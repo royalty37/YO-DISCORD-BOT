@@ -1,0 +1,27 @@
+{
+  "name": "myfirstdiscordbot",
+  "version": "1.0.0",
+  "description": "This is my first Discord bot ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Liam Hardy",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/voice": "^0.14.0",
+    "bufferutil": "^4.0.7",
+    "discord.js": "^14.7.1",
+    "dotenv": "^16.0.3",
+    "erlpack": "github:discord/erlpack",
+    "express": "^4.18.2",
+    "nodemon": "^2.0.20",
+    "typescript": "^4.9.4",
+    "utf-8-validate": "^5.0.10",
+    "zlib-sync": "^0.1.7"
+  },
+  "devDependencies": {
+    "eslint": "^8.30.0",
+    "prettier": "^2.8.1"
+  }
+}
