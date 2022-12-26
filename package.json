@@ -7,7 +7,8 @@
     "start": "npm run build && node build/index.js",
     "dev": "npx nodemon",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rimraf ./build && tsc"
+    "build": "rimraf ./build && tsc",
+    "deploy-commands": "npm run build && node build/deploy-commands.js"
   },
   "author": "Liam Hardy",
   "license": "ISC",
