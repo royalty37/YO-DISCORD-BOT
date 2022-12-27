@@ -10,15 +10,35 @@ class OpenAIService {
     this.openai = new OpenAIApi(config);
   }
 
-  public async createCompletion(prompt: string): Promise<string | undefined> {
-    const response = await this.openai.createCompletion({
+  public async createCompletion(input: string, suffix?: string): Promise<string | undefined> {
+    const res = await this.openai.createCompletion({
       model: "text-davinci-003",
       max_tokens: 4000,
-      prompt,
+      prompt: input,
+      suffix,
       temperature: 0.1,
     });
 
-    return response.data.choices[0].text;
+    return res.data.choices[0].text;
+  }
+
+  public async createEdit(input: string, instruction: string): Promise<string | undefined> {
+    const res = await this.openai.createEdit({
+      model: "text-davinci-edit-001",
+      input,
+      instruction,
+      temperature: 0.1,
+    });
+
+    return res.data.choices[0].text;
+  }
+
+  public async createImage(input: string): Promise<string | undefined> {
+    const res = await this.openai.createImage({
+      prompt: input,
+    });
+
+    return res.data.data[0].url;
   }
 }
 
