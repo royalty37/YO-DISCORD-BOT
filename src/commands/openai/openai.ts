@@ -4,6 +4,12 @@ import { editSubcommand, handleEditSubcommand } from "./subcommands/edit";
 import { createImageSubcommand, handleCreateImageSubcommand } from "./subcommands/createImage";
 import Command from "../../types/Command";
 
+export enum subcommands {
+  TEXT = "text",
+  EDIT = "edit",
+  CREATE_IMAGE = "create-image",
+}
+
 const data = new SlashCommandBuilder()
   .setName("openai")
   .setDescription("Various openAI subcommands.")
@@ -15,13 +21,13 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
   const subcommand = interaction.options.getSubcommand();
 
   switch (subcommand) {
-    case "text":
+    case subcommands.TEXT:
       handleTextSubcommand(interaction);
       break;
-    case "edit":
+    case subcommands.EDIT:
       handleEditSubcommand(interaction);
       break;
-    case "create-image":
+    case subcommands.CREATE_IMAGE:
       handleCreateImageSubcommand(interaction);
       break;
     default:

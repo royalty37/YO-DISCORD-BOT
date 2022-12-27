@@ -3,6 +3,11 @@ import { userSubcommand, handleUserSubcommand } from "./subcommands/user";
 import { serverSubcommand, handleServerSubcommand } from "./subcommands/server";
 import Command from "../../types/Command";
 
+export enum subcommands {
+  USER = "user",
+  SERVER = "server",
+}
+
 const data = new SlashCommandBuilder()
   .setName("info")
   .setDescription("Provides information about the server or user.")
@@ -10,9 +15,9 @@ const data = new SlashCommandBuilder()
   .addSubcommand(userSubcommand);
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
-  if (interaction.options.getSubcommand() === "user") {
+  if (interaction.options.getSubcommand() === subcommands.USER) {
     handleUserSubcommand(interaction);
-  } else if (interaction.options.getSubcommand() === "server") {
+  } else if (interaction.options.getSubcommand() === subcommands.SERVER) {
     handleServerSubcommand(interaction);
   }
 };

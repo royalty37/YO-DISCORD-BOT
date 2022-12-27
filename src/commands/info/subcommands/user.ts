@@ -4,10 +4,11 @@ import {
   SlashCommandSubcommandBuilder,
   SlashCommandUserOption,
 } from "discord.js";
+import { subcommands } from "../info";
 
 export const userSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc
-    .setName("user")
+    .setName(subcommands.USER)
     .setDescription("Provides information about the user")
     .addUserOption((option: SlashCommandUserOption) =>
       option.setName("target").setDescription("The user's info you want")

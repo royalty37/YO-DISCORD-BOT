@@ -1,11 +1,12 @@
 import { ChatInputCommandInteraction, SlashCommandStringOption, SlashCommandSubcommandBuilder } from "discord.js";
 import OpenAIService from "../../../apis/openaiService";
+import { subcommands } from "../openai";
 
 const INPUT_REQUIRED = true;
 
 export const textSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc
-    .setName("text")
+    .setName(subcommands.TEXT)
     .setDescription("Responds to user input with generated text (the sky is the limit!)")
     .addStringOption((option: SlashCommandStringOption) =>
       option.setName("input").setDescription("Input used to generate AI text response").setRequired(INPUT_REQUIRED)
