@@ -1,7 +1,8 @@
 import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
+import { subcommands } from "../info";
 
 export const serverSubcommand = (sc: SlashCommandSubcommandBuilder) =>
-  sc.setName("server").setDescription("Provides information about the server.");
+  sc.setName(subcommands.SERVER).setDescription("Provides information about the server.");
 
 export const handleServerSubcommand = async (interaction: ChatInputCommandInteraction) => {
   await interaction.reply(

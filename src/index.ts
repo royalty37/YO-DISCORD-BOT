@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { CacheType, Client, Collection, Events, GatewayIntentBits, Interaction } from "discord.js";
+import { Client, Collection, GatewayIntentBits } from "discord.js";
 import * as dotenv from "dotenv";
 
 // Load environment variables from .env file

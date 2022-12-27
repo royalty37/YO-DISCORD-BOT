@@ -6,12 +6,13 @@ import {
   Colors,
 } from "discord.js";
 import OpenAIService from "../../../apis/openaiService";
+import { subcommands } from "../openai";
 
 const INPUT_REQUIRED = true;
 
 export const createImageSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc
-    .setName("create-image")
+    .setName(subcommands.CREATE_IMAGE)
     .setDescription("Generate an image using provided input.")
     .addStringOption((option: SlashCommandStringOption) =>
       option.setName("input").setDescription("Input used to generate image").setRequired(INPUT_REQUIRED)
