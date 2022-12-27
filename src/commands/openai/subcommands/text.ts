@@ -1,21 +1,20 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
-import OpenAIService from "../apis/openaiService";
-import Command from "../types/Command";
+import { ChatInputCommandInteraction, SlashCommandStringOption, SlashCommandSubcommandBuilder } from "discord.js";
+import OpenAIService from "../../../apis/openaiService";
 
 const INPUT_REQUIRED = true;
 
-const textSubcommand = (sc: SlashCommandSubcommandBuilder) =>
+export const textSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc
     .setName("text")
     .setDescription("Responds to user input with generated text (the sky is the limit!)")
-    .addStringOption((option) =>
+    .addStringOption((option: SlashCommandStringOption) =>
       option.setName("input").setDescription("Input used to generate AI text response").setRequired(INPUT_REQUIRED)
     )
-    .addStringOption((option) =>
+    .addStringOption((option: SlashCommandStringOption) =>
       option.setName("suffix").setDescription("Suffix to add to the end of the generated text")
     );
 
-const handleTextSubcommand = async (interaction: ChatInputCommandInteraction) => {
+export const handleTextSubcommand = async (interaction: ChatInputCommandInteraction) => {
   try {
     await interaction.deferReply();
 
@@ -52,21 +51,3 @@ const handleTextSubcommand = async (interaction: ChatInputCommandInteraction) =>
     await interaction.editReply("Something went wrong. Please try again.");
   }
 };
-
-const data = new SlashCommandBuilder()
-  .setName("openai")
-  .setDescription("Various openAI subcommands.")
-  .addSubcommand(textSubcommand);
-
-const execute = async (interaction: ChatInputCommandInteraction) => {
-  if (interaction.options.getSubcommand() === "text") {
-    handleTextSubcommand(interaction);
-  }
-};
-
-const infoCommand: Command = {
-  data,
-  execute,
-};
-
-module.exports = infoCommand;
