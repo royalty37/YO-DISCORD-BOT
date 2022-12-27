@@ -23,13 +23,29 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       await interaction.deferReply();
 
       const text = interaction.options.getString("input", INPUT_REQUIRED);
-      const reply = await new OpenAIService().createCompletion(text);
+      const res = await new OpenAIService().createCompletion(text);
 
-      console.log(`*** REPLY:${reply}\n\nEND OF REPLY ***`);
+      console.log(`*** OPENAI RES:${res}\n\nEND OF RES ***`);
 
-      await interaction.editReply(
-        reply ? `**INPUT:**\n${text}\n\n**OPENAI RESPONSE:**${reply}` : "Something went wrong. Please try again."
-      );
+      if (res) {
+        const reply = `**INPUT:**\n${text}\n\n**OPENAI RESPONSE:**${res}`;
+
+        if (reply.length > 2000) {
+          for (let i = 0; i < reply.length; i += 2000) {
+            const toSend = reply.substring(i, Math.min(reply.length, i + 2000));
+
+            if (i === 0) {
+              await interaction.editReply(toSend);
+            } else {
+              await interaction.followUp(toSend);
+            }
+          }
+        } else {
+          await interaction.editReply(reply);
+        }
+      } else {
+        await interaction.editReply("Something went wrong. Please try again.");
+      }
     } catch (e) {
       console.error("OPEN AI COMMAND EXECEPTION: " + e);
       await interaction.editReply("Something went wrong. Please try again.");
