@@ -23,8 +23,6 @@ export const handleCreateImageSubcommand = async (interaction: ChatInputCommandI
 
     const input = interaction.options.getString("input", INPUT_REQUIRED);
 
-    console.log("INPUT: " + input);
-
     const res = await new OpenAIService().createImage(input);
 
     console.log(`*** OPENAI RES:\n\n${res}\n\nEND OF RES ***`);
