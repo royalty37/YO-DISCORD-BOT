@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
-import Command from "../types/Command";
+import Command from "../../types/Command";
 
 const INPUT_REQUIRED = true;
 

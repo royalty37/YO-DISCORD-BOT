@@ -28,10 +28,11 @@ eventFiles.forEach((file) => {
 });
 
 const commandsPath = path.join(__dirname, "commands");
-const commandFiles = fs.readdirSync(commandsPath);
+const commandFolders = fs.readdirSync(commandsPath);
 
-commandFiles.forEach((file) => {
-  const filePath = path.join(commandsPath, file);
+commandFolders.forEach((cf: string) => {
+  // Command file name is the same as the folder name, therefore we can join it twice to get the path of the file
+  const filePath = path.join(commandsPath, cf, cf);
   const command = require(filePath);
 
   // Set a new item in the Collection
