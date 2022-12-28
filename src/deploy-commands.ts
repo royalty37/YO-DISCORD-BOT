@@ -15,8 +15,12 @@ const commandFolders = fs.readdirSync(commandsPath);
 // Loop over the command files and push them to the commands array
 commandFolders.forEach((cf) => {
   // Command file name is the same as the folder name, therefore we can join it twice to get the path of the file
-  const command = require(`./commands/${cf}/${cf}`);
-  commands.push(command.data.toJSON());
+  const commandFiles = fs.readdirSync(path.join(commandsPath, cf)).filter((file) => file.endsWith(".js"));
+  commandFiles.forEach((file) => {
+    console.log("COMMAND FILE: ", file);
+    const command = require(`./commands/${cf}/${file}`);
+    commands.push(command.data.toJSON());
+  });
 });
 
 // Create a new REST instance

@@ -2,16 +2,19 @@ import fs from "fs";
 import path from "path";
 import { Client, Collection, GatewayIntentBits } from "discord.js";
 import * as dotenv from "dotenv";
+import { Player } from "discord-player";
+import YoClient from "./types/YoClient";
 
 // Load environment variables from .env file
 // process.env.DISCORD_TOKEN
 dotenv.config();
 
 // Create a new client instance
-const client: Client<boolean> & {
-  commands?: Collection<string, any>;
-} = new Client({ intents: GatewayIntentBits.Guilds });
-client.commands = new Collection();
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] }) as YoClient;
+client.commands = new Collection<string, any>();
+client.player = new Player(client);
+
+client.player.on("trackStart", (queue: any, track) => queue.metadata.send(`🎶 | Now playing **${track.title}**!`));
 
 const eventsPath = path.join(__dirname, "events");
 const eventFiles = fs.readdirSync(eventsPath);
@@ -32,16 +35,20 @@ const commandFolders = fs.readdirSync(commandsPath);
 
 commandFolders.forEach((cf: string) => {
   // Command file name is the same as the folder name, therefore we can join it twice to get the path of the file
-  const filePath = path.join(commandsPath, cf, cf);
-  const command = require(filePath);
+  const commandFiles = fs.readdirSync(path.join(commandsPath, cf)).filter((file) => file.endsWith(".js"));
+  commandFiles.forEach((file) => {
+    const command = require(`./commands/${cf}/${file}`);
 
-  // Set a new item in the Collection
-  if (command.data && command.execute) {
-    client.commands!.set(command.data.name, command);
-  } else {
-    console.log(`*** WARNING: Command at ${filePath} is missing 'data' or 'execute' property.`);
-  }
+    // Set a new item in the Collection
+    if (command.data && command.execute) {
+      client.commands!.set(command.data.name, command);
+    } else {
+      console.log(`*** WARNING: Command at ${file} is missing 'data' or 'execute' property.`);
+    }
+  });
 });
 
 // Login to Discord with your DISCORD_TOKEN
 client.login(process.env.DISCORD_TOKEN);
+
+module.exports = client;
