@@ -1,7 +1,7 @@
 {
-  "name": "myfirstdiscordbot",
+  "name": "YO-DISCORD-BOT",
   "version": "1.0.0",
-  "description": "This is my first Discord bot ",
+  "description": "Personal Discord bot for YOZA Discord channel",
   "main": "index.js",
   "scripts": {
     "start": "npm run build && node build/index.js",
