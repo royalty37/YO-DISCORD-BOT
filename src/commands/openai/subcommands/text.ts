@@ -43,12 +43,7 @@ export const handleTextSubcommand = async (interaction: ChatInputCommandInteract
       if (reply.length > 2000) {
         for (let i = 0; i < reply.length; i += 2000) {
           const toSend = reply.substring(i, Math.min(reply.length, i + 2000));
-
-          if (i === 0) {
-            await interaction.editReply(toSend);
-          } else {
-            await interaction.followUp(toSend);
-          }
+          await interaction.followUp(toSend);
         }
       } else {
         // Else, send as is
