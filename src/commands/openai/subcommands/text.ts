@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandStringOption, SlashCommandSubcommandBuilder } from "discord.js";
 import OpenAIService from "../../../apis/openaiService";
 import { subcommands } from "../openai";
+import { splitMessage } from "../../../utils/messageUtils";
 
 const INPUT_REQUIRED = true;
 
@@ -39,16 +40,10 @@ export const handleTextSubcommand = async (interaction: ChatInputCommandInteract
         suffix ? ` ${suffix}` : ""
       }`;
 
-      // If reply is too long, send multiple messages
-      if (reply.length > 2000) {
-        for (let i = 0; i < reply.length; i += 2000) {
-          const toSend = reply.substring(i, Math.min(reply.length, i + 2000));
-          await interaction.followUp(toSend);
-        }
-      } else {
-        // Else, send as is
-        await interaction.editReply(reply);
-      }
+      // Reply is sometimes > 2000 characters, so split into multiple messages
+      splitMessage(reply).forEach(async (message) => {
+        await interaction.followUp(message);
+      });
     } else {
       // If response is invalid (no res), send error message
       await interaction.editReply("Something went wrong. Please try again.");

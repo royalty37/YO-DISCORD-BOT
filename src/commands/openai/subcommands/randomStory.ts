@@ -2,6 +2,10 @@ import { ChatInputCommandInteraction, SlashCommandIntegerOption, SlashCommandSub
 import OpenAIService from "../../../apis/openaiService";
 import { subcommands } from "../openai";
 import randomWords from "../../../utils/randomWord";
+import { splitMessage } from "../../../utils/messageUtils";
+
+// Max number of random words to generate - setting it much higher will sometimes break request
+const MAX_WORDS = 20;
 
 // openai random-story subcommand - generates random story from randomly generated words
 // Takes in optional number representing number of random words/ideas to include in story
@@ -12,9 +16,9 @@ export const randomStorySubcommand = (sc: SlashCommandSubcommandBuilder) =>
     .addIntegerOption((option: SlashCommandIntegerOption) =>
       option
         .setName("no-of-words")
-        .setDescription("Number of random words/ideas to include in story (up to 20)")
+        .setDescription(`Number of random words/ideas to include in story (up to ${MAX_WORDS})`)
         .setMinValue(1)
-        .setMaxValue(20)
+        .setMaxValue(MAX_WORDS)
     );
 
 // openai random-story subcommand execution
@@ -41,16 +45,10 @@ export const handleRandomStorySubcommand = async (interaction: ChatInputCommandI
         ", "
       )}\n\n**INSTRUCTION**:\n${completionInput}\n\n**OPENAI RESPONSE:**${res}`;
 
-      // If reply is too long, send multiple messages
-      if (reply.length > 2000) {
-        for (let i = 0; i < reply.length; i += 2000) {
-          const toSend = reply.substring(i, Math.min(reply.length, i + 2000));
-          await interaction.followUp(toSend);
-        }
-      } else {
-        // Else, send as is
-        await interaction.editReply(reply);
-      }
+      // Reply is sometimes > 2000 characters, so split into multiple messages
+      splitMessage(reply).forEach(async (message) => {
+        await interaction.followUp(message);
+      });
     } else {
       // If response is invalid (no res), send error message
       await interaction.editReply("Something went wrong. Please try again.");
