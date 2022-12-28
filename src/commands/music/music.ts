@@ -11,7 +11,7 @@ const data = new SlashCommandBuilder()
   .addStringOption((option) => option.setName("input").setDescription("Song to play!").setRequired(INPUT_REQUIRED));
 
 const execute = async (interaction: ChatInputCommandInteraction) => {
-  const client: YoClient = require("../..");
+  const client: YoClient = interaction.client as YoClient;
 
   await interaction.deferReply();
 

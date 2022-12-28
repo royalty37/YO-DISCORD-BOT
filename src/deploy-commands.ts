@@ -17,7 +17,6 @@ commandFolders.forEach((cf) => {
   // Command file name is the same as the folder name, therefore we can join it twice to get the path of the file
   const commandFiles = fs.readdirSync(path.join(commandsPath, cf)).filter((file) => file.endsWith(".js"));
   commandFiles.forEach((file) => {
-    console.log("COMMAND FILE: ", file);
     const command = require(`./commands/${cf}/${file}`);
     commands.push(command.data.toJSON());
   });
