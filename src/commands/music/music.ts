@@ -3,12 +3,14 @@ import Command from "../../types/Command";
 import { playSubcommand, shorthandPlaySubcommand, handlePlaySubcommand } from "./subcommands/play";
 import { pauseSubcommand, handlePauseSubcommand } from "./subcommands/pause";
 
+// Enum for subcommands
 export enum subcommands {
   PLAY = "play",
   SHORTHAND_PLAY = "p",
   PAUSE = "pause",
 }
 
+// Music command SlashCommandBuilder
 const data = new SlashCommandBuilder()
   .setName("music")
   .setDescription("Play music!")
@@ -16,9 +18,11 @@ const data = new SlashCommandBuilder()
   .addSubcommand(shorthandPlaySubcommand)
   .addSubcommand(pauseSubcommand);
 
+// Music command execute function
 const execute = async (interaction: ChatInputCommandInteraction) => {
   const subcommand = interaction.options.getSubcommand();
 
+  // Switch statement for subcommands to handle subcommand execution accordingly
   switch (subcommand) {
     case subcommands.PLAY:
     case subcommands.SHORTHAND_PLAY:

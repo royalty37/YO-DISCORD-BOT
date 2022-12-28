@@ -3,6 +3,7 @@ import Command from "../../types/Command";
 
 const INPUT_REQUIRED = true;
 
+// Really basic command that echos input - used for testing/learning
 const echoCommand: Command = {
   data: new SlashCommandBuilder()
     .setName("echo")

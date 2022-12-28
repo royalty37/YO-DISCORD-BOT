@@ -4,8 +4,10 @@ import * as dotenv from "dotenv";
 import { REST, Routes } from "discord.js";
 import Command from "./types/Command";
 
+// Load environment variables from .env file
 dotenv.config();
 
+// Create a new commands array
 const commands: Command[] = [];
 
 // Grab all the command files from the commands directory you created earlier
@@ -25,6 +27,7 @@ commandFolders.forEach((cf) => {
 // Create a new REST instance
 const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN ?? "");
 
+// Define a function that will be used to register the commands
 const deployCommands = async () => {
   try {
     console.log(`Started refreshing ${commands.length} application (/) commands.`);
@@ -42,4 +45,5 @@ const deployCommands = async () => {
   }
 };
 
+// Run the function
 deployCommands();
