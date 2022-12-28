@@ -8,6 +8,7 @@ export enum subcommands {
   PLAY = "play",
   SHORTHAND_PLAY = "p",
   PAUSE = "pause",
+  RESUME = "resume",
 }
 
 // Music command SlashCommandBuilder
