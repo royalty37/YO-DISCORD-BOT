@@ -2,6 +2,7 @@ import { SlashCommandBuilder, ChatInputCommandInteraction, SlashCommandSubcomman
 import { textSubcommand, handleTextSubcommand } from "./subcommands/text";
 import { editSubcommand, handleEditSubcommand } from "./subcommands/edit";
 import { createImageSubcommand, handleCreateImageSubcommand } from "./subcommands/createImage";
+import { randomStorySubcommand, handleRandomStorySubcommand } from "./subcommands/randomStory";
 import Command from "../../types/Command";
 
 // Enum for subcommands
@@ -9,6 +10,7 @@ export enum subcommands {
   TEXT = "text",
   EDIT = "edit",
   CREATE_IMAGE = "create-image",
+  RANDOM_STORY = "random-story",
 }
 
 // OpenAI command SlashCommandBuilder
@@ -17,7 +19,8 @@ const data = new SlashCommandBuilder()
   .setDescription("Various openAI subcommands.")
   .addSubcommand(textSubcommand)
   .addSubcommand(editSubcommand)
-  .addSubcommand(createImageSubcommand);
+  .addSubcommand(createImageSubcommand)
+  .addSubcommand(randomStorySubcommand);
 
 // OpenAI command execute function
 const execute = async (interaction: ChatInputCommandInteraction) => {
@@ -33,6 +36,9 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       break;
     case subcommands.CREATE_IMAGE:
       handleCreateImageSubcommand(interaction);
+      break;
+    case subcommands.RANDOM_STORY:
+      handleRandomStorySubcommand(interaction);
       break;
     default:
       interaction.reply("Something went wrong. Please try again.");
