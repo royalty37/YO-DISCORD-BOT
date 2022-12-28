@@ -7,9 +7,7 @@ const INPUT_REQUIRED = true;
 export const editSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc
     .setName(subcommands.EDIT)
-    .setDescription(
-      "Edit input using provided instruction (for instance, correct spelling mistakes). WARNING: This AI model is not very smart."
-    )
+    .setDescription("Edit input using provided instruction (for instance, correct spelling mistakes).")
     .addStringOption((option: SlashCommandStringOption) =>
       option.setName("input").setDescription("Input to edit using provided instructions").setRequired(INPUT_REQUIRED)
     )
