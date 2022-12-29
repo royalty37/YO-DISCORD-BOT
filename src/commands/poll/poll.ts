@@ -49,8 +49,6 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     }
   }
 
-  interaction.client.emojis.cache;
-
   const pollEmbedDescription = options.map((o, i) => EMOJI_NUMBERS[i] + " - " + o).join("\n");
 
   const pollEmbed = new EmbedBuilder()
