@@ -57,8 +57,6 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     }
   }
 
-  console.log("OPTIONS LENGTH", options.length);
-
   const votes = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   let userVoted: string[] = [];
 
@@ -73,7 +71,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       return percentage.toString();
     };
 
-    return options.map((o, i) => `${EMOJI_NUMBERS[i]} - ${o} | ${votes[i]} (${generatePercentage(i)}%)`).join("\n");
+    return options.map((o, i) => `${EMOJI_NUMBERS[i]} ${o} | ${votes[i]} (${generatePercentage(i)}%)`).join("\n");
   };
 
   const pollEmbed = new EmbedBuilder()
@@ -87,18 +85,10 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
   const message = await interaction.editReply({ embeds: [pollEmbed] });
 
-  const filter = (reaction: MessageReaction, user: User) => {
-    if (EMOJI_NUMBERS.indexOf(reaction.emoji.name ?? "") >= options.length) {
-      return false;
-    }
-    console.log("EMOJI NUMBERS INDEX", EMOJI_NUMBERS.indexOf(reaction.emoji.name ?? ""));
-    console.log("OPTIONS LENGTH", options.length);
-    return EMOJI_NUMBERS.includes(reaction.emoji.name ?? "") &&
-      EMOJI_NUMBERS.indexOf(reaction.emoji.name ?? "") < options.length &&
-      !allowMultiVote
-      ? !userVoted.includes(user.id)
-      : true;
-  };
+  const filter = (reaction: MessageReaction, user: User) =>
+    EMOJI_NUMBERS.includes(reaction.emoji.name ?? "") &&
+    EMOJI_NUMBERS.indexOf(reaction.emoji.name ?? "") < options.length &&
+    (!allowMultiVote ? !userVoted.includes(user.id) : true);
 
   const collector = message.createReactionCollector({
     filter,
