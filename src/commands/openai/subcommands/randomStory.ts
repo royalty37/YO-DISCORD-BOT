@@ -48,9 +48,9 @@ export const handleRandomStorySubcommand = async (interaction: ChatInputCommandI
       )}\n\n**INSTRUCTION**:\n${completionInput}\n\n**OPENAI RESPONSE:**${res}`;
 
       // Reply is sometimes > 2000 characters, so split into multiple messages
-      splitMessage(reply).forEach(async (message) => {
+      for (const message in splitMessage(reply)) {
         await interaction.followUp(message);
-      });
+      }
     } else {
       // If response is invalid (no res), send error message
       await interaction.editReply("Something went wrong. Please try again.");

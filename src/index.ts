@@ -27,10 +27,10 @@ const commandsPath = path.join(__dirname, "commands");
 const commandFolders = fs.readdirSync(commandsPath);
 
 // Loop over command folders and command files within and push them to the commands array
-commandFolders.forEach((cf: string) => {
+for (const cf of commandFolders) {
   // Command file name is the same as the folder name, therefore we can join it twice to get the path of the file
   const commandFiles = fs.readdirSync(path.join(commandsPath, cf)).filter((file) => file.endsWith(".js"));
-  commandFiles.forEach((file) => {
+  for (const file of commandFiles) {
     const command = require(`./commands/${cf}/${file}`);
 
     // Set a new item in the Collection only if command has both 'data' and 'execute' properties
@@ -39,8 +39,8 @@ commandFolders.forEach((cf: string) => {
     } else {
       console.log(`*** WARNING: Command at ${file} is missing 'data' or 'execute' property.`);
     }
-  });
-});
+  }
+}
 
 // Login to Discord with DISCORD_TOKEN
 client.login(process.env.DISCORD_TOKEN);
