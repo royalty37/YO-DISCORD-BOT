@@ -12,7 +12,9 @@ import { registerPlayerEvents } from "./events/playerEvents";
 dotenv.config();
 
 // Create a new client instance
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates] }) as YoClient;
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMessageReactions],
+}) as YoClient;
 client.commands = new Collection<string, any>();
 client.player = new Player(client);
 
