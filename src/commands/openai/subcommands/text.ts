@@ -3,7 +3,9 @@ import OpenAIService from "../../../apis/openaiService";
 import { subcommands } from "../openai";
 import { splitMessage } from "../../../utils/messageUtils";
 
+const INPUT_OPTION_NAME = "input";
 const INPUT_REQUIRED = true;
+const SUFFIX_OPTION_NAME = "suffix";
 
 // openai text subcommand - generates text using provided input like ChatGPT
 // Takes input and optional suffix
@@ -12,10 +14,13 @@ export const textSubcommand = (sc: SlashCommandSubcommandBuilder) =>
     .setName(subcommands.TEXT)
     .setDescription("Responds to user input with generated text (the sky is the limit!)")
     .addStringOption((option: SlashCommandStringOption) =>
-      option.setName("input").setDescription("Input used to generate AI text response").setRequired(INPUT_REQUIRED)
+      option
+        .setName(INPUT_OPTION_NAME)
+        .setDescription("Input used to generate AI text response")
+        .setRequired(INPUT_REQUIRED)
     )
     .addStringOption((option: SlashCommandStringOption) =>
-      option.setName("suffix").setDescription("Suffix to add to the end of the generated text")
+      option.setName(SUFFIX_OPTION_NAME).setDescription("Suffix to add to the end of the generated text")
     );
 
 // openai text subcommand execution
@@ -24,11 +29,11 @@ export const handleTextSubcommand = async (interaction: ChatInputCommandInteract
     await interaction.deferReply();
 
     // Get input and suffix from user
-    const input = interaction.options.getString("input", INPUT_REQUIRED);
-    const suffix = interaction.options.getString("suffix") ?? undefined;
+    const input = interaction.options.getString(INPUT_OPTION_NAME, INPUT_REQUIRED);
+    const suffix = interaction.options.getString(SUFFIX_OPTION_NAME);
 
     // Call OpenAI API createCompletion
-    const res = await new OpenAIService().createCompletion(input, suffix);
+    const res = await new OpenAIService().createCompletion(input, suffix ?? undefined);
 
     // Log response
     console.log(`*** OPENAI RES:${res}\n\nEND OF RES ***`);

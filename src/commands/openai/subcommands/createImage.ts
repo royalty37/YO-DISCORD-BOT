@@ -8,6 +8,7 @@ import {
 import OpenAIService from "../../../apis/openaiService";
 import { subcommands } from "../openai";
 
+const INPUT_OPTION_NAME = "input";
 const INPUT_REQUIRED = true;
 
 // openai create-image subcommand - generates an image using provided input
@@ -16,7 +17,7 @@ export const createImageSubcommand = (sc: SlashCommandSubcommandBuilder) =>
     .setName(subcommands.CREATE_IMAGE)
     .setDescription("Generate an image using provided input.")
     .addStringOption((option: SlashCommandStringOption) =>
-      option.setName("input").setDescription("Input used to generate image").setRequired(INPUT_REQUIRED)
+      option.setName(INPUT_OPTION_NAME).setDescription("Input used to generate image").setRequired(INPUT_REQUIRED)
     );
 
 // openai create-image subcommand execution
@@ -25,7 +26,7 @@ export const handleCreateImageSubcommand = async (interaction: ChatInputCommandI
     await interaction.deferReply();
 
     // Get input from user
-    const input = interaction.options.getString("input", INPUT_REQUIRED);
+    const input = interaction.options.getString(INPUT_OPTION_NAME, INPUT_REQUIRED);
 
     // Call OpenAI API createImage
     const res = await new OpenAIService().createImage(input);
@@ -52,6 +53,6 @@ export const handleCreateImageSubcommand = async (interaction: ChatInputCommandI
   } catch (e) {
     // If error, log error and send error message
     console.error("OPEN AI CREATE-IMAGE SUBCOMMAND EXECEPTION: " + e);
-    await interaction.editReply("Something went wrong. Please try again.");
+    await interaction.editReply("Something went wrong. Please try again.\n\nOpenAI potentially interpreted your input as NSFW.");
   }
 };

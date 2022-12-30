@@ -7,6 +7,8 @@ import { splitMessage } from "../../../utils/messageUtils";
 // Max number of random words to generate - setting it much higher will sometimes break request
 const MAX_WORDS = 20;
 
+const NO_OF_WORDS_OPTION_NAME = "no-of-words";
+
 // openai random-story subcommand - generates random story from randomly generated words
 // Takes in optional number representing number of random words/ideas to include in story
 export const randomStorySubcommand = (sc: SlashCommandSubcommandBuilder) =>
@@ -15,7 +17,7 @@ export const randomStorySubcommand = (sc: SlashCommandSubcommandBuilder) =>
     .setDescription("Generates a random story involving random words from a list of approx. 300k words")
     .addIntegerOption((option: SlashCommandIntegerOption) =>
       option
-        .setName("no-of-words")
+        .setName(NO_OF_WORDS_OPTION_NAME)
         .setDescription(`Number of random words/ideas to include in story (up to ${MAX_WORDS})`)
         .setMinValue(1)
         .setMaxValue(MAX_WORDS)
@@ -27,7 +29,7 @@ export const handleRandomStorySubcommand = async (interaction: ChatInputCommandI
     await interaction.deferReply();
 
     // Get number of words from user input
-    const noOfWords = interaction.options.getInteger("no-of-words");
+    const noOfWords = interaction.options.getInteger(NO_OF_WORDS_OPTION_NAME);
 
     // Get random words from randomWords util
     const words = randomWords(noOfWords ?? undefined);
