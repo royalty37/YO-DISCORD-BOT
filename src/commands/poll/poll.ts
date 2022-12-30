@@ -145,10 +145,11 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
 	// On Remove listener
   collector.on("remove", (reaction: MessageReaction) => {
-		// Get index of reaction emoji in EMOJI_NUMBERS array and decrement vote count for that index
+    // Get index of reaction emoji in EMOJI_NUMBERS array and decrement vote count for that index
     const index = EMOJI_NUMBERS.indexOf(reaction.emoji.name ?? "");
     votes[index]--;
 
+    // Update poll embed description and edit message
     pollEmbed.setDescription(generateDescription());
     message.edit({ embeds: [pollEmbed] });
   });
