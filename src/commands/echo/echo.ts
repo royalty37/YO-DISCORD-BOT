@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
+import { SlashCommandBuilder, ChatInputCommandInteraction, SlashCommandStringOption } from "discord.js";
 import Command from "../../types/Command";
 
 const INPUT_OPTION_NAME = "input";
@@ -9,7 +9,7 @@ const echoCommand: Command = {
   data: new SlashCommandBuilder()
     .setName(INPUT_OPTION_NAME)
     .setDescription("Replies with your input!")
-    .addStringOption((option) =>
+    .addStringOption((option: SlashCommandStringOption) =>
       option.setName("input").setDescription("Input to echo back").setRequired(INPUT_REQUIRED)
     ),
   execute: async (interaction: ChatInputCommandInteraction) => {

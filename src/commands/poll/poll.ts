@@ -6,6 +6,7 @@ import {
   Colors,
   MessageReaction,
   User,
+  SlashCommandBooleanOption,
 } from "discord.js";
 import Command from "../../types/Command";
 
@@ -32,7 +33,7 @@ const data = new SlashCommandBuilder()
       .setDescription("Question to ask on poll. Must have AT LEAST 2 options.")
       .setRequired(QUESTION_REQUIRED)
   )
-  .addBooleanOption((option) =>
+  .addBooleanOption((option: SlashCommandBooleanOption) =>
     option.setName(ALLOW_MULTIVOTE_OPTION_NAME).setDescription("Allow multiple votes").setRequired(MULTIVOTE_REQUIRED)
   );
 
@@ -42,7 +43,7 @@ for (let i = 1; i <= NO_OF_OPTIONS; i++) {
     option
       .setName(OPTION_NAME_PREFIX + i)
       .setDescription(`Option ${i} for poll`)
-			// First 2 options are required
+      // First 2 options are required
       .setRequired(i <= 2)
   );
 }
@@ -108,8 +109,14 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
   // Edit reply to include poll embed and pull out message to edit after collecting reactions
   const message = await interaction.editReply({ embeds: [pollEmbed] });
 
+  options.forEach((_, i) => {
+    // Add bot reaction to message for each option
+    message.react(EMOJI_NUMBERS[i]);
+  });
+
   // Create reaction collector - no filter (manually handle in collect listener), 2 hour time limit, dispose = true (allow remove listener)
   const collector = message.createReactionCollector({
+    filter: (_, user: User) => !user.bot,
     // More readable than 720k ms, 60,000ms = 1 minute * 60 = 1 hour * 2 = 2 hours
     time: 60000 * 60 * 2,
     dispose: true,

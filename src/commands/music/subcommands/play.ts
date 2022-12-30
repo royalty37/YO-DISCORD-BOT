@@ -1,5 +1,5 @@
 import { QueryType } from "discord-player";
-import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandStringOption, SlashCommandSubcommandBuilder } from "discord.js";
 import YoClient from "../../../types/YoClient";
 import { subcommands } from "../music";
 
@@ -11,7 +11,7 @@ export const playSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc
     .setName(subcommands.PLAY)
     .setDescription("Search for and play a song!")
-    .addStringOption((option) =>
+    .addStringOption((option: SlashCommandStringOption) =>
       option.setName(SONG_OPTION_NAME).setDescription("Song to play!").setRequired(INPUT_REQUIRED)
     );
 
