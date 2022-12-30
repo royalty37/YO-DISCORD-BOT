@@ -6,19 +6,21 @@ import {
 } from "discord.js";
 import { subcommands } from "../info";
 
+const USER_OPTION_NAME = "user";
+
 // Info User subcommand - has optional user parameter that if not provided will default to the user who invoked the command
 export const userSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc
     .setName(subcommands.USER)
     .setDescription("Provides information about the user")
     .addUserOption((option: SlashCommandUserOption) =>
-      option.setName("user").setDescription("The user's info you want")
+      option.setName(USER_OPTION_NAME).setDescription("The user's info you want")
     );
 
 // User subcommand execution - prints info about user
 export const handleUserSubcommand = async (interaction: ChatInputCommandInteraction) => {
   // Get user from user option
-  const user = interaction.options.getUser("user");
+  const user = interaction.options.getUser(USER_OPTION_NAME);
 
   // If user is provided, fetch user from guild and print info about user
   // Else, print info about user who invoked the command

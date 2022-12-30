@@ -4,7 +4,7 @@ export const splitMessage = (message: string, maxLength = 2000): string[] => {
     return [message];
   }
 
-  const returnArray = [];
+  const returnArray: string[] = [];
 
   for (let i = 0; i < message.length; i += 2000) {
     const toSend = message.substring(i, Math.min(message.length, i + 2000));

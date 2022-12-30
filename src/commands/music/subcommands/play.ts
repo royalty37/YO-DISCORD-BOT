@@ -1,34 +1,39 @@
 import { QueryType } from "discord-player";
-import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandStringOption, SlashCommandSubcommandBuilder } from "discord.js";
 import YoClient from "../../../types/YoClient";
 import { subcommands } from "../music";
 
 const INPUT_REQUIRED = true;
+const SONG_OPTION_NAME = "song";
 
 // Play and Shorthand Play subcommands play song that is searched for
 export const playSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc
     .setName(subcommands.PLAY)
     .setDescription("Search for and play a song!")
-    .addStringOption((option) => option.setName("song").setDescription("Song to play!").setRequired(INPUT_REQUIRED));
+    .addStringOption((option: SlashCommandStringOption) =>
+      option.setName(SONG_OPTION_NAME).setDescription("Song to play!").setRequired(INPUT_REQUIRED)
+    );
 
 // Shorthand play is just play but called with /music p instead of /music play
 export const shorthandPlaySubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc
     .setName(subcommands.SHORTHAND_PLAY)
     .setDescription("Search for and play a song!")
-    .addStringOption((option) => option.setName("song").setDescription("Song to play!").setRequired(INPUT_REQUIRED));
+    .addStringOption((option) =>
+      option.setName(SONG_OPTION_NAME).setDescription("Song to play!").setRequired(INPUT_REQUIRED)
+    );
 
 // This is the function that handles the play subcommand
 export const handlePlaySubcommand = async (interaction: ChatInputCommandInteraction) => {
-  // Get client off of interaction 
+  // Get client off of interaction
   const client: YoClient = interaction.client as YoClient;
 
   await interaction.deferReply();
 
   const guild = client.guilds.cache.get(interaction.guildId ?? "");
   const channel = guild?.channels.cache.get(interaction.channelId ?? "");
-  const song = interaction.options.getString("song", INPUT_REQUIRED);
+  const song = interaction.options.getString(SONG_OPTION_NAME, INPUT_REQUIRED);
 
   if (!guild || !channel) {
     return void interaction.followUp({ content: "There was an error while executing this command!" });
