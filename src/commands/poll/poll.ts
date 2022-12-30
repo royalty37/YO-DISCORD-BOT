@@ -58,7 +58,6 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
   }
 
   const votes = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-  let userVoted: string[] = [];
 
   const generateDescription = () => {
     const generatePercentage = (index: number): string => {
@@ -85,36 +84,51 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
   const message = await interaction.editReply({ embeds: [pollEmbed] });
 
-  const filter = (reaction: MessageReaction, user: User) =>
-    EMOJI_NUMBERS.includes(reaction.emoji.name ?? "") &&
-    EMOJI_NUMBERS.indexOf(reaction.emoji.name ?? "") < options.length &&
-    (!allowMultiVote ? !userVoted.includes(user.id) : true);
-
   const collector = message.createReactionCollector({
-    filter,
     time: 60000 * 60 * 2,
     dispose: true,
   });
 
   collector.on("collect", (reaction: MessageReaction, user: User) => {
-    const index = EMOJI_NUMBERS.indexOf(reaction.emoji.name ?? "");
-    votes[index]++;
-
-    if (!allowMultiVote) {
-      userVoted.push(user.id);
+    if (
+      !(
+        EMOJI_NUMBERS.includes(reaction.emoji.name ?? "") &&
+        EMOJI_NUMBERS.indexOf(reaction.emoji.name ?? "") < options.length
+      )
+    ) {
+      return void reaction.remove();
     }
 
-    pollEmbed.setDescription(generateDescription());
-    message.edit({ embeds: [pollEmbed] });
+    const registerVote = () => {
+      const index = EMOJI_NUMBERS.indexOf(reaction.emoji.name ?? "");
+      votes[index]++;
+
+      pollEmbed.setDescription(generateDescription());
+      message.edit({ embeds: [pollEmbed] });
+    };
+
+    if (!allowMultiVote) {
+      let userHasVoted = false;
+
+      message.reactions.cache.each((existingReaction) => {
+        if (existingReaction === reaction || userHasVoted) {
+          return;
+        }
+
+        userHasVoted = !!existingReaction.users.cache.get(user.id);
+      });
+
+      if (userHasVoted) {
+        return void reaction.remove();
+      }
+    }
+
+    registerVote();
   });
 
-  collector.on("remove", (reaction: MessageReaction, user: User) => {
+  collector.on("remove", (reaction: MessageReaction) => {
     const index = EMOJI_NUMBERS.indexOf(reaction.emoji.name ?? "");
     votes[index]--;
-
-    if (!allowMultiVote) {
-      userVoted = userVoted.filter((id) => id !== user.id);
-    }
 
     pollEmbed.setDescription(generateDescription());
     message.edit({ embeds: [pollEmbed] });
