@@ -12,6 +12,9 @@ import Command from "../../types/Command";
 // Array of emoji numbers that correspond to possible options
 const EMOJI_NUMBERS = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
 
+// Emoji that represents a vote in description
+const VOTE_EMOJI = "🟢";
+
 const QUESTION_OPTION_NAME = "question";
 const QUESTION_REQUIRED = true;
 const ALLOW_MULTIVOTE_OPTION_NAME = "allow-multiple-votes";
@@ -84,7 +87,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       .sort((a, b) => votes[options.indexOf(b)] - votes[options.indexOf(a)])
       .map((o) => {
         // Generate green emoji bar for each option showing vote count
-        const votesEmojis = "🟢".repeat(votes[options.indexOf(o)]);
+        const votesEmojis = VOTE_EMOJI.repeat(votes[options.indexOf(o)]);
         return `${EMOJI_NUMBERS[options.indexOf(o)]} ${o}\n ${votesEmojis ? `${votesEmojis} | ` : ""}${
           votes[options.indexOf(o)]
         } (${generatePercentage(options.indexOf(o))}%)`;
