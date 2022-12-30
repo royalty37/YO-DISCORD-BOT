@@ -64,7 +64,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
   // Array of votes for each option (even if option is unused, collector will handle invalid votes)
   const votes = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-  // Generate description for poll embed
+  // Function to generate description for poll embed based on current votes
   const generateDescription = (): string => {
     // Generate percentage for each option on poll
     const generatePercentage = (index: number): string => {
@@ -78,13 +78,16 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       return percentage.toString();
     };
 
-    return options
-      .map((o, i) => {
+    // Sort options by vote count, then map to generate information about each option, and join each option with a double new line
+    // Spread options into new array to avoid mutating original array on sort
+    return [...options]
+      .sort((a, b) => votes[options.indexOf(b)] - votes[options.indexOf(a)])
+      .map((o) => {
         // Generate green emoji bar for each option showing vote count
-        const votesEmojis = "🟢".repeat(votes[i]);
-        return `${EMOJI_NUMBERS[i]} ${o}\n ${votesEmojis ? `${votesEmojis} | ` : ""}${votes[i]} (${generatePercentage(
-          i
-        )}%)`;
+        const votesEmojis = "🟢".repeat(votes[options.indexOf(o)]);
+        return `${EMOJI_NUMBERS[options.indexOf(o)]} ${o}\n ${votesEmojis ? `${votesEmojis} | ` : ""}${
+          votes[options.indexOf(o)]
+        } (${generatePercentage(options.indexOf(o))}%)`;
       })
       .join("\n\n");
   };
