@@ -126,6 +126,14 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
   // Edit reply to include poll embed and pull out message to edit after collecting reactions
   const message = await interaction.editReply({ embeds: [pollEmbed] });
 
+  // Create reaction collector - no filter (manually handle in collect listener), 2 hour time limit, dispose = true (allow remove listener)
+  const collector = message.createReactionCollector({
+    filter: (_, user: User) => !user.bot,
+    // 60,000 ms (a minute) * duration (in minutes)
+    time: 60000 * duration,
+    dispose: true,
+  });
+
   // Recursive function edit embed every minute to show remaining duration
   const updateDuration = async (duration: number) => {
     setTimeout(async () => {
@@ -134,7 +142,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       });
       await message.edit({ embeds: [pollEmbed] });
 
-      if (duration > 0) {
+      if (duration > 0 && !collector.checkEnd()) {
         updateDuration(duration - 1);
       }
     }, 60000);
@@ -147,14 +155,6 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     // Add bot reaction to message for each option
     message.react(EMOJI_NUMBERS[i]);
   }
-
-  // Create reaction collector - no filter (manually handle in collect listener), 2 hour time limit, dispose = true (allow remove listener)
-  const collector = message.createReactionCollector({
-    filter: (_, user: User) => !user.bot,
-    // 60,000 ms (a minute) * duration (in minutes)
-    time: 60000 * duration,
-    dispose: true,
-  });
 
   // On Collect listener
   collector.on("collect", (reaction: MessageReaction, user: User) => {
