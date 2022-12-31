@@ -48,7 +48,7 @@ export const handleRandomStorySubcommand = async (interaction: ChatInputCommandI
       )}\n\n**INSTRUCTION**:\n${completionInput}\n\n**OPENAI RESPONSE:**${res}`;
 
       // Reply is sometimes > 2000 characters, so split into multiple messages
-      for (const message in splitMessage(reply)) {
+      for (const message of splitMessage(reply)) {
         await interaction.followUp(message);
       }
     } else {
