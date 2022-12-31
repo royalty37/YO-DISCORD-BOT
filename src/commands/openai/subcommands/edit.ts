@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandStringOption, SlashCommandSubcommandBuilder } from "discord.js";
 import OpenAIService from "../../../apis/openaiService";
-import { splitMessage } from "../../../utils/messageUtils";
+import { splitMessage } from "../../../utils/messageUtils/messageUtils";
 import { subcommands } from "../openai";
 
 const INPUT_OPTION_NAME = "input";

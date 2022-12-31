@@ -1,8 +1,8 @@
 import { ChatInputCommandInteraction, SlashCommandIntegerOption, SlashCommandSubcommandBuilder } from "discord.js";
 import OpenAIService from "../../../apis/openaiService";
 import { subcommands } from "../openai";
-import randomWords from "../../../utils/randomWord";
-import { splitMessage } from "../../../utils/messageUtils";
+import randomWords from "../../../utils/wordUtils/randomWord";
+import { splitMessage } from "../../../utils/messageUtils/messageUtils";
 
 // Max number of random words to generate - setting it much higher will sometimes break request
 const MAX_WORDS = 20;
