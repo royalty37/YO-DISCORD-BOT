@@ -43,7 +43,7 @@ export const handleEditSubcommand = async (interaction: ChatInputCommandInteract
       const reply = `**INPUT:**\n${input}\n\n**INSTRUCTION:**\n${instruction}\n\n**OPENAI RESPONSE:**\n\n${res}`;
 
       // Reply is sometimes > 2000 characters, so split into multiple messages
-      for (const message in splitMessage(reply)) {
+      for (const message of splitMessage(reply)) {
         await interaction.followUp(message);
       }
     } else {
