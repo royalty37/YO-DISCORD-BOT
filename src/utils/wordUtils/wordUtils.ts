@@ -17,3 +17,20 @@ export const getRandomWords = (n: number): string[] => {
 
   return returnArray;
 };
+
+export const getUniqueRandomWords = (n: number) => {
+  const returnArray: string[] = [];
+
+  for (let i = 0; i < n; i++) {
+    let word = getRandomWord();
+
+    while (returnArray.includes(word)) {
+      word = getRandomWord();
+    }
+
+    returnArray.push(word);
+  }
+
+  return returnArray;
+};
+

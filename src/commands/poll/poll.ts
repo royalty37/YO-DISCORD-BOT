@@ -107,9 +107,9 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
   const getFooterText = (remainingDurationParam?: number): string =>
     `Poll created by ${interaction.user.username}${
       remainingDurationParam
-        ? `\n\nPoll will end in approximately ${
-            remainingDurationParam > 1 ? `${remainingDurationParam} minutes.` : `${remainingDurationParam} minute.`
-          }`
+        ? `\n\nPoll will end in approximately ${remainingDurationParam} ${
+            remainingDurationParam > 1 ? `minutes` : `${remainingDurationParam} minute`
+          }.`
         : ""
     }`;
 
@@ -237,9 +237,9 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       // If there are multiple winners, add winners to description
       pollEmbed.setDescription(
         generateDescription() +
-          `\n\n**Poll has ended**\n\nWinners are:\n\n ${winners.map((w) => `👑 **${w}** 👑`).join("\n")}\n\n with ${
-            maxVotes > 1 ? `${maxVotes} votes` : `${maxVotes} vote`
-          } each.`
+          `\n\n**Poll has ended**\n\nWinners are:\n\n ${winners
+            .map((w) => `👑 **${w}** 👑`)
+            .join("\n")}\n\n with ${maxVotes} ${maxVotes > 1 ? `votes` : `vote`} each.`
       );
     }
 
