@@ -89,18 +89,25 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       return percentage.toString();
     };
 
-    // Sort options by vote count, then map to generate information about each option, and join each option with a double new line
-    // Spread options into new array to avoid mutating original array on sort
-    return [...options]
-      .sort((a, b) => votes[options.indexOf(b)] - votes[options.indexOf(a)])
-      .map((o) => {
-        // Generate green emoji bar for each option showing vote count
-        const votesEmojis = VOTE_EMOJI.repeat(votes[options.indexOf(o)]);
-        return `${EMOJI_NUMBERS[options.indexOf(o)]} ${o}\n ${votesEmojis ? `${votesEmojis} | ` : ""}${
-          votes[options.indexOf(o)]
-        } (${generatePercentage(options.indexOf(o))}%)`;
-      })
-      .join("\n\n");
+    return (
+      `This is a ${allowMultiVote ? "" : "non "}multi vote poll, which means participants are ${
+        allowMultiVote
+          ? "allowed to cast multiple votes"
+          : "only allowed to cast a single vote. To change your vote, remove your existing vote (reaction) and cast a new one"
+      }. Vote by reacting with the emoji corresponding to the option you want to vote for.\n\n` +
+      // Sort options by vote count, then map to generate information about each option, and join each option with a double new line
+      // Spread options into new array to avoid mutating original array on sort
+      [...options]
+        .sort((a, b) => votes[options.indexOf(b)] - votes[options.indexOf(a)])
+        .map((o) => {
+          // Generate green emoji bar for each option showing vote count
+          const votesEmojis = VOTE_EMOJI.repeat(votes[options.indexOf(o)]);
+          return `${EMOJI_NUMBERS[options.indexOf(o)]} ${o}\n ${votesEmojis ? `${votesEmojis} | ` : ""}${
+            votes[options.indexOf(o)]
+          } (${generatePercentage(options.indexOf(o))}%)`;
+        })
+        .join("\n\n")
+    );
   };
 
   // Function to generate footer text for poll embed, if no duration is provided, then remaining duration is not shown (used for poll end)
