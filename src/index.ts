@@ -12,13 +12,12 @@ import { registerPlayerEvents } from "./events/playerEvents";
 dotenv.config();
 
 // Create a new client instance
-//Liam is Gay
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.GuildMessageReactions,
-    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMembers
   ],
 }) as YoClient;
 
