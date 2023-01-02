@@ -6,6 +6,7 @@ import { Player } from "discord-player";
 import YoClient from "./types/YoClient";
 import { registerClientEvents } from "./events/clientEvents";
 import { registerPlayerEvents } from "./events/playerEvents";
+import { registerProcessEvents } from "./events/processEvents";
 
 // Load environment variables from .env file
 // process.env.DISCORD_TOKEN
@@ -17,7 +18,9 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.GuildMessageReactions,
-    GatewayIntentBits.GuildMembers
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
   ],
 }) as YoClient;
 
@@ -27,6 +30,7 @@ client.player = new Player(client);
 // Register Client and Player events
 registerClientEvents(client);
 registerPlayerEvents(client.player);
+registerProcessEvents();
 
 // Get commandsPath and command folders within
 const commandsPath = path.join(__dirname, "commands");

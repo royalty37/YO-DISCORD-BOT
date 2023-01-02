@@ -52,7 +52,7 @@ export const handleEditSubcommand = async (interaction: ChatInputCommandInteract
     }
   } catch (e) {
     // If error, log error and send error message
-    console.error("OPEN AI EDIT SUBCOMMAND EXECEPTION: " + e);
     await interaction.editReply("Something went wrong. Please try again.");
+    console.error("OPEN AI EDIT SUBCOMMAND EXECEPTION: " + e);
   }
 };

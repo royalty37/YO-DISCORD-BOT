@@ -52,7 +52,9 @@ export const handleCreateImageSubcommand = async (interaction: ChatInputCommandI
     }
   } catch (e) {
     // If error, log error and send error message
+    await interaction.editReply(
+      "Something went wrong. Please try again.\n\nOpenAI potentially interpreted your input as NSFW."
+    );
     console.error("OPEN AI CREATE-IMAGE SUBCOMMAND EXECEPTION: " + e);
-    await interaction.editReply("Something went wrong. Please try again.\n\nOpenAI potentially interpreted your input as NSFW.");
   }
 };
