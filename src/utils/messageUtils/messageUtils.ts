@@ -18,13 +18,33 @@ export const splitMessage = (message: string, maxLength = 2000): string[] => {
 };
 
 // Regex for invite links
-const inviteRegex = new RegExp(/(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[a-z0-9]/);
+const INVITE_REGEX = new RegExp(/(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[a-z0-9]/);
 
-// Function to filter/remove messages that contain Discocrd invite links
+// Function to filter/remove messages that contain Discord invite links
 export const filterInvites = async (message: Message<boolean>) => {
-  if (inviteRegex.test(message.content)) {
+  if (INVITE_REGEX.test(message.content)) {
     console.log("*** Deleting Discord invite");
     await message.delete();
     await message.channel.send(`Discord invites are not allowed ${message.author.username}!`);
+  }
+};
+
+// Function to filter/remove messages that contain banned words
+export const filterBannedWords = async (message: Message<boolean>) => {
+  // Get banned words from .env and split into an array
+  const bannedWords = process.env.BANNED_WORDS?.split(", ");
+
+  // If no banned words found, .env is probably missing BANNED_WORDS. Skip filter.
+  if (!bannedWords) {
+    return console.log("*** No banned words found in .env, skipping filter...");
+  }
+
+  // Loop through banned words to see if message contains any and if so, delete.
+  for (const bannedWord of bannedWords) {
+    if (message.content.toLowerCase().includes(bannedWord)) {
+      console.log("*** Deleting banned word");
+      await message.delete();
+      await message.channel.send(`Banned word detected ${message.author.username}!`);
+    }
   }
 };
