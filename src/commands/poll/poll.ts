@@ -89,27 +89,36 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       return percentage.toString();
     };
 
-    // Sort options by vote count, then map to generate information about each option, and join each option with a double new line
-    // Spread options into new array to avoid mutating original array on sort
-    return [...options]
-      .sort((a, b) => votes[options.indexOf(b)] - votes[options.indexOf(a)])
-      .map((o) => {
-        // Generate green emoji bar for each option showing vote count
-        const votesEmojis = VOTE_EMOJI.repeat(votes[options.indexOf(o)]);
-        return `${EMOJI_NUMBERS[options.indexOf(o)]} ${o}\n ${votesEmojis ? `${votesEmojis} | ` : ""}${
-          votes[options.indexOf(o)]
-        } (${generatePercentage(options.indexOf(o))}%)`;
-      })
-      .join("\n\n");
+    // Generate description for poll embed, start with an explanation of the poll type and how to participate
+    return (
+      `This is a ${allowMultiVote ? "" : "non "}multi vote poll, which means participants are ${
+        allowMultiVote
+          ? "allowed to cast multiple votes"
+          : "only allowed to cast a single vote. To change your vote, remove your existing vote (reaction) and cast a new one"
+      }. Vote by reacting with the emoji corresponding to the option you want to vote for.\n\n` +
+      // Sort options by vote count, then map to generate information about each option, and join each option with a double new line
+      // Spread options into new array to avoid mutating original array on sort
+      [...options]
+        .sort((a, b) => votes[options.indexOf(b)] - votes[options.indexOf(a)])
+        .map((o) => {
+          // Generate green emoji bar for each option showing vote count
+          const votesEmojis = VOTE_EMOJI.repeat(votes[options.indexOf(o)]);
+          return `${EMOJI_NUMBERS[options.indexOf(o)]} ${o}\n ${votesEmojis ? `${votesEmojis} | ` : ""}${
+            votes[options.indexOf(o)]
+          } (${generatePercentage(options.indexOf(o))}%)`;
+        })
+        .join("\n\n") +
+      "\n\n"
+    );
   };
 
   // Function to generate footer text for poll embed, if no duration is provided, then remaining duration is not shown (used for poll end)
   const getFooterText = (remainingDurationParam?: number): string =>
     `Poll created by ${interaction.user.username}${
       remainingDurationParam
-        ? `\n\nPoll will end in approximately ${
-            remainingDurationParam > 1 ? `${remainingDurationParam} minutes.` : `${remainingDurationParam} minute.`
-          }`
+        ? `\n\nPoll will end in approximately ${remainingDurationParam} ${
+            remainingDurationParam > 1 ? "minutes" : "minute"
+          }.`
         : ""
     }`;
 
@@ -126,6 +135,14 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
   // Edit reply to include poll embed and pull out message to edit after collecting reactions
   const message = await interaction.editReply({ embeds: [pollEmbed] });
 
+  // Create reaction collector - no filter (manually handle in collect listener), 2 hour time limit, dispose = true (allow remove listener)
+  const collector = message.createReactionCollector({
+    filter: (_, user: User) => !user.bot,
+    // 60,000 ms (a minute) * duration (in minutes)
+    time: 60000 * duration,
+    dispose: true,
+  });
+
   // Recursive function edit embed every minute to show remaining duration
   const updateDuration = async (duration: number) => {
     setTimeout(async () => {
@@ -134,7 +151,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       });
       await message.edit({ embeds: [pollEmbed] });
 
-      if (duration > 0) {
+      if (duration > 0 && !collector.ended) {
         updateDuration(duration - 1);
       }
     }, 60000);
@@ -147,14 +164,6 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     // Add bot reaction to message for each option
     message.react(EMOJI_NUMBERS[i]);
   }
-
-  // Create reaction collector - no filter (manually handle in collect listener), 2 hour time limit, dispose = true (allow remove listener)
-  const collector = message.createReactionCollector({
-    filter: (_, user: User) => !user.bot,
-    // 60,000 ms (a minute) * duration (in minutes)
-    time: 60000 * duration,
-    dispose: true,
-  });
 
   // On Collect listener
   collector.on("collect", (reaction: MessageReaction, user: User) => {
@@ -220,7 +229,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     const maxVotes = Math.max(...votes);
     const winners = options.filter((_, i) => votes[i] === maxVotes);
 
-    // If no votes, write a sad no votes to description
+    // If no votes, write a sad no votes message to description
     if (!maxVotes) {
       pollEmbed.setDescription(
         generateDescription() + "\n\n**Poll has ended**\n\nUnfortunately, no votes were cast. 😔😔😔"
@@ -229,17 +238,17 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       // If there is only one winner, add winner to description
       pollEmbed.setDescription(
         generateDescription() +
-          `\n\n**Poll has ended**\n\n👑 **${winners[0]}** 👑 is the winner with ${
-            maxVotes > 1 ? `${maxVotes} votes` : `${maxVotes} vote`
+          `\n\n**Poll has ended**\n\n👑 **${winners[0]}** 👑 is the winner with ${maxVotes} ${
+            maxVotes > 1 ? "votes" : "vote"
           }.`
       );
     } else {
       // If there are multiple winners, add winners to description
       pollEmbed.setDescription(
         generateDescription() +
-          `\n\n**Poll has ended**\n\nWinners are:\n\n ${winners.map((w) => `👑 **${w}** 👑`).join("\n")}\n\n with ${
-            maxVotes > 1 ? `${maxVotes} votes` : `${maxVotes} vote`
-          } each.`
+          `\n\n**Poll has ended**\n\nWinners are:\n\n ${winners
+            .map((w) => `👑 **${w}** 👑`)
+            .join("\n")}\n\n with ${maxVotes} ${maxVotes > 1 ? "votes" : "vote"} each.`
       );
     }
 

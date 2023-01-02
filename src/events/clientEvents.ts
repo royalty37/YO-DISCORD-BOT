@@ -1,5 +1,6 @@
-import { Client, Events, BaseInteraction } from "discord.js";
+import { Client, Events, BaseInteraction, Message } from "discord.js";
 import YoClient from "../types/YoClient";
+import { filterInvites } from "../utils/messageUtils/messageUtils";
 
 // Register client events
 export const registerClientEvents = (client: YoClient) => {
@@ -7,7 +8,7 @@ export const registerClientEvents = (client: YoClient) => {
   client.on(Events.InteractionCreate, async (interaction: BaseInteraction) => {
     // If interaction is not a chat input command, return
     if (!interaction.isChatInputCommand()) {
-      return console.error('Interaction is not a chat input command.');
+      return console.error("Interaction is not a chat input command.");
     }
 
     // Get command from client commands collection
@@ -31,5 +32,13 @@ export const registerClientEvents = (client: YoClient) => {
   client.once(Events.ClientReady, (client: Client<boolean>) => {
     // Log client ready when client is ready
     console.log(`Ready! Logged in as ${client?.user?.tag}`);
+  });
+
+  client.on(Events.ShardError, (error) => {
+    console.log(`A websocket connection encountered an error: ${error}`);
+  });
+
+  client.on(Events.MessageCreate, async (message: Message<boolean>) => {
+    await filterInvites(message);
   });
 };
