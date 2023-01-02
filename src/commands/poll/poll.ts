@@ -89,6 +89,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       return percentage.toString();
     };
 
+    // Generate description for poll embed, start with an explanation of the poll type and how to participate
     return (
       `This is a ${allowMultiVote ? "" : "non "}multi vote poll, which means participants are ${
         allowMultiVote
@@ -106,7 +107,8 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
             votes[options.indexOf(o)]
           } (${generatePercentage(options.indexOf(o))}%)`;
         })
-        .join("\n\n")
+        .join("\n\n") +
+      "\n\n"
     );
   };
 
@@ -115,7 +117,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     `Poll created by ${interaction.user.username}${
       remainingDurationParam
         ? `\n\nPoll will end in approximately ${remainingDurationParam} ${
-            remainingDurationParam > 1 ? `minutes` : `${remainingDurationParam} minute`
+            remainingDurationParam > 1 ? "minutes" : "minute"
           }.`
         : ""
     }`;
@@ -149,7 +151,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       });
       await message.edit({ embeds: [pollEmbed] });
 
-      if (duration > 0 && !collector.checkEnd()) {
+      if (duration > 0 && !collector.ended) {
         updateDuration(duration - 1);
       }
     }, 60000);
@@ -227,7 +229,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     const maxVotes = Math.max(...votes);
     const winners = options.filter((_, i) => votes[i] === maxVotes);
 
-    // If no votes, write a sad no votes to description
+    // If no votes, write a sad no votes message to description
     if (!maxVotes) {
       pollEmbed.setDescription(
         generateDescription() + "\n\n**Poll has ended**\n\nUnfortunately, no votes were cast. 😔😔😔"
@@ -236,8 +238,8 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       // If there is only one winner, add winner to description
       pollEmbed.setDescription(
         generateDescription() +
-          `\n\n**Poll has ended**\n\n👑 **${winners[0]}** 👑 is the winner with ${
-            maxVotes > 1 ? `${maxVotes} votes` : `${maxVotes} vote`
+          `\n\n**Poll has ended**\n\n👑 **${winners[0]}** 👑 is the winner with ${maxVotes} ${
+            maxVotes > 1 ? "votes" : "vote"
           }.`
       );
     } else {
@@ -246,7 +248,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
         generateDescription() +
           `\n\n**Poll has ended**\n\nWinners are:\n\n ${winners
             .map((w) => `👑 **${w}** 👑`)
-            .join("\n")}\n\n with ${maxVotes} ${maxVotes > 1 ? `votes` : `vote`} each.`
+            .join("\n")}\n\n with ${maxVotes} ${maxVotes > 1 ? "votes" : "vote"} each.`
       );
     }
 

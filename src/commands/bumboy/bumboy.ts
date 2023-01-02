@@ -9,6 +9,11 @@ import {
 import Command from "../../types/Command";
 import { getUniqueRandomEmojis } from "../../utils/emojiUtils/emojiUtils";
 
+type bumboyOption = {
+  userName: string;
+  nickName: string | null;
+};
+
 // Feature to excite the boys - the YOZA BUMBOY feature
 
 // Created a VICE PLUS role to use for this command - only includes close friends/active members
@@ -30,7 +35,7 @@ const NO_OF_OPTIONS = 20;
 
 // Command cooldown only allows one BUMBOY poll per day
 let onCooldown = false;
-let bumboys: string[] = [];
+let bumboys: bumboyOption[] = [];
 
 // Bumboy command SlashCommandBuilder
 const data = new SlashCommandBuilder()
@@ -41,9 +46,9 @@ const data = new SlashCommandBuilder()
 const execute = async (interaction: ChatInputCommandInteraction) => {
   if (onCooldown) {
     return void (await interaction.reply(
-      "BUMBOY poll can only be run once every 24 hours.\n\nCurrent BUMBOYS are:\n\n" +
-        bumboys.map((b) => `💩 **${b}** 💩`).join("\n\n") +
-        "\n\nTry again later."
+      `BUMBOY poll can only be run once every 24 hours.\n\nCurrent BUMBOYS are:\n\n
+        ${bumboys.length ? `${bumboys.map((b) => `💩 **${b}** 💩`).join("\n\n")}` : "There are currently no BUMBOYS..."}
+        \n\nTry again later.`
     ));
   }
 
@@ -67,12 +72,19 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
   }
 
   // Randomly retrieve 20 members Create a list of options for the poll
-  const options = vicePlusRole.members.random(NO_OF_OPTIONS).map((m) => m.user.username);
+  const includedMembers = vicePlusRole.members.random(NO_OF_OPTIONS);
 
   // Array of members names in Vice Plus role that will not be included in the poll
-  const nonIncludedMembers: string[] = vicePlusRole.members
-    .map((m) => m.user.username)
-    .filter((m) => !options.includes(m));
+  const nonIncludedMembers = vicePlusRole.members.filter((m) => !includedMembers.includes(m));
+
+  // Array of objects including username and nickname options for the poll
+  const options: bumboyOption[] = includedMembers.map((m) => ({ userName: m.user.username, nickName: m.nickname }));
+
+  // Array of non included members names to include in the poll description
+  const nonIncludedMemberOptions: bumboyOption[] = nonIncludedMembers.map((m) => ({
+    userName: m.user.username,
+    nickName: m.nickname,
+  }));
 
   // Get a random emoji for each option - VICE PLUS
   const emojis = getUniqueRandomEmojis(options.length);
@@ -102,7 +114,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       "The BUMBOY poll is a poll to determine who will be demoted to BUMBOY and have their nickname changed for 24 hours. This doesn't revoke any permissions (except for the ability to change your nickname), but the BUMBOY must suffer the embarrassment of being the BUMBOY.\n\n" +
       "This poll is a non multi vote poll, which means you can only cast a single vote. To change your vote, remove your existing vote (reaction) and cast a new vote.\n\nOnly members of the Vice Plus role may participate.\n\nThe BUMBOY poll can only be run once every 24 hours.\n\n" +
       "Luckily, the following members are exempt from todays YOZA Bumboy vote (Discord only allows a maximum of 20 reacts on a message):\n\n" +
-      nonIncludedMembers.map((m) => `🍀 ${m} 🍀`).join("\n\n") +
+      nonIncludedMemberOptions.map((m) => `🍀 ${m.userName} ${m.nickName ? `(${m.nickName})` : ""} 🍀`).join("\n\n") +
       "\n\nMembers included in todays BUMBOY poll are:\n\n" +
       // Sort options by vote count, then map to generate information about each option, and join each option with a double new line
       // Spread options into new array to avoid mutating original array on sort
@@ -111,20 +123,21 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
         .map((o) => {
           // Generate green emoji bar for each option showing vote count
           const votesEmojis = VOTE_EMOJI.repeat(votes[options.indexOf(o)]);
-          return `${emojis[options.indexOf(o)]} ${o}\n ${votesEmojis ? `${votesEmojis} | ` : ""}${
-            votes[options.indexOf(o)]
-          } (${generatePercentage(options.indexOf(o))}%)`;
+          return `${emojis[options.indexOf(o)]} ${o.userName}${o.nickName ? ` (${o.nickName})` : ""}\n ${
+            votesEmojis ? `${votesEmojis} | ` : ""
+          }${votes[options.indexOf(o)]} (${generatePercentage(options.indexOf(o))}%)`;
         })
-        .join("\n\n")
+        .join("\n\n") +
+      "\n\n"
     );
   };
 
   const getFooterText = (remainingDurationParam?: number): string =>
     `BUMBOY poll initiated by ${interaction.user.username}${
       remainingDurationParam
-        ? `\n\nBUMBOY poll will end in approximately ${
-            remainingDurationParam > 1 ? `${remainingDurationParam} minutes.` : `${remainingDurationParam} minute.`
-          }`
+        ? `\n\nBUMBOY poll will end in approximately ${remainingDurationParam} ${
+            remainingDurationParam > 1 ? `minutes` : `minute`
+          }.`
         : ""
     }`;
 
@@ -149,18 +162,19 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
   });
 
   const updateDuration = async (duration: number) => {
-    setTimeout(async () => {
-      pollEmbed.setFooter({
-        text: getFooterText(duration),
-      });
-      await message.edit({ embeds: [pollEmbed] });
+    if (duration > 1 && !collector.ended) {
+      setTimeout(async () => {
+        pollEmbed.setFooter({
+          text: getFooterText(duration),
+        });
+        await message.edit({ embeds: [pollEmbed] });
 
-      if (duration > 1 && !collector.checkEnd()) {
         updateDuration(duration - 1);
-      }
-    }, 60000);
+      }, 1000 * 60);
+    }
   };
 
+  // updateDuration(NO_OF_MINUTES);
   updateDuration(NO_OF_MINUTES);
 
   for (let i = 0; i < options.length; i++) {
@@ -242,16 +256,16 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       // If there is only one winner, add winner to description
       pollEmbed.setDescription(
         generateDescription() +
-          `\n\n**BUMBOY Poll has ended**\n\n💩 **${bumboys[0]}** 💩 is the todays BUMBOY with ${maxVotes} ${
-            maxVotes > 1 ? `votes` : `vote`
-          }.`
+          `\n\n**BUMBOY Poll has ended**\n\n💩 **${bumboys[0].userName}${
+            bumboys[0].nickName ? ` (${bumboys[0].nickName})` : ""
+          }** 💩 is the todays BUMBOY with ${maxVotes} ${maxVotes > 1 ? `votes` : `vote`}.\n\n`
       );
     } else {
       // If there are multiple winners, add winners to description
       pollEmbed.setDescription(
         generateDescription() +
           `\n\n**BUMBOY Poll has ended**\n\nTodays BUMBOYS are:\n\n ${bumboys
-            .map((w) => `💩 **${w}** 💩`)
+            .map((w) => `💩 **${w.userName}${w.nickName ? ` (${w.nickName})` : ""}** 💩`)
             .join("\n")}\n\n with ${maxVotes} ${maxVotes > 1 ? `votes` : `vote`} each.`
       );
     }
@@ -259,34 +273,36 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     pollEmbed.setFooter({ text: getFooterText() });
     message.edit({ embeds: [pollEmbed] });
 
-    // Store old nicknames so I can reset them later
-    const oldNicknames: string[] = [];
-
     // Set roles and change nicknames for bumboys
     for (let i = 0; i < bumboys.length; i++) {
-      const member = interaction.guild?.members.cache.find((m) => m.user.username === bumboys[i]);
+      const member = interaction.guild?.members.cache.find((m) => m.user.username === bumboys[i].userName);
       if (member) {
-        member.roles.add(bumboyRole);
-        member.roles.remove(vicePlusRole);
-        oldNicknames.push(member.nickname ?? member.user.username);
-        member.setNickname(`💩 ${bumboys[i]} 💩`);
+        await member.roles.set([BUMBOY_ROLE_ID]);
+        await member.setNickname(bumboys.length === 1 ? `💩 THE BUMBOY 💩` : `💩 BUMBOY ${i + 1} 💩`);
       }
     }
 
     // Set timeout to promote bumboys back to Vice Plus after 24 hours and reset their nicknames
-    setTimeout(() => {
+    setTimeout(async () => {
+      console.log("Promoting bumboys back to Vice Plus and resetting nicknames...");
       for (let i = 0; i < bumboys.length; i++) {
-        const member = interaction.guild?.members.cache.find((m) => m.user.username === bumboys[i]);
+        const member = interaction.guild?.members.cache.find((m) => m.user.username === bumboys[i].userName);
         if (member) {
-          member.roles.remove(bumboyRole);
-          member.roles.add(vicePlusRole);
-          member.setNickname(oldNicknames[i]);
+          await member.roles.set([VICE_PLUS_ROLE_ID]);
+          await member.setNickname(bumboys[i].nickName ?? bumboys[i].userName);
         }
       }
 
+      interaction.channel?.send(
+        "Following members have been promoted back to Vice Plus and had their nicknames reset:\n\n" +
+          bumboys.map((w) => `💩 **${w.userName}${w.nickName ? ` (${w.nickName})` : ""}** 💩`).join("\n\n") +
+          `\n\nYou are no longer ${bumboys.length === 1 ? "a BUMBOY" : "BUMBOYS"} (for now)...`
+      );
+
       // Set bumboys array to empty ready for next poll
       bumboys = [];
-    }, 60000 * 24);
+      // 1000ms * 60s * 60m * 24h = 24 hours
+    }, 1000 * 60 * 60 * 24);
   });
 };
 
