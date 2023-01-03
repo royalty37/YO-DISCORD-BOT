@@ -16,19 +16,19 @@ type bumboyOption = {
 
 // Feature to excite the boys - the YOZA BUMBOY feature
 
-// Created a VICE PLUS role to use for this command - only includes close friends/active members
-// Don't really know if it's worth programmatically retrieving the role ID when it will theoretically never change
-// Commands like these will only ever be used in my own Discord server
-// I guess it makes sense to set an environment variable like BUMBOY_ROLE_ID if I want to use this command in other servers
+// Created VICE PLUS and BUMBOY roles to use for this command - only includes close friends/active members
+// Don't really know if it's worth programmatically retrieving the role IDs when it will theoretically never change
+// Commands like these will only ever be used in my own Discord server anyway
+// I guess it makes sense to create an environment variable like BUMBOY_ROLE_ID if I want to adapt this command in other servers
 const VICE_PLUS_ROLE_ID = "1058420923356676226";
 const BUMBOY_ROLE_ID = "903191636098568243";
 
 // Emoji that represents a vote in description
 const VOTE_EMOJI = "🟢";
 
-// Duration of the poll in milliseconds, 2 hours
-const NO_OF_MINUTES = 60 * 2;
-const DURATION = 60000 * NO_OF_MINUTES;
+// Duration of the poll in milliseconds, 1 hour
+const DURATION_IN_MINUTES = 60;
+const DURATION_IN_MS = 60000 * DURATION_IN_MINUTES;
 
 // Have to set max number of options to 20 as this is the max number of reacts per message Discord allows
 const NO_OF_OPTIONS = 20;
@@ -150,7 +150,8 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     .setColor(Colors.Red)
     .setThumbnail(interaction.user.avatarURL())
     .setFooter({
-      text: getFooterText(NO_OF_MINUTES),
+      // Embed shows duration in minutes
+      text: getFooterText(DURATION_IN_MINUTES),
     });
 
   // Edit reply to include poll embed and pull out message to edit after collecting reactions
@@ -159,25 +160,26 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
   // Create reaction collector - no filter (manually handle in collect listener), 2 hour time limit, dispose = true (allow remove listener)
   const collector = message.createReactionCollector({
     filter: (_, user: User) => !user.bot,
-    time: DURATION,
+    // Collector uses milliseconds
+    time: DURATION_IN_MS,
     dispose: true,
   });
 
+  // Recursive function to update poll embed footer with remaining duration every minute
   const updateDuration = async (duration: number) => {
-    if (duration > 1 && !collector.ended) {
       setTimeout(async () => {
         pollEmbed.setFooter({
           text: getFooterText(duration),
         });
         await message.edit({ embeds: [pollEmbed] });
 
+        if (duration > 1 && !collector.ended) {
         updateDuration(duration - 1);
+        }
       }, 1000 * 60);
-    }
   };
 
-  // updateDuration(NO_OF_MINUTES);
-  updateDuration(NO_OF_MINUTES);
+  updateDuration(DURATION_IN_MINUTES);
 
   for (let i = 0; i < options.length; i++) {
     // Add bot reaction to message for each option
@@ -276,25 +278,31 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     message.edit({ embeds: [pollEmbed] });
 
     // Set roles and change nicknames for bumboys
-    for (let i = 0; i < bumboys.length; i++) {
-      const member = interaction.guild?.members.cache.find((m) => m.user.username === bumboys[i].userName);
-      if (member) {
-        await member.roles.set([BUMBOY_ROLE_ID]);
-        await member.setNickname(bumboys.length === 1 ? `💩 THE BUMBOY 💩` : `💩 BUMBOY ${i + 1} 💩`);
-      }
-    }
-
-    // Set timeout to promote bumboys back to Vice Plus after 24 hours and reset their nicknames
+    // Adding a 1 second timeout as role related actions fail when done too quickly... 1000ms is just a guess but if it fails again I will increase it
     setTimeout(async () => {
-      console.log("Promoting bumboys back to Vice Plus and resetting nicknames...");
       for (let i = 0; i < bumboys.length; i++) {
         const member = interaction.guild?.members.cache.find((m) => m.user.username === bumboys[i].userName);
         if (member) {
-          await member.roles.set([VICE_PLUS_ROLE_ID]);
-          await member.setNickname(bumboys[i].nickName ?? bumboys[i].userName);
+          await member.roles.set([BUMBOY_ROLE_ID]);
+          await member.setNickname(bumboys.length === 1 ? `💩 THE BUMBOY 💩` : `💩 BUMBOY ${i + 1} 💩`);
         }
       }
-
+    }, bumboys.length > 1 ? 1000 : 0);
+      
+    // Set timeout to promote bumboys back to Vice Plus after 24 hours and reset their nicknames
+    // Set timeout for same reason as above
+    setTimeout(async () => {
+      console.log("Promoting bumboys back to Vice Plus and resetting nicknames...");
+      setTimeout(async () => {
+        for (let i = 0; i < bumboys.length; i++) {
+          const member = interaction.guild?.members.cache.find((m) => m.user.username === bumboys[i].userName);
+          if (member) {
+            await member.roles.set([VICE_PLUS_ROLE_ID]);
+            await member.setNickname(bumboys[i].nickName ?? bumboys[i].userName);
+          }
+        }
+      }, bumboys.length > 1 ? 1000 : 0);
+        
       interaction.channel?.send(
         "Following members have been promoted back to Vice Plus and had their nicknames reset:\n\n" +
           bumboys.map((w) => `💩 **${w.userName}${w.nickName ? ` (${w.nickName})` : ""}** 💩`).join("\n\n") +
@@ -303,8 +311,8 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
       // Set bumboys array to empty ready for next poll
       bumboys = [];
-      // 1000ms * 60s * 60m * 24h = 24 hours
-    }, 1000 * 60 * 60 * 24);
+      // 1000ms * 60s * 60m * 24h = 12 hours
+    }, 1000 * 60 * 60 * 12);
   });
 };
 
