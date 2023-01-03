@@ -107,8 +107,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
             votes[options.indexOf(o)]
           } (${generatePercentage(options.indexOf(o))}%)`;
         })
-        .join("\n\n") +
-      "\n\n"
+        .join("\n\n")
     );
   };
 

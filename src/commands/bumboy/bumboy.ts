@@ -46,8 +46,11 @@ const data = new SlashCommandBuilder()
 const execute = async (interaction: ChatInputCommandInteraction) => {
   if (onCooldown) {
     return void (await interaction.reply(
-      `BUMBOY poll can only be run once every 24 hours.\n\nCurrent BUMBOYS are:\n\n
-        ${bumboys.length ? `${bumboys.map((b) => `💩 **${b}** 💩`).join("\n\n")}` : "There are currently no BUMBOYS..."}
+      `BUMBOY poll can only be run once every 24 hours.\n\nCurrent BUMBOYS are:\n\n${
+        bumboys.length
+          ? `${bumboys.map((b) => `💩 **${b.userName}${b.nickName ? ` ${b.nickName}` : ""}** 💩`).join("\n\n")}`
+          : "There are currently no BUMBOYS..."
+      }
         \n\nTry again later.`
     ));
   }
@@ -127,8 +130,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
             votesEmojis ? `${votesEmojis} | ` : ""
           }${votes[options.indexOf(o)]} (${generatePercentage(options.indexOf(o))}%)`;
         })
-        .join("\n\n") +
-      "\n\n"
+        .join("\n\n")
     );
   };
 
