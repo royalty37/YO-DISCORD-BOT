@@ -11,8 +11,8 @@ export const handleCleanSubcommand = async (interaction: ChatInputCommandInterac
   interaction.deferReply();
   interaction.editReply("Cleaning channel...");
 
+  // Fetch all messages in channel in batches of 100 as this is the most that can be fetched at once
   let messages: Message[] = [];
-
   let message = await interaction.channel?.messages
     .fetch({ limit: 1 })
     .then((messagePage) => (messagePage.size === 1 ? messagePage.at(0) : null));
@@ -25,6 +25,7 @@ export const handleCleanSubcommand = async (interaction: ChatInputCommandInterac
     });
   }
 
+  // Loop through all fetched messages and filter them through filter functions
   for (const message of messages) {
     await filterInvites(message);
     await filterBannedWords(message);
