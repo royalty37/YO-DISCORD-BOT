@@ -7,10 +7,17 @@ import YoClient from "./types/YoClient";
 import { registerClientEvents } from "./events/clientEvents";
 import { registerPlayerEvents } from "./events/playerEvents";
 import { registerProcessEvents } from "./events/processEvents";
+import { initMongo } from "./mongoSetup";
+import { scheduleJobs } from "./scheduleJobs";
 
 // Load environment variables from .env file
 // process.env.DISCORD_TOKEN
 dotenv.config();
+
+if (!process.env.DISCORD_TOKEN) {
+  console.error("*** ERROR: DISCORD_TOKEN environment variable not found.");
+  process.exit(1);
+}
 
 // Create a new client instance
 const client = new Client({
@@ -31,6 +38,9 @@ client.player = new Player(client);
 registerClientEvents(client);
 registerPlayerEvents(client.player);
 registerProcessEvents();
+
+// Initiate mongoDB connection
+initMongo();
 
 // Get commandsPath and command folders within
 const commandsPath = path.join(__dirname, "commands");
@@ -53,4 +63,7 @@ for (const cf of commandFolders) {
 }
 
 // Login to Discord with DISCORD_TOKEN
-client.login(process.env.DISCORD_TOKEN);
+client.login(process.env.DISCORD_TOKEN).then(() => {
+  // Reschedule jobs
+  scheduleJobs(client);
+});

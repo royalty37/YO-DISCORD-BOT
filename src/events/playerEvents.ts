@@ -5,13 +5,13 @@ export const registerPlayerEvents = (player: Player) => {
   // Player Error event
   player.on("error", (queue: Queue<any>, error: Error) => {
     // Log error
-    console.log(`[${queue.guild.name}] Error emitted from the queue: ${error.message}`);
+    console.log(`*** [${queue.guild.name}] Error emitted from the queue: ${error.message}`);
   });
 
   // Player ConnectionError event
   player.on("connectionError", (queue: Queue<any>, error: Error) => {
     // Log error
-    console.log(`[${queue.guild.name}] Error emitted from the connection: ${error.message}`);
+    console.log(`*** [${queue.guild.name}] Error emitted from the connection: ${error.message}`);
   });
 
   // Player TrackStart event
