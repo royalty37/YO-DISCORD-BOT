@@ -284,14 +284,7 @@ export const handlePollSubcommand = async (interaction: ChatInputCommandInteract
       setTimeout(async () => {
         console.log(`*** MAKING MEMBER BUMBOY: ${newBumboys[i].user.username}`);
         // Spread in managed roles when setting to avoid exception (for instance server booster role)
-        // await newBumboys[i].roles.set([BUMBOY_ROLE_ID, ...newBumboys[i].roles.cache.filter((r) => r.managed).values()]);
-
-        // Roles.set (commented out line above) not working properly so doing in separate steps with a second between
-        await newBumboys[i].roles.remove(VICE_PLUS_ROLE_ID);
-        setTimeout(async () => {
-          await newBumboys[i].roles.add(BUMBOY_ROLE_ID);
-        }, 1000);
-
+        await newBumboys[i].roles.set([BUMBOY_ROLE_ID, ...newBumboys[i].roles.cache.filter((r) => r.managed).values()]);
         await newBumboys[i].setNickname(newBumboys.length === 1 ? `💩 THE BUMBOY 💩` : `💩 BUMBOY ${i + 1} 💩`);
 
         i++;

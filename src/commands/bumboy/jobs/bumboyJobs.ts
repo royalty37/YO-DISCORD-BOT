@@ -37,15 +37,7 @@ export const clearBumboysJob = async (client: YoClient) => {
         } else {
           console.log(`*** RESETTING ROLE AND NICKNAME FOR: ${member.user.username}`);
           // Spread in managed roles when setting to avoid exception (for instance server booster role)
-          // await member.roles.set([VICE_PLUS_ROLE_ID, ...member.roles.cache.filter((r) => r.managed).values()]);
-
-          console.log("BUMBOY ROLE ID: ", BUMBOY_ROLE_ID);
-          // Roles.set (commented out line above) not working properly so doing in separate steps with a second between
-          await member.roles.remove(BUMBOY_ROLE_ID);
-          setTimeout(async () => {
-            await member.roles.add(VICE_PLUS_ROLE_ID);
-          }, 1000);
-
+          await member.roles.set([VICE_PLUS_ROLE_ID, ...member.roles.cache.filter((r) => r.managed).values()]);
           await member.setNickname(currentBumboyRecord.bumboys[i].nickname ?? "");
 
           bumboysPostClear.push(member);
