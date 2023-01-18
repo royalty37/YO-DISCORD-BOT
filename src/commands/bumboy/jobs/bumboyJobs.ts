@@ -66,15 +66,11 @@ const performClear = async (client: YoClient, currentBumboyRecord: CurrentBumboy
           guild?.members.cache.filter((m) => m.roles.cache.has(BUMBOY_ROLE_ID)).values()
         );
 
-        console.log("BUMBOYS STILL IN SERVER", bumboysStillInServer);
         // Another weird recursive function - essentially the same as above
         let j = 0;
         const resetBuggedBumboysWithDelay = async () => {
           setTimeout(() => {
             const member = bumboysStillInServer[j];
-
-            console.log("MEMBER: ", member);
-
             console.log(`*** RESETTING ROLE FOR BUGGED BUMBOY: ${member.user.username}`);
             // Only reset role as nickname wasn't stored in the database
             member.roles.set([VICE_PLUS_ROLE_ID, ...member.roles.cache.filter((r) => r.managed).values()]);
