@@ -6,7 +6,7 @@ const DB_NAME = "YOZA-BOT";
 // Database operations for handling BUMBOY Guild Member IDs
 
 // Return type from Database
-type CurrentBumboysRecord = {
+export type CurrentBumboysRecord = {
   bumboys: bumboyData[];
   clearTime: Date;
 };
