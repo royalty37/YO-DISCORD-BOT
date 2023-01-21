@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
 import { Client, Collection, GatewayIntentBits } from "discord.js";
-import * as dotenv from "dotenv";
 import { Player } from "discord-player";
 import YoClient from "./types/YoClient";
 import { registerClientEvents } from "./events/clientEvents";
@@ -9,13 +8,10 @@ import { registerPlayerEvents } from "./events/playerEvents";
 import { registerProcessEvents } from "./events/processEvents";
 import { initMongo } from "./mongoSetup";
 import { scheduleJobs } from "./scheduleJobs";
+import { discordToken } from "./clientUtils";
 
-// Load environment variables from .env file
-// process.env.DISCORD_TOKEN
-dotenv.config();
-
-if (!process.env.DISCORD_TOKEN) {
-  console.error("*** ERROR: DISCORD_TOKEN environment variable not found.");
+if (!discordToken) {
+  console.error("*** ERROR: DISCORD_TOKEN OR TEST_DISCORD_TOKEN environment variable not found.");
   process.exit(1);
 }
 
@@ -62,8 +58,8 @@ for (const cf of commandFolders) {
   }
 }
 
-// Login to Discord with DISCORD_TOKEN
-client.login(process.env.DISCORD_TOKEN).then(() => {
+// Login to Discord with DISCORD_TOKEN or TEST_DISCORD_TOKEN
+client.login(discordToken).then(() => {
   // Reschedule jobs
   scheduleJobs(client);
 });
