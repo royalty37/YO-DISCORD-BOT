@@ -1,14 +1,11 @@
 import fs from "fs";
 import path from "path";
-import * as dotenv from "dotenv";
 import { REST, Routes } from "discord.js";
 import Command from "./types/Command";
+import { discordToken, clientId } from "./clientUtils";
 
-// Load environment variables from .env file
-dotenv.config();
-
-if (!process.env.DISCORD_TOKEN) {
-  console.error("*** ERROR: DISCORD_TOKEN environment variable not found.");
+if (!discordToken) {
+  console.error("*** ERROR: DISCORD_TOKEN OR TEST_DISCORD_TOKEN environment variable not found.");
   process.exit(1);
 }
 
@@ -17,8 +14,8 @@ if (!process.env.GUILD_ID) {
   process.exit(1);
 }
 
-if (!process.env.CLIENT_ID) {
-  console.error("*** ERROR: CLIENT_ID environment variable not found.");
+if (!clientId) {
+  console.error("*** ERROR: CLIENT_ID or TEST_CLIENT_ID environment variable not found.");
   process.exit(1);
 }
 
@@ -40,7 +37,7 @@ for (const cf of commandFolders) {
 }
 
 // Create a new REST instance
-const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
+const rest = new REST({ version: "10" }).setToken(discordToken);
 
 // Define a function that will be used to register the commands
 const deployCommands = async () => {
@@ -48,7 +45,7 @@ const deployCommands = async () => {
     console.log(`*** Started refreshing ${commands.length} application (/) commands.`);
 
     // The put method is used to fully refresh all commands in the guild with the current set
-    const data: any = await rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID!, process.env.GUILD_ID!), {
+    const data: any = await rest.put(Routes.applicationGuildCommands(clientId!, process.env.GUILD_ID!), {
       body: commands,
     });
 
