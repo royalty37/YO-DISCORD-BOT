@@ -10,6 +10,7 @@ import { initMongo } from "./mongoSetup";
 import { scheduleJobs } from "./scheduleJobs";
 import { discordToken } from "./clientUtils";
 
+// Check if DISCORD_TOKEN or TEST_DISCORD_TOKEN environment variable is set - if not, exit
 if (!discordToken) {
   console.error("*** ERROR: DISCORD_TOKEN OR TEST_DISCORD_TOKEN environment variable not found.");
   process.exit(1);
