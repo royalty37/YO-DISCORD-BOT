@@ -38,7 +38,7 @@ export const handlePlaySubcommand = async (interaction: ChatInputCommandInteract
     const song = interaction.options.getString(SONG_OPTION_NAME, INPUT_REQUIRED);
     const member = interaction.member as GuildMember;
 
-    await interaction.reply(`🔍 **Searching...** ${song}`);
+    await interaction.reply(`🔍 **Searching for ${song}...**`);
     const message = await interaction.fetchReply();
 
     if (!member.voice.channel) {

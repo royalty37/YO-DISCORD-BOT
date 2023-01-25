@@ -7,7 +7,7 @@ import { SpotifyPlugin } from "@distube/spotify";
 import { SoundCloudPlugin } from "@distube/soundcloud";
 import YoClient from "./types/YoClient";
 import { registerClientEvents } from "./events/clientEvents";
-import { registerPlayerEvents } from "./events/playerEvents";
+import { registerDistubeEvents } from "./events/distubeEvents";
 import { registerProcessEvents } from "./events/processEvents";
 import { initMongo } from "./mongoSetup";
 import { scheduleJobs } from "./scheduleJobs";
@@ -45,7 +45,7 @@ client.distube = new DisTube(client, {
 
 // Register Client and Player events
 registerClientEvents(client);
-registerPlayerEvents(client.distube);
+registerDistubeEvents(client.distube);
 registerProcessEvents();
 
 // Initiate mongoDB connection
