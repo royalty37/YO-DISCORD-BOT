@@ -8,14 +8,25 @@ export const resumeSubcommand = (sc: SlashCommandSubcommandBuilder) =>
 
 // Music resume subcommand execution
 export const handleResumeSubcommand = async (interaction: ChatInputCommandInteraction) => {
-  // Get player from client from interaction
-  // const { player } = interaction.client as YoClient;
-  // await interaction.deferReply();
-  // // If no music is playing, return
-  // const queue = player.getQueue(interaction.guildId ?? "");
-  // if (!queue?.playing) {
-  //   return void interaction.followUp("❌ | No music is being played!");
-  // }
-  // // Resume music and send appropriate message
-  // interaction.followUp(queue.setPaused(false) ? "▶ | Resumed!" : "❌ | Something went wrong!");
+  if (!interaction.guildId) {
+    console.log("*** MUSIC RESUME SUBCOMMAND - NO GUILD ID");
+    return void interaction.reply("Something went wrong. Please try again.");
+  }
+
+  // Get DisTube queue from client from interaction
+  const queue = (interaction.client as YoClient).distube.getQueue(interaction.guildId ?? "");
+
+  if (!queue) {
+    console.log("*** MUSIC RESUME SUBCOMMAND - NO QUEUE");
+    return void interaction.reply("❌ | No music is being played!");
+  }
+
+  if (queue.paused) {
+    console.log("*** MUSIC RESUME SUBCOMMAND - RESUMING QUEUE");
+    queue.resume();
+    return void interaction.reply("▶ | Resumed!");
+  } else {
+    console.log("*** MUSIC RESUME SUBCOMMAND - ALREADY PLAYING");
+    return void interaction.reply("❌ | Music is already playing!");
+  }
 };

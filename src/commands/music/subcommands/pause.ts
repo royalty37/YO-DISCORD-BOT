@@ -30,7 +30,7 @@ export const handlePauseSubcommand = async (interaction: ChatInputCommandInterac
   }
 
   // Pause the music
-  distube.pause(interaction.guildId ?? "");
+  distube.pause(interaction.guildId);
 
   // Reply to user
   interaction.reply("⏸ | Paused!");
