@@ -6,7 +6,7 @@ import { Interaction } from "../../../types/types";
 export const joinSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc
     .setName(subcommands.JOIN)
-    .setDescription("Joins the selected voice channel.")
+    .setDescription("Joins your voice channel or a supplied voice channel.")
     .addChannelOption((option) => option.setName("channel").setDescription("The voice channel to join"));
 
 // Music join subcommand execution
