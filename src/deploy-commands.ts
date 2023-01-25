@@ -4,16 +4,19 @@ import { REST, Routes } from "discord.js";
 import Command from "./types/Command";
 import { discordToken, clientId } from "./clientUtils";
 
+// Check if DISCORD_TOKEN or TEST_DISCORD_TOKEN environment variable is set - if not, exit
 if (!discordToken) {
   console.error("*** ERROR: DISCORD_TOKEN OR TEST_DISCORD_TOKEN environment variable not found.");
   process.exit(1);
 }
 
+// Check if GUILD_ID environment variable is set - if not, exit
 if (!process.env.GUILD_ID) {
   console.error("*** ERROR: GUILD_ID environment variable not found.");
   process.exit(1);
 }
 
+// Check if CLIENT_ID or TEST_CLIENT_ID environment variable is set - if not, exit
 if (!clientId) {
   console.error("*** ERROR: CLIENT_ID or TEST_CLIENT_ID environment variable not found.");
   process.exit(1);
@@ -51,8 +54,7 @@ const deployCommands = async () => {
 
     console.log(`*** Successfully reloaded ${data.length} application (/) commands.`);
   } catch (error) {
-    // And of course, make sure you catch and log any errors!
-    console.error(error);
+    console.error(`***EXCEPTION deploying commands: ${error}`);
   }
 };
 

@@ -1,7 +1,10 @@
 import fs from "fs";
 import path from "path";
 import { Client, Collection, GatewayIntentBits } from "discord.js";
-import { Player } from "discord-player";
+import { DisTube } from "distube";
+import { YtDlpPlugin } from "@distube/yt-dlp";
+import { SpotifyPlugin } from "@distube/spotify";
+import { SoundCloudPlugin } from "@distube/soundcloud";
 import YoClient from "./types/YoClient";
 import { registerClientEvents } from "./events/clientEvents";
 import { registerPlayerEvents } from "./events/playerEvents";
@@ -29,11 +32,20 @@ const client = new Client({
 }) as YoClient;
 
 client.commands = new Collection<string, any>();
-client.player = new Player(client);
+client.distube = new DisTube(client, {
+  searchSongs: 5,
+  searchCooldown: 10,
+  leaveOnEmpty: true,
+  leaveOnFinish: false,
+  leaveOnStop: false,
+  emitAddListWhenCreatingQueue: false,
+  emitAddSongWhenCreatingQueue: false,
+  plugins: [new YtDlpPlugin({ update: true }), new SpotifyPlugin(), new SoundCloudPlugin()],
+});
 
 // Register Client and Player events
 registerClientEvents(client);
-registerPlayerEvents(client.player);
+registerPlayerEvents(client.distube);
 registerProcessEvents();
 
 // Initiate mongoDB connection

@@ -21,20 +21,19 @@ const data = new SlashCommandBuilder()
 
 // Music command execute function
 const execute = async (interaction: ChatInputCommandInteraction) => {
-  interaction.reply("Music command is currently under construction!");
-  // const subcommand = interaction.options.getSubcommand();
+  const subcommand = interaction.options.getSubcommand();
 
-  // // Switch statement for subcommands to handle subcommand execution accordingly
-  // switch (subcommand) {
-  //   case subcommands.PLAY:
-  //   case subcommands.SHORTHAND_PLAY:
-  //     handlePlaySubcommand(interaction);
-  //     break;
-  //   case subcommands.PAUSE:
-  //     handlePauseSubcommand(interaction);
-  //     break;
-  //   default:
-  // }
+  // Switch statement for subcommands to handle subcommand execution accordingly
+  switch (subcommand) {
+    case subcommands.PLAY:
+    case subcommands.SHORTHAND_PLAY:
+      handlePlaySubcommand(interaction);
+      break;
+    case subcommands.PAUSE:
+      handlePauseSubcommand(interaction);
+      break;
+    default:
+  }
 };
 
 const musicCommand: Command = {
