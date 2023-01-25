@@ -8,14 +8,30 @@ export const pauseSubcommand = (sc: SlashCommandSubcommandBuilder) =>
 
 // Music pause subcommand execution
 export const handlePauseSubcommand = async (interaction: ChatInputCommandInteraction) => {
-  // // Get player from client from interaction
-  // const { player } = interaction.client as YoClient;
-  // await interaction.deferReply();
-  // // If no music is playing, return
-  // const queue = player.getQueue(interaction.guildId ?? "");
-  // if (!queue?.playing) {
-  //   return void (await interaction.followUp("❌ | No music is being played!"));
-  // }
-  // // Pause music and send appropriate message
-  // return void interaction.followUp(queue.setPaused(true) ? "⏸ | Paused!" : "❌ | Something went wrong!");
+  if (!interaction.guildId) {
+    console.log("*** MUSIC PAUSE SUBCOMMAND - NO GUILD ID");
+    return void interaction.reply("Something went wrong. Please try again.");
+  }
+
+  // Get DisTube from client from interaction
+  const { distube } = interaction.client as YoClient;
+  const queue = distube.getQueue(interaction.guildId ?? "");
+
+  // If no queue, no music is playing
+  if (!queue) {
+    console.log("*** MUSIC PAUSE SUBCOMMAND - NO QUEUE");
+    return void interaction.reply("❌ | No music is being played!");
+  }
+
+  // If music is already paused, don't pause it again
+  if (queue.paused) {
+    console.log("*** MUSIC PAUSE SUBCOMMAND - ALREADY PAUSED");
+    return void interaction.reply("❌ | Music is already paused!");
+  }
+
+  // Pause the music
+  distube.pause(interaction.guildId ?? "");
+
+  // Reply to user
+  interaction.reply("⏸ | Paused!");
 };
