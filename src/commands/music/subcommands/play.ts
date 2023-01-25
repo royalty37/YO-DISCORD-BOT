@@ -5,7 +5,7 @@ import {
   SlashCommandStringOption,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-import YoClient from "../../../types/YoClient";
+import { Interaction } from "../../../types/types";
 import { subcommands } from "../music";
 
 const INPUT_REQUIRED = true;
@@ -30,20 +30,20 @@ export const shorthandPlaySubcommand = (sc: SlashCommandSubcommandBuilder) =>
     );
 
 // This is the function that handles the play subcommand
-export const handlePlaySubcommand = async (interaction: ChatInputCommandInteraction) => {
+export const handlePlaySubcommand = async (interaction: Interaction) => {
   try {
-    // Get client off of interaction
-    const client: YoClient = interaction.client as YoClient;
-
     const song = interaction.options.getString(SONG_OPTION_NAME, INPUT_REQUIRED);
     const member = interaction.member as GuildMember;
 
     await interaction.reply(`🔍 **Searching for ${song}...**`);
     const message = await interaction.fetchReply();
 
-    if (!member.voice.channel) {
-      console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - MEMBER NOT IN VOICE CHANNEL");
-      return void interaction.followUp("You must be in a voice channel!");
+    // Select either the member's voice channel or the bot's voice channel
+    const voiceChannel = member.voice.channel ?? interaction.client.distube.voices.collection.first()?.channel;
+
+    if (!voiceChannel) {
+      console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - MEMBER NOT IN VOICE CHANNEL AND BOT NOT IN VOICE CHANNEL");
+      return void interaction.followUp("You must be in a voice channel or the bot must be!");
     }
 
     if (!interaction.channel) {
@@ -51,7 +51,7 @@ export const handlePlaySubcommand = async (interaction: ChatInputCommandInteract
       return void interaction.followUp("Something went wrong. Please try again.");
     }
 
-    client.distube.play(member.voice.channel, song, {
+    interaction.client.distube.play(voiceChannel, song, {
       textChannel: interaction.channel as GuildTextBasedChannel,
       member: interaction.member as GuildMember,
       message,

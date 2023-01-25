@@ -77,7 +77,7 @@ export const registerDistubeEvents = (distube: DisTube) => {
 
   // DisTube finish event
   distube.on("finish", (queue: Queue) => {
-    console.log(`*** DisTube finish event - finishing ${queue.songs[0].name}`);
+    console.log(`*** DisTube finish event - Queue finished`);
     queue.textChannel?.send("🎶 | Queue finished!");
   });
 

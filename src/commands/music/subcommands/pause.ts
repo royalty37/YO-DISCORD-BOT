@@ -13,9 +13,8 @@ export const handlePauseSubcommand = async (interaction: Interaction) => {
     return void interaction.reply("Something went wrong. Please try again.");
   }
 
-  // Get DisTube from client from interaction
-  const { distube } = interaction.client;
-  const queue = distube.getQueue(interaction.guildId ?? "");
+  // Get queue from distube
+  const queue = interaction.client.distube.getQueue(interaction.guildId ?? "");
 
   // If no queue, no music is playing
   if (!queue) {
@@ -30,7 +29,7 @@ export const handlePauseSubcommand = async (interaction: Interaction) => {
   }
 
   // Pause the music
-  distube.pause(interaction.guildId);
+  interaction.client.distube.pause(interaction.guildId);
 
   // Reply to user
   interaction.reply("⏸ | Paused!");

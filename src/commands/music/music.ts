@@ -1,7 +1,8 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
+import { SlashCommandBuilder } from "discord.js";
 import { playSubcommand, shorthandPlaySubcommand, handlePlaySubcommand } from "./subcommands/play";
 import { pauseSubcommand, handlePauseSubcommand } from "./subcommands/pause";
 import { resumeSubcommand, handleResumeSubcommand } from "./subcommands/resume";
+import { joinSubcommand, handleJoinSubcommand } from "./subcommands/join";
 import { Command, Interaction } from "../../types/types";
 
 // Enum for subcommands
@@ -10,6 +11,7 @@ export enum subcommands {
   SHORTHAND_PLAY = "p",
   PAUSE = "pause",
   RESUME = "resume",
+  JOIN = "join",
 }
 
 // Music command SlashCommandBuilder
@@ -19,7 +21,8 @@ const data = new SlashCommandBuilder()
   .addSubcommand(playSubcommand)
   .addSubcommand(shorthandPlaySubcommand)
   .addSubcommand(pauseSubcommand)
-  .addSubcommand(resumeSubcommand);
+  .addSubcommand(resumeSubcommand)
+  .addSubcommand(joinSubcommand);
 
 // Music command execute function
 const execute = async (interaction: Interaction) => {
@@ -37,7 +40,11 @@ const execute = async (interaction: Interaction) => {
     case subcommands.RESUME:
       handleResumeSubcommand(interaction);
       break;
+    case subcommands.JOIN:
+      handleJoinSubcommand(interaction);
+      break;
     default:
+      console.log("*** ERROR: No subcommand found.");
   }
 };
 
