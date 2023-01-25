@@ -1,13 +1,14 @@
-import { ChatInputCommandInteraction, Message, SlashCommandSubcommandBuilder } from "discord.js";
+import { Message, SlashCommandSubcommandBuilder } from "discord.js";
 import { subcommands } from "../channel";
-import { filterInvites, filterBannedWords } from "../../../utils/messageUtils/messageUtils";
+import { filterMessages } from "../../../utils/messageUtils/messageUtils";
+import { Interaction } from "../../../types/types";
 
 // Clean channel subcommand
 export const cleanSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc.setName(subcommands.CLEAN).setDescription("Clean messages in this channel.");
 
 // Clean subcommand execution - cleans/filters messages in channel that I deem inappropriate
-export const handleCleanSubcommand = async (interaction: ChatInputCommandInteraction) => {
+export const handleCleanSubcommand = async (interaction: Interaction) => {
   interaction.deferReply();
   interaction.editReply("Cleaning channel...");
 
@@ -27,8 +28,7 @@ export const handleCleanSubcommand = async (interaction: ChatInputCommandInterac
 
   // Loop through all fetched messages and filter them through filter functions
   for (const message of messages) {
-    await filterInvites(message);
-    await filterBannedWords(message);
+    filterMessages(message);
   }
 
   interaction.followUp("Channel cleaned of disallowed/offensive words/statements.");

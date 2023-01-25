@@ -1,9 +1,9 @@
-import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
+import { SlashCommandSubcommandBuilder } from "discord.js";
 import { getBumboys } from "../actions/bumboyActions";
 import { BUMBOY_ROLE_ID, VICE_PLUS_ROLE_ID } from "../../../utils/discordUtils/roleUtils";
 import { subcommands } from "../bumboy";
 import { performForceClear } from "../jobs/bumboyJobs";
-import YoClient from "../../../types/YoClient";
+import { Interaction } from "../../../types/types";
 
 // TODO: Let the president use this command - only me at this point (and probably ever)
 
@@ -13,7 +13,7 @@ const MY_ID = "218945393579261954";
 export const clearSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc.setName(subcommands.CLEAR).setDescription("Resets all data related to the latest BUMBOY poll.");
 
-export const handleClearSubcommand = async (interaction: ChatInputCommandInteraction) => {
+export const handleClearSubcommand = async (interaction: Interaction) => {
   if (interaction.user.id !== MY_ID) {
     return void (await interaction.reply(
       "You do not have permission to use this command. Only the president can use this command."
@@ -37,7 +37,7 @@ export const handleClearSubcommand = async (interaction: ChatInputCommandInterac
 
   console.log("*** Calling BUMBOY performcClear from Clear subcommand.");
 
-  performForceClear(interaction.client as YoClient, currentBumboyRecord);
+  performForceClear(interaction.client, currentBumboyRecord);
 
   interaction.editReply("The BUMBOY roles have been forcefully cleared by the president!");
 };

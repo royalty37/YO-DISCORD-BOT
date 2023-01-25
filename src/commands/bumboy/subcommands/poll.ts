@@ -1,17 +1,10 @@
-import {
-  ChatInputCommandInteraction,
-  Colors,
-  EmbedBuilder,
-  MessageReaction,
-  SlashCommandSubcommandBuilder,
-  User,
-} from "discord.js";
+import { Colors, EmbedBuilder, MessageReaction, SlashCommandSubcommandBuilder, User } from "discord.js";
 import { subcommands } from "../bumboy";
 import { getUniqueRandomEmojis } from "../../../utils/emojiUtils/emojiUtils";
 import { saveBumboys, getBumboys, clearBumboys } from "../actions/bumboyActions";
 import dayjs from "dayjs";
 import { clearBumboysJob } from "../jobs/bumboyJobs";
-import YoClient from "../../../types/YoClient";
+import { Interaction } from "../../../types/types";
 import { VICE_PLUS_ROLE_ID, BUMBOY_ROLE_ID } from "../../../utils/discordUtils/roleUtils";
 
 // Emoji that represents a vote in description
@@ -32,7 +25,7 @@ export const pollSubcommand = (sc: SlashCommandSubcommandBuilder) =>
     .setName(subcommands.POLL)
     .setDescription("Vices cast their vote for who will be demoted to bumboy for the next 24 hours!");
 
-export const handlePollSubcommand = async (interaction: ChatInputCommandInteraction) => {
+export const handlePollSubcommand = async (interaction: Interaction) => {
   // If poll is already running, send message and early return
   if (pollIsRunning) {
     return void (await interaction.reply("BUMBOY poll is already running!\n\nCheck above!"));
@@ -304,7 +297,7 @@ export const handlePollSubcommand = async (interaction: ChatInputCommandInteract
     await saveBumboys(newBumboys.map((b) => ({ id: b.id, nickname: b.nickname })));
 
     // Schedule job to promote bumboys back to Vice Plus after 12 hours and reset their nicknames
-    clearBumboysJob(interaction.client as YoClient);
+    clearBumboysJob(interaction.client);
 
     // Set pollIsRunning back to false
     pollIsRunning = false;

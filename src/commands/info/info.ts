@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import { userSubcommand, handleUserSubcommand } from "./subcommands/user";
 import { serverSubcommand, handleServerSubcommand } from "./subcommands/server";
-import Command from "../../types/Command";
+import { Command, Interaction } from "../../types/types";
 
 // Subcommands enum for info command
 export enum subcommands {
@@ -17,7 +17,7 @@ const data = new SlashCommandBuilder()
   .addSubcommand(userSubcommand);
 
 // Info command execute function
-const execute = async (interaction: ChatInputCommandInteraction) => {
+const execute = async (interaction: Interaction) => {
   if (interaction.options.getSubcommand() === subcommands.USER) {
     handleUserSubcommand(interaction);
   } else if (interaction.options.getSubcommand() === subcommands.SERVER) {

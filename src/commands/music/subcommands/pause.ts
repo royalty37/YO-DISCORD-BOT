@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
-import YoClient from "../../../types/YoClient";
+import { Interaction } from "../../../types/types";
 import { subcommands } from "../music";
 
 // Music pause subcommand
@@ -7,14 +7,14 @@ export const pauseSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc.setName(subcommands.PAUSE).setDescription("Pauses the current song.");
 
 // Music pause subcommand execution
-export const handlePauseSubcommand = async (interaction: ChatInputCommandInteraction) => {
+export const handlePauseSubcommand = async (interaction: Interaction) => {
   if (!interaction.guildId) {
     console.log("*** MUSIC PAUSE SUBCOMMAND - NO GUILD ID");
     return void interaction.reply("Something went wrong. Please try again.");
   }
 
   // Get DisTube from client from interaction
-  const { distube } = interaction.client as YoClient;
+  const { distube } = interaction.client;
   const queue = distube.getQueue(interaction.guildId ?? "");
 
   // If no queue, no music is playing

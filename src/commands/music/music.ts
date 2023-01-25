@@ -1,8 +1,8 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
-import Command from "../../types/Command";
 import { playSubcommand, shorthandPlaySubcommand, handlePlaySubcommand } from "./subcommands/play";
 import { pauseSubcommand, handlePauseSubcommand } from "./subcommands/pause";
 import { resumeSubcommand, handleResumeSubcommand } from "./subcommands/resume";
+import { Command, Interaction } from "../../types/types";
 
 // Enum for subcommands
 export enum subcommands {
@@ -22,7 +22,7 @@ const data = new SlashCommandBuilder()
   .addSubcommand(resumeSubcommand);
 
 // Music command execute function
-const execute = async (interaction: ChatInputCommandInteraction) => {
+const execute = async (interaction: Interaction) => {
   const subcommand = interaction.options.getSubcommand();
 
   // Switch statement for subcommands to handle subcommand execution accordingly

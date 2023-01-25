@@ -1,5 +1,5 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
-import Command from "../../types/Command";
+import { SlashCommandBuilder } from "discord.js";
+import { Command, Interaction } from "../../types/types";
 import { cleanSubcommand, handleCleanSubcommand } from "./subcommands/clean";
 
 // Subcommands enum for channel command
@@ -14,7 +14,7 @@ const data = new SlashCommandBuilder()
   .addSubcommand(cleanSubcommand);
 
 // Channel command execute function
-const execute = async (interaction: ChatInputCommandInteraction) => {
+const execute = async (interaction: Interaction) => {
   if (interaction.options.getSubcommand() === subcommands.CLEAN) {
     handleCleanSubcommand(interaction);
   }

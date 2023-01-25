@@ -5,7 +5,7 @@ import { DisTube } from "distube";
 import { YtDlpPlugin } from "@distube/yt-dlp";
 import { SpotifyPlugin } from "@distube/spotify";
 import { SoundCloudPlugin } from "@distube/soundcloud";
-import YoClient from "./types/YoClient";
+import { YoClient } from "./types/types";
 import { registerClientEvents } from "./events/clientEvents";
 import { registerDistubeEvents } from "./events/distubeEvents";
 import { registerProcessEvents } from "./events/processEvents";

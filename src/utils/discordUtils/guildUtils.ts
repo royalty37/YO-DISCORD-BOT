@@ -1,5 +1,5 @@
 import { Guild } from "discord.js";
-import YoClient from "../../types/YoClient";
+import { YoClient } from "../../types/types";
 
 // Guild ID of my personal Discord channel
 const GUILD_ID = "249728245212119043";

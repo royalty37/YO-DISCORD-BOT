@@ -1,12 +1,7 @@
-import {
-  ChatInputCommandInteraction,
-  SlashCommandStringOption,
-  SlashCommandSubcommandBuilder,
-  EmbedBuilder,
-  Colors,
-} from "discord.js";
+import { SlashCommandStringOption, SlashCommandSubcommandBuilder, EmbedBuilder, Colors } from "discord.js";
 import OpenAIService from "../../../apis/openaiService";
 import { subcommands } from "../openai";
+import { Interaction } from "../../../types/types";
 
 const INPUT_OPTION_NAME = "input";
 const INPUT_REQUIRED = true;
@@ -21,7 +16,7 @@ export const createImageSubcommand = (sc: SlashCommandSubcommandBuilder) =>
     );
 
 // openai create-image subcommand execution
-export const handleCreateImageSubcommand = async (interaction: ChatInputCommandInteraction) => {
+export const handleCreateImageSubcommand = async (interaction: Interaction) => {
   try {
     await interaction.deferReply();
 

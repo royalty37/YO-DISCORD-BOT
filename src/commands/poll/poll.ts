@@ -9,7 +9,7 @@ import {
   SlashCommandBooleanOption,
   SlashCommandNumberOption,
 } from "discord.js";
-import Command from "../../types/Command";
+import { Command, Interaction } from "../../types/types";
 
 // Array of emoji numbers that correspond to possible options
 const EMOJI_NUMBERS = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
@@ -55,7 +55,7 @@ for (let i = 1; i <= NO_OF_OPTIONS; i++) {
 }
 
 // Poll command execute function
-const execute = async (interaction: ChatInputCommandInteraction) => {
+const execute = async (interaction: Interaction) => {
   await interaction.deferReply();
 
   // Get Question, Allow-Multi-Vote and Duration from options

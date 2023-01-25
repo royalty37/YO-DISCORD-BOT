@@ -3,7 +3,7 @@ import { textSubcommand, handleTextSubcommand } from "./subcommands/text";
 import { editSubcommand, handleEditSubcommand } from "./subcommands/edit";
 import { createImageSubcommand, handleCreateImageSubcommand } from "./subcommands/createImage";
 import { randomStorySubcommand, handleRandomStorySubcommand } from "./subcommands/randomStory";
-import Command from "../../types/Command";
+import { Command, Interaction } from "../../types/types";
 
 // Enum for subcommands
 export enum subcommands {
@@ -23,7 +23,7 @@ const data = new SlashCommandBuilder()
   .addSubcommand(randomStorySubcommand);
 
 // OpenAI command execute function
-const execute = async (interaction: ChatInputCommandInteraction) => {
+const execute = async (interaction: Interaction) => {
   const subcommand = interaction.options.getSubcommand();
 
   // Switch statement for subcommands to handle subcommand execution accordingly

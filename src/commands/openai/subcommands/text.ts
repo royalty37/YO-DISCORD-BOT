@@ -1,7 +1,8 @@
-import { ChatInputCommandInteraction, SlashCommandStringOption, SlashCommandSubcommandBuilder } from "discord.js";
+import { SlashCommandStringOption, SlashCommandSubcommandBuilder } from "discord.js";
 import OpenAIService from "../../../apis/openaiService";
 import { subcommands } from "../openai";
 import { splitMessage } from "../../../utils/messageUtils/messageUtils";
+import { Interaction } from "../../../types/types";
 
 const INPUT_OPTION_NAME = "input";
 const INPUT_REQUIRED = true;
@@ -24,7 +25,7 @@ export const textSubcommand = (sc: SlashCommandSubcommandBuilder) =>
     );
 
 // openai text subcommand execution
-export const handleTextSubcommand = async (interaction: ChatInputCommandInteraction) => {
+export const handleTextSubcommand = async (interaction: Interaction) => {
   try {
     await interaction.deferReply();
 

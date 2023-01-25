@@ -1,6 +1,6 @@
 import { Client, Events, BaseInteraction, Message } from "discord.js";
-import YoClient from "../types/YoClient";
-import { filterBannedWords, filterInvites } from "../utils/messageUtils/messageUtils";
+import { YoClient } from "../types/types";
+import { filterMessages } from "../utils/messageUtils/messageUtils";
 
 // Register client events
 export const registerClientEvents = (client: YoClient) => {
@@ -40,12 +40,11 @@ export const registerClientEvents = (client: YoClient) => {
     console.log(`*** Ready! Logged in as ${client?.user?.tag}`);
   });
 
-  client.on(Events.ShardError, (error) => {
+  client.on(Events.ShardError, (error: Error) => {
     console.log(`*** A websocket connection encountered an error: ${error}`);
   });
 
   client.on(Events.MessageCreate, async (message: Message<boolean>) => {
-    await filterInvites(message);
-    await filterBannedWords(message);
+    filterMessages(message);
   });
 };

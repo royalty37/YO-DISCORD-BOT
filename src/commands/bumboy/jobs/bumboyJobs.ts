@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import { GuildMember } from "discord.js";
 import { Job, scheduleJob } from "node-schedule";
-import YoClient from "../../../types/YoClient";
+import { YoClient } from "../../../types/types";
 import { getBotChannel } from "../../../utils/discordUtils/channelUtils";
 import { getMyGuild } from "../../../utils/discordUtils/guildUtils";
 import { getBumboys, clearBumboys, CurrentBumboysRecord } from "../actions/bumboyActions";

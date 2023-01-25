@@ -1,8 +1,8 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
-import Command from "../../types/Command";
+import { SlashCommandBuilder } from "discord.js";
 import { pollSubcommand, handlePollSubcommand } from "./subcommands/poll";
 import { clearSubcommand, handleClearSubcommand } from "./subcommands/clear";
 import { isDevMode } from "../../clientUtils";
+import { Command, Interaction } from "../../types/types";
 
 // TODO: Fix remaining time bug - sometimes shows message after poll finishes
 
@@ -21,7 +21,7 @@ const data = new SlashCommandBuilder()
   .addSubcommand(clearSubcommand);
 
 // Bumboy command execute function
-const execute = async (interaction: ChatInputCommandInteraction) => {
+const execute = async (interaction: Interaction) => {
   if (isDevMode) {
     return void interaction.reply("This command is disabled in dev mode.");
   }

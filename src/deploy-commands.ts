@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { REST, Routes } from "discord.js";
-import Command from "./types/Command";
+import { Command } from "./types/types";
 import { discordToken, clientId } from "./clientUtils";
 
 // Check if DISCORD_TOKEN or TEST_DISCORD_TOKEN environment variable is set - if not, exit
