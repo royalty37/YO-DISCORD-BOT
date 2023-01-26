@@ -4,6 +4,8 @@ import { pauseSubcommand, handlePauseSubcommand } from "./subcommands/pause";
 import { resumeSubcommand, handleResumeSubcommand } from "./subcommands/resume";
 import { joinSubcommand, handleJoinSubcommand } from "./subcommands/join";
 import { leaveSubcommand, handleLeaveSubcommand } from "./subcommands/leave";
+import { skipSubcommand, handleSkipSubcommand } from "./subcommands/skip";
+import { stopSubcommand, handleStopSubcommand } from "./subcommands/stop";
 import { Command, Interaction } from "../../types/types";
 
 // Enum for subcommands
@@ -14,6 +16,8 @@ export enum subcommands {
   RESUME = "resume",
   JOIN = "join",
   LEAVE = "leave",
+  SKIP = "skip",
+  STOP = "stop",
 }
 
 // Music command SlashCommandBuilder
@@ -25,7 +29,9 @@ const data = new SlashCommandBuilder()
   .addSubcommand(pauseSubcommand)
   .addSubcommand(resumeSubcommand)
   .addSubcommand(joinSubcommand)
-  .addSubcommand(leaveSubcommand);
+  .addSubcommand(leaveSubcommand)
+  .addSubcommand(skipSubcommand)
+  .addSubcommand(stopSubcommand);
 
 // Music command execute function
 const execute = async (interaction: Interaction) => {
@@ -48,6 +54,12 @@ const execute = async (interaction: Interaction) => {
       break;
     case subcommands.LEAVE:
       handleLeaveSubcommand(interaction);
+      break;
+    case subcommands.SKIP:
+      handleSkipSubcommand(interaction);
+      break;
+    case subcommands.STOP:
+      handleStopSubcommand(interaction);
       break;
     default:
       console.log("*** ERROR: No subcommand found.");
