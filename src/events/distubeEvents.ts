@@ -83,6 +83,9 @@ export const registerDistubeEvents = (distube: DisTube) => {
 
   // DisTube disconnect event
   distube.on("disconnect", (queue: Queue) => {
+    // Stop and delete queue on disconnect - this is to avoid an exception when forcefully disconnected
+    queue.stop();
+
     console.log(`*** DisTube disconnect event - disconnecting ${queue.songs[0].name}`);
     queue.textChannel?.send("❌ | Disconnected from the voice channel!");
   });

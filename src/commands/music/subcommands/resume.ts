@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
+import { SlashCommandSubcommandBuilder } from "discord.js";
 import { subcommands } from "../music";
 import { Interaction } from "../../../types/types";
 
