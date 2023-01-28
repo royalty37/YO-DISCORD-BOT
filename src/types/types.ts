@@ -4,6 +4,7 @@ import {
   SlashCommandSubcommandsOnlyBuilder,
   Client,
   Collection,
+  BaseInteraction,
 } from "discord.js";
 import { DisTube } from "distube";
 
@@ -12,7 +13,7 @@ export type YoClient = Client<boolean> & {
   distube: DisTube;
 };
 
-export type Interaction = ChatInputCommandInteraction & {
+export type Interaction<T extends BaseInteraction> = T & {
   client: YoClient;
 };
 

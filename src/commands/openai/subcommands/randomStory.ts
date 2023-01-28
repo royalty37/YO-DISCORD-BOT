@@ -1,4 +1,4 @@
-import { SlashCommandIntegerOption, SlashCommandSubcommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandIntegerOption, SlashCommandSubcommandBuilder } from "discord.js";
 import OpenAIService from "../../../apis/openaiService";
 import { subcommands } from "../openai";
 import { getUniqueRandomWords } from "../../../utils/wordUtils/wordUtils";
@@ -25,7 +25,7 @@ export const randomStorySubcommand = (sc: SlashCommandSubcommandBuilder) =>
     );
 
 // openai random-story subcommand execution
-export const handleRandomStorySubcommand = async (interaction: Interaction) => {
+export const handleRandomStorySubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   try {
     await interaction.deferReply();
 

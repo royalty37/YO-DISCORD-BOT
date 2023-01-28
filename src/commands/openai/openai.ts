@@ -23,7 +23,7 @@ const data = new SlashCommandBuilder()
   .addSubcommand(randomStorySubcommand);
 
 // OpenAI command execute function
-const execute = async (interaction: Interaction) => {
+const execute = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   const subcommand = interaction.options.getSubcommand();
 
   // Switch statement for subcommands to handle subcommand execution accordingly

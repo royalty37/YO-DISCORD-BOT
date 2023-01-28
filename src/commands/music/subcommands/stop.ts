@@ -1,4 +1,4 @@
-import { SlashCommandSubcommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import { subcommands } from "../music";
 import { Interaction } from "../../../types/types";
 
@@ -7,7 +7,7 @@ export const stopSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc.setName(subcommands.STOP).setDescription("Skips the current song.");
 
 // Music leave subcommand execution
-export const handleStopSubcommand = async (interaction: Interaction) => {
+export const handleStopSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   // If no guildId, return
   if (!interaction.guildId) {
     console.log("*** MUSIC SKIP SUBCOMMAND - NO GUILD ID");

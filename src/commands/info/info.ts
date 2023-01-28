@@ -17,7 +17,7 @@ const data = new SlashCommandBuilder()
   .addSubcommand(userSubcommand);
 
 // Info command execute function
-const execute = async (interaction: Interaction) => {
+const execute = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   if (interaction.options.getSubcommand() === subcommands.USER) {
     handleUserSubcommand(interaction);
   } else if (interaction.options.getSubcommand() === subcommands.SERVER) {

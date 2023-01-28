@@ -55,7 +55,7 @@ for (let i = 1; i <= NO_OF_OPTIONS; i++) {
 }
 
 // Poll command execute function
-const execute = async (interaction: Interaction) => {
+const execute = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   await interaction.deferReply();
 
   // Get Question, Allow-Multi-Vote and Duration from options

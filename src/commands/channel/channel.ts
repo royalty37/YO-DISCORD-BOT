@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { Command, Interaction } from "../../types/types";
 import { cleanSubcommand, handleCleanSubcommand } from "./subcommands/clean";
 
@@ -14,7 +14,7 @@ const data = new SlashCommandBuilder()
   .addSubcommand(cleanSubcommand);
 
 // Channel command execute function
-const execute = async (interaction: Interaction) => {
+const execute = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   if (interaction.options.getSubcommand() === subcommands.CLEAN) {
     handleCleanSubcommand(interaction);
   }

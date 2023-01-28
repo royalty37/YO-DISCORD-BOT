@@ -1,4 +1,9 @@
-import { GuildMember, SlashCommandSubcommandBuilder, SlashCommandUserOption } from "discord.js";
+import {
+  ChatInputCommandInteraction,
+  GuildMember,
+  SlashCommandSubcommandBuilder,
+  SlashCommandUserOption,
+} from "discord.js";
 import { subcommands } from "../info";
 import { Interaction } from "../../../types/types";
 
@@ -14,7 +19,7 @@ export const userSubcommand = (sc: SlashCommandSubcommandBuilder) =>
     );
 
 // User subcommand execution - prints info about user
-export const handleUserSubcommand = async (interaction: Interaction) => {
+export const handleUserSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   // Get user from user option
   const user = interaction.options.getUser(USER_OPTION_NAME);
 

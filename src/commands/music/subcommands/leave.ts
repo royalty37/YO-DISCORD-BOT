@@ -1,4 +1,4 @@
-import { SlashCommandSubcommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import { subcommands } from "../music";
 import { Interaction } from "../../../types/types";
 
@@ -7,7 +7,7 @@ export const leaveSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc.setName(subcommands.LEAVE).setDescription("Leaves the voice channel (if in one).");
 
 // Music leave subcommand execution
-export const handleLeaveSubcommand = async (interaction: Interaction) => {
+export const handleLeaveSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   if (!interaction.client.distube.voices.size) {
     console.error("*** MUSIC LEAVE SUBCOMMAND - NOT IN VOICE CHANNEL");
     return void interaction.reply("❌ | I'm not in a voice channel!");

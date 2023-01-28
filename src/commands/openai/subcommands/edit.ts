@@ -1,4 +1,4 @@
-import { SlashCommandStringOption, SlashCommandSubcommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandStringOption, SlashCommandSubcommandBuilder } from "discord.js";
 import OpenAIService from "../../../apis/openaiService";
 import { splitMessage } from "../../../utils/messageUtils/messageUtils";
 import { subcommands } from "../openai";
@@ -24,7 +24,7 @@ export const editSubcommand = (sc: SlashCommandSubcommandBuilder) =>
     );
 
 // openai edit subcommand execution
-export const handleEditSubcommand = async (interaction: Interaction) => {
+export const handleEditSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   try {
     await interaction.deferReply();
 

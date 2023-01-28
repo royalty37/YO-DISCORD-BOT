@@ -1,4 +1,4 @@
-import { SlashCommandSubcommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import { subcommands } from "../music";
 import { Interaction } from "../../../types/types";
 
@@ -7,7 +7,7 @@ export const resumeSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc.setName(subcommands.RESUME).setDescription("Resumes the current song.");
 
 // Music resume subcommand execution
-export const handleResumeSubcommand = async (interaction: Interaction) => {
+export const handleResumeSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   if (!interaction.guildId) {
     console.log("*** MUSIC RESUME SUBCOMMAND - NO GUILD ID");
     return void interaction.reply("Something went wrong. Please try again.");

@@ -7,7 +7,7 @@ export const pauseSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc.setName(subcommands.PAUSE).setDescription("Pauses the current song.");
 
 // Music pause subcommand execution
-export const handlePauseSubcommand = async (interaction: Interaction) => {
+export const handlePauseSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   if (!interaction.guildId) {
     console.log("*** MUSIC PAUSE SUBCOMMAND - NO GUILD ID");
     return void interaction.reply("Something went wrong. Please try again.");

@@ -30,7 +30,7 @@ export const shorthandPlaySubcommand = (sc: SlashCommandSubcommandBuilder) =>
     );
 
 // This is the function that handles the play subcommand
-export const handlePlaySubcommand = async (interaction: Interaction) => {
+export const handlePlaySubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   try {
     const song = interaction.options.getString(SONG_OPTION_NAME, INPUT_REQUIRED);
     const member = interaction.member as GuildMember;

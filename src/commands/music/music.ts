@@ -1,4 +1,4 @@
-import { SlashCommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { playSubcommand, shorthandPlaySubcommand, handlePlaySubcommand } from "./subcommands/play";
 import { pauseSubcommand, handlePauseSubcommand } from "./subcommands/pause";
 import { resumeSubcommand, handleResumeSubcommand } from "./subcommands/resume";
@@ -37,7 +37,7 @@ const data = new SlashCommandBuilder()
   .addSubcommand(queueSubcommand);
 
 // Music command execute function
-const execute = async (interaction: Interaction) => {
+const execute = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   const subcommand = interaction.options.getSubcommand();
 
   // Switch statement for subcommands to handle subcommand execution accordingly

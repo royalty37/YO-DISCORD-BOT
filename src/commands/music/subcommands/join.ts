@@ -1,4 +1,10 @@
-import { SlashCommandSubcommandBuilder, VoiceChannel, GuildMember, ChannelType } from "discord.js";
+import {
+  SlashCommandSubcommandBuilder,
+  VoiceChannel,
+  GuildMember,
+  ChannelType,
+  ChatInputCommandInteraction,
+} from "discord.js";
 import { subcommands } from "../music";
 import { Interaction } from "../../../types/types";
 
@@ -10,7 +16,7 @@ export const joinSubcommand = (sc: SlashCommandSubcommandBuilder) =>
     .addChannelOption((option) => option.setName("channel").setDescription("The voice channel to join"));
 
 // Music join subcommand execution
-export const handleJoinSubcommand = async (interaction: Interaction) => {
+export const handleJoinSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   // Get channel from channel option
   let channel = interaction.options.getChannel("channel");
 

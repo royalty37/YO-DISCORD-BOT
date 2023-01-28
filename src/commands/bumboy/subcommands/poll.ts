@@ -1,4 +1,11 @@
-import { Colors, EmbedBuilder, MessageReaction, SlashCommandSubcommandBuilder, User } from "discord.js";
+import {
+  ChatInputCommandInteraction,
+  Colors,
+  EmbedBuilder,
+  MessageReaction,
+  SlashCommandSubcommandBuilder,
+  User,
+} from "discord.js";
 import { subcommands } from "../bumboy";
 import { getUniqueRandomEmojis } from "../../../utils/emojiUtils/emojiUtils";
 import { saveBumboys, getBumboys, clearBumboys } from "../actions/bumboyActions";
@@ -25,7 +32,7 @@ export const pollSubcommand = (sc: SlashCommandSubcommandBuilder) =>
     .setName(subcommands.POLL)
     .setDescription("Vices cast their vote for who will be demoted to bumboy for the next 24 hours!");
 
-export const handlePollSubcommand = async (interaction: Interaction) => {
+export const handlePollSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   // If poll is already running, send message and early return
   if (pollIsRunning) {
     return void (await interaction.reply("BUMBOY poll is already running!\n\nCheck above!"));

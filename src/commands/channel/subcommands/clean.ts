@@ -1,4 +1,4 @@
-import { Message, SlashCommandSubcommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, Message, SlashCommandSubcommandBuilder } from "discord.js";
 import { subcommands } from "../channel";
 import { filterMessages } from "../../../utils/messageUtils/messageUtils";
 import { Interaction } from "../../../types/types";
@@ -8,7 +8,7 @@ export const cleanSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc.setName(subcommands.CLEAN).setDescription("Clean messages in this channel.");
 
 // Clean subcommand execution - cleans/filters messages in channel that I deem inappropriate
-export const handleCleanSubcommand = async (interaction: Interaction) => {
+export const handleCleanSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   interaction.deferReply();
   interaction.editReply("Cleaning channel...");
 

@@ -3,12 +3,14 @@
   "version": "1.0.0",
   "description": "Personal Discord bot for YOZA Discord channel",
   "main": "index.js",
+  "exports": "./build/index.js",
   "scripts": {
-    "start": "npm run build && node build/index.js",
+    "start": "npm run build && env-cmd -e prod node ./build/index.js",
     "deploy-commands": "npm run build && node build/deploy-commands.js",
     "deploy-start": "npm run deploy-commands && node build/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rimraf ./build && tsc"
+    "build": "rimraf ./build && tsc",
+    "dev": "env-cmd -e prod,dev node --experimental-specifier-resolution=node --loader ts-node/esm ./src/index.ts"
   },
   "author": "Liam Hardy",
   "license": "ISC",
@@ -23,6 +25,7 @@
     "discord.js": "^14.7.1",
     "distube": "^4.0.4",
     "dotenv": "^16.0.3",
+    "env-cmd": "^10.1.0",
     "ffmpeg-static": "^5.1.0",
     "mongodb": "^4.13.0",
     "node-schedule": "^2.1.1",
@@ -33,6 +36,7 @@
   "devDependencies": {
     "@types/node": "^18.11.17",
     "eslint": "^8.30.0",
+    "nodemon": "^2.0.20",
     "prettier": "^2.8.1",
     "rimraf": "^3.0.2",
     "ts-node": "^10.9.1"

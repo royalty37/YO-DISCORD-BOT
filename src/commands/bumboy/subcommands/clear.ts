@@ -1,4 +1,4 @@
-import { SlashCommandSubcommandBuilder } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import { getBumboys } from "../actions/bumboyActions";
 import { BUMBOY_ROLE_ID, VICE_PLUS_ROLE_ID } from "../../../utils/discordUtils/roleUtils";
 import { subcommands } from "../bumboy";
@@ -13,7 +13,7 @@ const MY_ID = "218945393579261954";
 export const clearSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc.setName(subcommands.CLEAR).setDescription("Resets all data related to the latest BUMBOY poll.");
 
-export const handleClearSubcommand = async (interaction: Interaction) => {
+export const handleClearSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   if (interaction.user.id !== MY_ID) {
     return void (await interaction.reply(
       "You do not have permission to use this command. Only the president can use this command."
