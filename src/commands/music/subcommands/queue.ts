@@ -30,36 +30,19 @@ export const handleQueueSubcommand = async (interaction: Interaction<ChatInputCo
     return void interaction.reply("❌ | No music is being played!");
   }
 
-  // Array of embed descriptions for separate pages
-  // const embedDescriptions: string[] = [];
-
-  // Loop through all songs and build up embed descriptions array with 10 songs per page
-  // let currentEmbedDescription = "";
-  // queue.songs.forEach((song, index) => {
-  //   const songToAppend = `${index + 1}. ${song.name}${index === 0 ? " (currently playing)" : ""}\n\n`;
-  //   if (index !== 0 && index % 10 === 0) {
-  //     embedDescriptions.push(currentEmbedDescription);
-  //     currentEmbedDescription = songToAppend;
-  //   } else {
-  //     currentEmbedDescription += songToAppend;
-  //     if (index === queue.songs.length - 1) {
-  //       embedDescriptions.push(currentEmbedDescription);
-  //     }
-  //   }
-  // });
-
-  // Current page index - starts at 0
+  // Set current index to 0 for new queue message
   setCurrentIndex(0);
 
   // Reply with first page and get message object
   const message = await interaction.reply(generateReplyObject(queue));
 
+  // Set latest queue message to this interaction - delete old one
   setLatestQueueMessage(interaction);
 
   // Create message component collector
   const collector = message.createMessageComponentCollector({
     componentType: ComponentType.Button,
-    time: 1000 * 60 * 10, // 10 minutes
+    time: 1000 * 60 * 60, // 1 hour - will probably be replaced by then anyway
   });
 
   // On collect increment/decrement current index and regenerate reply object
