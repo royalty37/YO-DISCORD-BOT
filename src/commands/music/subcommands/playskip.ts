@@ -1,10 +1,4 @@
-import {
-  ChatInputCommandInteraction,
-  GuildMember,
-  GuildTextBasedChannel,
-  SlashCommandStringOption,
-  SlashCommandSubcommandBuilder,
-} from "discord.js";
+import { SlashCommandStringOption, SlashCommandSubcommandBuilder } from "discord.js";
 import { subcommands } from "../music";
 
 const INPUT_REQUIRED = true;

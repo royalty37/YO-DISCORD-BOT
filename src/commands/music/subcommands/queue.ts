@@ -1,14 +1,7 @@
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  ChatInputCommandInteraction,
-  ComponentType,
-  EmbedBuilder,
-  SlashCommandSubcommandBuilder,
-} from "discord.js";
+import { ChatInputCommandInteraction, ComponentType, SlashCommandSubcommandBuilder } from "discord.js";
 import { subcommands } from "../music";
 import { Interaction } from "../../../types/types";
+import { setLatestQueueMessage, currentIndex, setCurrentIndex, generateReplyObject } from "../actions/queueActions";
 
 // Music queue subcommand
 export const queueSubcommand = (sc: SlashCommandSubcommandBuilder) =>
@@ -38,54 +31,30 @@ export const handleQueueSubcommand = async (interaction: Interaction<ChatInputCo
   }
 
   // Array of embed descriptions for separate pages
-  const embedDescriptions: string[] = [];
+  // const embedDescriptions: string[] = [];
 
   // Loop through all songs and build up embed descriptions array with 10 songs per page
-  let currentEmbedDescription = "";
-  queue.songs.forEach((song, index) => {
-    const songToAppend = `${index + 1}. ${song.name}${index === 0 ? " (currently playing)" : ""}\n\n`;
-    if (index !== 0 && index % 10 === 0) {
-      embedDescriptions.push(currentEmbedDescription);
-      currentEmbedDescription = songToAppend;
-    } else {
-      currentEmbedDescription += songToAppend;
-      if (index === queue.songs.length - 1) {
-        embedDescriptions.push(currentEmbedDescription);
-      }
-    }
-  });
+  // let currentEmbedDescription = "";
+  // queue.songs.forEach((song, index) => {
+  //   const songToAppend = `${index + 1}. ${song.name}${index === 0 ? " (currently playing)" : ""}\n\n`;
+  //   if (index !== 0 && index % 10 === 0) {
+  //     embedDescriptions.push(currentEmbedDescription);
+  //     currentEmbedDescription = songToAppend;
+  //   } else {
+  //     currentEmbedDescription += songToAppend;
+  //     if (index === queue.songs.length - 1) {
+  //       embedDescriptions.push(currentEmbedDescription);
+  //     }
+  //   }
+  // });
 
   // Current page index - starts at 0
-  let currentIndex = 0;
-
-  // Function to generate/regenerate reply object when pressing next/previous buttons
-  const generateReplyObject = () => ({
-    embeds: [
-      new EmbedBuilder()
-        .setColor("Random")
-        .setTitle("🎶 | Current queue:")
-        .setThumbnail(queue.songs[currentIndex].thumbnail ?? null)
-        .setDescription(embedDescriptions[currentIndex])
-        .setFooter({ text: `Page ${currentIndex + 1} of ${embedDescriptions.length}` }),
-    ],
-    components: [
-      new ActionRowBuilder<ButtonBuilder>().addComponents([
-        new ButtonBuilder()
-          .setCustomId("queue-prev-page")
-          .setLabel("Previous")
-          .setStyle(ButtonStyle.Primary)
-          .setDisabled(currentIndex <= 0),
-        new ButtonBuilder()
-          .setCustomId("queue-next-page")
-          .setLabel("Next")
-          .setStyle(ButtonStyle.Primary)
-          .setDisabled(currentIndex >= embedDescriptions.length - 1),
-      ]),
-    ],
-  });
+  setCurrentIndex(0);
 
   // Reply with first page and get message object
-  const message = await interaction.reply(generateReplyObject());
+  const message = await interaction.reply(generateReplyObject(queue));
+
+  setLatestQueueMessage(interaction);
 
   // Create message component collector
   const collector = message.createMessageComponentCollector({
@@ -97,12 +66,12 @@ export const handleQueueSubcommand = async (interaction: Interaction<ChatInputCo
   collector.on("collect", async (interaction) => {
     if (interaction.customId === "queue-prev-page") {
       console.log("*** MUSIC QUEUE SUBCOMMAND - PREV PAGE");
-      currentIndex--;
+      setCurrentIndex(currentIndex - 1);
     } else if (interaction.customId === "queue-next-page") {
       console.log("*** MUSIC QUEUE SUBCOMMAND - NEXT PAGE");
-      currentIndex++;
+      setCurrentIndex(currentIndex + 1);
     }
 
-    await interaction.update(generateReplyObject());
+    await interaction.update(generateReplyObject(queue));
   });
 };

@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import { subcommands } from "../music";
 import { Interaction } from "../../../types/types";
+import { finishLatestQueueMessage } from "../actions/queueActions";
 
 // Music skip subcommand
 export const stopSubcommand = (sc: SlashCommandSubcommandBuilder) =>
@@ -22,6 +23,10 @@ export const handleStopSubcommand = async (interaction: Interaction<ChatInputCom
   }
 
   queue.stop();
-  console.log("*** MUSIC SKIP SUBCOMMAND - SKIPPED SONG");
-  interaction.reply(`⏹️ | Stopped!`);
+
+  console.log("*** MUSIC STOP SUBCOMMAND - STOPPED QUEUE");
+  await interaction.reply(`⏹️ | Stopped!`);
+
+  // Update latest queue message upon stop
+  finishLatestQueueMessage();
 };

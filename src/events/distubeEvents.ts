@@ -1,5 +1,6 @@
 import { EmbedBuilder, GuildTextBasedChannel } from "discord.js";
 import { DisTube, Queue, Song } from "distube";
+import { updateLatestQueueMessage, finishLatestQueueMessage } from "../commands/music/actions/queueActions";
 
 // Register player events
 export const registerDistubeEvents = (distube: DisTube) => {
@@ -40,6 +41,9 @@ export const registerDistubeEvents = (distube: DisTube) => {
           .setTimestamp(),
       ],
     });
+
+    // Update latest queue message
+    updateLatestQueueMessage(queue);
   });
 
   // DisTube addSong event
@@ -79,6 +83,9 @@ export const registerDistubeEvents = (distube: DisTube) => {
   distube.on("finish", (queue: Queue) => {
     console.log(`*** DisTube finish event - Queue finished`);
     queue.textChannel?.send("🎶 | Queue finished!");
+
+    // Update latest queue message - empty queue
+    finishLatestQueueMessage();
   });
 
   // DisTube disconnect event
@@ -92,7 +99,7 @@ export const registerDistubeEvents = (distube: DisTube) => {
 
   // DisTube empty event
   distube.on("empty", (queue: Queue) => {
-    console.log(`*** DisTube empty event - emptying ${queue.songs[0].name}`);
+    console.log(`*** DisTube empty event - nobody in the voice channel`);
     queue.textChannel?.send("❌ | Nobody is in the voice channel, leaving...");
   });
 };
