@@ -6,6 +6,7 @@ import {
   SlashCommandSubcommandBuilder,
 } from "discord.js";
 import { Interaction } from "../../../types/types";
+import { updateLatestQueueMessage } from "../actions/queueActions";
 import { subcommands } from "../music";
 
 const INPUT_REQUIRED = true;
@@ -38,11 +39,7 @@ export const handlePlaySubcommand = async (
   top = false
 ) => {
   try {
-    const song = interaction.options.getString(SONG_OPTION_NAME, INPUT_REQUIRED);
     const member = interaction.member as GuildMember;
-
-    await interaction.reply(`🔍 **Searching for ${song}...**`);
-    const message = await interaction.fetchReply();
 
     // Select either the member's voice channel or the bot's voice channel
     const voiceChannel = member.voice.channel ?? interaction.client.distube.voices.collection.first()?.channel;
@@ -57,13 +54,38 @@ export const handlePlaySubcommand = async (
       return void interaction.followUp("Something went wrong. Please try again.");
     }
 
-    interaction.client.distube.play(voiceChannel, song, {
+    const song = interaction.options.getString(SONG_OPTION_NAME, INPUT_REQUIRED);
+    await interaction.reply(`🔍 | **Searching for ${song}...**`);
+    const message = await interaction.fetchReply();
+
+    if (skip) {
+      await interaction.followUp(`⏭ | **Skipping current song to play new song...**`);
+    }
+
+    if (top) {
+      await interaction.followUp(`⏫ | **Adding new song to the top of the queue...**`);
+    }
+
+    await interaction.client.distube.play(voiceChannel, song, {
       textChannel: interaction.channel as GuildTextBasedChannel,
       member: interaction.member as GuildMember,
       message,
       skip,
       position: top ? 1 : undefined,
     });
+
+    if (!interaction.guildId) {
+      return console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - NO GUILD ID - CANNOT UPDATE QUEUE MESSAGE");
+    }
+
+    const queue = interaction.client.distube.getQueue(interaction.guildId);
+
+    if (!queue) {
+      return console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - NO QUEUE - CANNOT UPDATE QUEUE MESSAGE");
+    }
+
+    // Update latest queue message upon play
+    updateLatestQueueMessage(queue);
   } catch (e) {
     console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND -", e);
     await interaction.reply("Something went wrong. Please try again.");

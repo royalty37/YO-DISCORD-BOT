@@ -3,11 +3,11 @@ import { Interaction } from "../../../types/types";
 import { updateLatestQueueMessage } from "../actions/queueActions";
 import { subcommands } from "../music";
 
-// Music pause subcommand
-export const shuffleSubcommand = (sc: SlashCommandSubcommandBuilder) =>
+// Music previous subcommand
+export const previousSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc.setName(subcommands.SHUFFLE).setDescription("Shuffles the queue.");
 
-// Music pause subcommand execution
+// Music previous subcommand execution
 export const handleShuffleSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   if (!interaction.guildId) {
     console.log("*** MUSIC PAUSE SUBCOMMAND - NO GUILD ID");
@@ -23,9 +23,12 @@ export const handleShuffleSubcommand = async (interaction: Interaction<ChatInput
     return void interaction.reply("❌ | No music is being played!");
   }
 
-  queue.shuffle();
+  // Send reply to user
+  await interaction.reply("⏮ | Playing previous song!");
   console.log("*** MUSIC SHUFFLE SUBCOMMAND - SHUFFLED QUEUE");
-  await interaction.reply("🔀 | Current queue shuffled!");
+
+  // Play previous song
+  queue.previous();
 
   // Update latest queue message upon shuffle
   updateLatestQueueMessage(queue);

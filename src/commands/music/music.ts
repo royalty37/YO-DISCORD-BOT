@@ -9,6 +9,7 @@ import { stopSubcommand, handleStopSubcommand } from "./subcommands/stop";
 import { queueSubcommand, handleQueueSubcommand } from "./subcommands/queue";
 import { nowPlayingSubcommand, handleNowPlayingSubcommand } from "./subcommands/nowplaying";
 import { shuffleSubcommand, handleShuffleSubcommand } from "./subcommands/shuffle";
+import { skipToSubcommand, handleSkipToSubcommand } from "./subcommands/skipto";
 import { playSkipSubcommand } from "./subcommands/playskip";
 import { Command, Interaction } from "../../types/types";
 import { playTopSubcommand } from "./subcommands/playtop";
@@ -28,6 +29,8 @@ export enum subcommands {
   PLAYSKIP = "playskip",
   SHUFFLE = "shuffle",
   PLAYTOP = "playtop",
+  PREVIOUS = "previous",
+  SKIPTO = "skipto",
 }
 
 // Music command SlashCommandBuilder
@@ -46,7 +49,8 @@ const data = new SlashCommandBuilder()
   .addSubcommand(nowPlayingSubcommand)
   .addSubcommand(playSkipSubcommand)
   .addSubcommand(playTopSubcommand)
-  .addSubcommand(shuffleSubcommand);
+  .addSubcommand(shuffleSubcommand)
+  .addSubcommand(skipToSubcommand);
 
 // Music command execute function
 const execute = async (interaction: Interaction<ChatInputCommandInteraction>) => {
@@ -89,6 +93,9 @@ const execute = async (interaction: Interaction<ChatInputCommandInteraction>) =>
       handlePlaySubcommand(interaction, false, true);
     case subcommands.SHUFFLE:
       handleShuffleSubcommand(interaction);
+      break;
+    case subcommands.SKIPTO:
+      handleSkipToSubcommand(interaction);
       break;
     default:
       console.log("*** ERROR: No subcommand found.");
