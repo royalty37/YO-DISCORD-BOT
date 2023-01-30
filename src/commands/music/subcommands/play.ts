@@ -44,6 +44,7 @@ export const handlePlaySubcommand = async (
     // Select either the member's voice channel or the bot's voice channel
     const voiceChannel = member.voice.channel ?? interaction.client.distube.voices.collection.first()?.channel;
 
+    // If member is not in a voice channel and bot is not in a voice channel, return
     if (!voiceChannel) {
       console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - MEMBER NOT IN VOICE CHANNEL AND BOT NOT IN VOICE CHANNEL");
       return void interaction.followUp("You must be in a voice channel or the bot must be!");
@@ -54,18 +55,23 @@ export const handlePlaySubcommand = async (
       return void interaction.followUp("Something went wrong. Please try again.");
     }
 
+    // Get song from song option
     const song = interaction.options.getString(SONG_OPTION_NAME, INPUT_REQUIRED);
+
     await interaction.reply(`🔍 | **Searching for ${song}...**`);
     const message = await interaction.fetchReply();
 
+    // If using playskip, follow up with skip message
     if (skip) {
       await interaction.followUp(`⏭ | **Skipping current song to play new song...**`);
     }
 
+    // If using playtop, follow up with top message
     if (top) {
       await interaction.followUp(`⏫ | **Adding new song to the top of the queue...**`);
     }
 
+    // Play song
     await interaction.client.distube.play(voiceChannel, song, {
       textChannel: interaction.channel as GuildTextBasedChannel,
       member: interaction.member as GuildMember,
@@ -74,12 +80,15 @@ export const handlePlaySubcommand = async (
       position: top ? 1 : undefined,
     });
 
+    // If no guild id, return without updating queue message
     if (!interaction.guildId) {
       return console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - NO GUILD ID - CANNOT UPDATE QUEUE MESSAGE");
     }
 
+    // Get queue
     const queue = interaction.client.distube.getQueue(interaction.guildId);
 
+    // If no queue, return without updating queue message
     if (!queue) {
       return console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - NO QUEUE - CANNOT UPDATE QUEUE MESSAGE");
     }
