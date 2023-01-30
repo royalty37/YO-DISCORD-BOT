@@ -1,6 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import { Queue } from "distube";
 import { Interaction } from "../../../types/types";
+import { REPEAT_MODE_ARRAY } from "../constants/musicConstants";
 
 // CurrentIndex of embedDescription in existing queue message
 export let currentIndex = 0;
@@ -44,7 +45,7 @@ export const generateReplyObject = (queue: Queue) => {
     embeds: [
       new EmbedBuilder()
         .setColor("Random")
-        .setTitle("🎶 | Current queue:")
+        .setTitle(`🎶 | Repeat mode: **${REPEAT_MODE_ARRAY[queue.repeatMode]}** | Current queue:`)
         .setThumbnail(queue.songs[currentIndex].thumbnail ?? null)
         .setDescription(embedDescriptions[currentIndex])
         .setFooter({ text: `Page ${currentIndex + 1} of ${embedDescriptions.length}` }),
