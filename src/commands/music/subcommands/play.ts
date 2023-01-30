@@ -50,7 +50,10 @@ export const handlePlaySubcommand = async (
       return void interaction.followUp("You must be in a voice channel or the bot must be!");
     }
 
-    if (!interaction.channel) {
+    const textChannel = interaction.channel as GuildTextBasedChannel;
+
+    // If no text channel, return
+    if (!textChannel) {
       console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - NO TEXT CHANNEL");
       return void interaction.followUp("Something went wrong. Please try again.");
     }
@@ -73,8 +76,8 @@ export const handlePlaySubcommand = async (
 
     // Play song
     await interaction.client.distube.play(voiceChannel, song, {
-      textChannel: interaction.channel as GuildTextBasedChannel,
-      member: interaction.member as GuildMember,
+      textChannel,
+      member,
       message,
       skip,
       position: top ? 1 : undefined,
