@@ -15,7 +15,7 @@ const SONG_OPTION_NAME = "song";
 export const playSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc
     .setName(subcommands.PLAY)
-    .setDescription("Search for and play (or add to queue) a song!")
+    .setDescription("Search for and play a song (or add to the end of the queue)!")
     .addStringOption((option: SlashCommandStringOption) =>
       option.setName(SONG_OPTION_NAME).setDescription("Song to play!").setRequired(INPUT_REQUIRED)
     );
@@ -30,7 +30,13 @@ export const shorthandPlaySubcommand = (sc: SlashCommandSubcommandBuilder) =>
     );
 
 // This is the function that handles the play subcommand
-export const handlePlaySubcommand = async (interaction: Interaction<ChatInputCommandInteraction>, skip = false) => {
+// skip used to skip the song that is currently playing
+// top used to play the song at the top of the queue
+export const handlePlaySubcommand = async (
+  interaction: Interaction<ChatInputCommandInteraction>,
+  skip = false,
+  top = false
+) => {
   try {
     const song = interaction.options.getString(SONG_OPTION_NAME, INPUT_REQUIRED);
     const member = interaction.member as GuildMember;
@@ -56,6 +62,7 @@ export const handlePlaySubcommand = async (interaction: Interaction<ChatInputCom
       member: interaction.member as GuildMember,
       message,
       skip,
+      position: top ? 1 : undefined,
     });
   } catch (e) {
     console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND -", e);
