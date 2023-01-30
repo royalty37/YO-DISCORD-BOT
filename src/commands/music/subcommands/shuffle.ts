@@ -15,7 +15,7 @@ export const handleShuffleSubcommand = async (interaction: Interaction<ChatInput
   }
 
   // Get queue from distube
-  const queue = interaction.client.distube.getQueue(interaction.guildId ?? "");
+  const queue = interaction.client.distube.getQueue(interaction.guildId);
 
   // If no queue, no music is playing
   if (!queue) {

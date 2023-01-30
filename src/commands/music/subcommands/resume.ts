@@ -14,7 +14,7 @@ export const handleResumeSubcommand = async (interaction: Interaction<ChatInputC
   }
 
   // Get DisTube queue from client from interaction
-  const queue = interaction.client.distube.getQueue(interaction.guildId ?? "");
+  const queue = interaction.client.distube.getQueue(interaction.guildId);
 
   if (!queue) {
     console.log("*** MUSIC RESUME SUBCOMMAND - NO QUEUE");
