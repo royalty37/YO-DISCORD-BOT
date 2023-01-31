@@ -38,7 +38,7 @@ export const handleNowPlayingSubcommand = async (interaction: Interaction<ChatIn
       new EmbedBuilder()
         .setColor("Random")
         .setTitle("🎶 | Currently playing:")
-        .setDescription(`**${song.name}!**`)
+        .setDescription(`**${song.name}!**\n\n${song.url}`)
         .setThumbnail(song.thumbnail ?? null)
         .addFields([
           {

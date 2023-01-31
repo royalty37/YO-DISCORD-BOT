@@ -15,6 +15,7 @@ import { repeatSubcommand, handleRepeatSubcommand } from "./subcommands/repeat";
 import { playSkipSubcommand } from "./subcommands/playskip";
 import { Command, Interaction } from "../../types/types";
 import { playTopSubcommand } from "./subcommands/playtop";
+import { handleSeekSubcommand, seekSubcommand } from "./subcommands/seek";
 
 // Enum for subcommands
 export enum subcommands {
@@ -35,6 +36,7 @@ export enum subcommands {
   SKIPTO = "skipto",
   SEARCH = "search",
   REPEAT = "repeat",
+  SEEK = "seek",
 }
 
 // Music command SlashCommandBuilder
@@ -56,7 +58,8 @@ const data = new SlashCommandBuilder()
   .addSubcommand(shuffleSubcommand)
   .addSubcommand(skipToSubcommand)
   .addSubcommand(searchSubcommand)
-  .addSubcommand(repeatSubcommand);
+  .addSubcommand(repeatSubcommand)
+  .addSubcommand(seekSubcommand);
 
 // Music command execute function
 const execute = async (interaction: Interaction<ChatInputCommandInteraction>) => {
@@ -106,6 +109,9 @@ const execute = async (interaction: Interaction<ChatInputCommandInteraction>) =>
       break;
     case subcommands.REPEAT:
       handleRepeatSubcommand(interaction);
+      break;
+    case subcommands.SEEK:
+      handleSeekSubcommand(interaction);
       break;
     default:
       console.log("*** ERROR: No subcommand found.");
