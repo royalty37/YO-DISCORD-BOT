@@ -1,5 +1,7 @@
 import {
   ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   ChatInputCommandInteraction,
   ComponentType,
   EmbedBuilder,
@@ -8,6 +10,7 @@ import {
   SlashCommandStringOption,
   SlashCommandSubcommandBuilder,
   StringSelectMenuBuilder,
+  SelectMenuComponentOptionData,
 } from "discord.js";
 import { Interaction } from "../../../types/types";
 import { updateLatestQueueMessage } from "../actions/queueActions";
@@ -44,6 +47,7 @@ export const handleSearchSubcommand = async (interaction: Interaction<ChatInputC
 
     const textChannel = interaction.channel as GuildTextBasedChannel;
 
+    // If no text channel, return
     if (!textChannel) {
       console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - NO TEXT CHANNEL");
       return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
@@ -54,52 +58,118 @@ export const handleSearchSubcommand = async (interaction: Interaction<ChatInputC
 
     await interaction.deferReply({ ephemeral: true });
 
+    // Search for song - limit to 50 results
     const results = await interaction.client.distube.search(song, {
-      limit: 10,
+      limit: 50,
     });
 
-    interaction.editReply({
+    // Current page index
+    let currentIndex = 0;
+
+    // Create array of embed descriptions - 10 results per page
+    const embedDescriptions: string[] = [];
+    let currentEmbedDescription = "";
+    results.forEach((result, index) => {
+      const resultToAppend = `${index + 1}. **${result.name}**\nDuration: ${result.formattedDuration}\nUploaded by: ${
+        result.uploader.name
+      }\n\n`;
+      if (index !== 0 && index % 10 === 0) {
+        embedDescriptions.push(currentEmbedDescription);
+        currentEmbedDescription = resultToAppend;
+      } else {
+        currentEmbedDescription += resultToAppend;
+        if (index === results.length - 1) {
+          embedDescriptions.push(currentEmbedDescription);
+        }
+      }
+    });
+
+    // Create array of results for the select menu corresponding to the embed descriptions
+    const resultsForSelectMenu: Array<SelectMenuComponentOptionData[]> = [];
+    let currentResultsForSelectMenu: SelectMenuComponentOptionData[] = [];
+    results.forEach((result, index) => {
+      const resultToAppend = {
+        label: `${index + 1}. ${result.name}`,
+        value: `${index}`,
+        description: `${result.formattedDuration} - ${result.uploader.name}`,
+      };
+      if (index !== 0 && index % 10 === 0) {
+        resultsForSelectMenu.push(currentResultsForSelectMenu);
+        currentResultsForSelectMenu = [resultToAppend];
+      } else {
+        currentResultsForSelectMenu.push(resultToAppend);
+        if (index === results.length - 1) {
+          resultsForSelectMenu.push(currentResultsForSelectMenu);
+        }
+      }
+    });
+
+    // Function to generate reply object between button clicks
+    const generateReplyObject = () => ({
       embeds: [
         new EmbedBuilder()
           .setColor("Random")
           .setTitle("🎶 | Select from options below:")
-          .setDescription(
-            results
-              .map(
-                (r, index) =>
-                  `${index + 1}. **${r.name}**\nDuration: ${r.formattedDuration}\nUploaded by: ${r.uploader.name}`
-              )
-              .join("\n\n")
-          )
+          .setDescription(embedDescriptions[currentIndex])
           .setFooter({
             text: `Search initiated by ${interaction.user.username}`,
             iconURL: interaction.user.avatarURL() ?? undefined,
           }),
       ],
       components: [
+        new ActionRowBuilder<ButtonBuilder>().addComponents([
+          new ButtonBuilder()
+            .setCustomId("queue-prev-page")
+            .setLabel("Previous")
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(currentIndex <= 0),
+          new ButtonBuilder()
+            .setCustomId("queue-next-page")
+            .setLabel("Next")
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(currentIndex >= embedDescriptions.length - 1),
+        ]),
         new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
           new StringSelectMenuBuilder()
             .setCustomId("select-song")
             .setPlaceholder("Select a song")
-            .addOptions(
-              results.map((r, index) => ({
-                label: `${r.name}`,
-                value: `${index}`,
-                description: `${r.formattedDuration} - ${r.uploader.name}`,
-              }))
-            )
+            .addOptions(resultsForSelectMenu[currentIndex])
         ),
       ],
     });
 
+    // Send initial reply
+    interaction.editReply(generateReplyObject());
+
     const message = await interaction.fetchReply();
 
-    const collector = message.createMessageComponentCollector({
-      componentType: ComponentType.StringSelect,
-      time: 1000 * 60 * 2, // 2 minutes to select a song
+    // Create button collector
+    const buttonCollector = message.createMessageComponentCollector({
+      componentType: ComponentType.Button,
+      time: 1000 * 60 * 5, // 5 minutes to select a song
     });
 
-    collector.once("collect", async (selectInteraction) => {
+    // Listen for button clicks and update reply object
+    buttonCollector.on("collect", async (buttonInteraction) => {
+      if (buttonInteraction.customId === "queue-prev-page") {
+        console.log("*** MUSIC SEARCH SUBCOMMAND - PREV PAGE");
+        currentIndex--;
+      } else if (buttonInteraction.customId === "queue-next-page") {
+        console.log("*** MUSIC SEARCH SUBCOMMAND - NEXT PAGE");
+        currentIndex++;
+      }
+
+      await buttonInteraction.update(generateReplyObject());
+    });
+
+    // Create select collector
+    const selectCollector = message.createMessageComponentCollector({
+      componentType: ComponentType.StringSelect,
+      time: 1000 * 60 * 5, // 5 minutes to select a song
+    });
+
+    // Listen for selection and play song
+    selectCollector.once("collect", async (selectInteraction) => {
       if (selectInteraction.customId === "select-song") {
         console.log("*** MUSIC SEARCH - SELECTED SONG");
         await interaction.client.distube.play(voiceChannel, results[parseInt(selectInteraction.values[0])], {
@@ -127,8 +197,13 @@ export const handleSearchSubcommand = async (interaction: Interaction<ChatInputC
         updateLatestQueueMessage(queue);
       }
     });
+
+    // Listen for select collector end and send timeout message
+    selectCollector.on("end", async () => {
+      await interaction.editReply("❌ | You took too long to select a song.");
+    });
   } catch (e) {
-    console.log(`*** ERROR IN MUSIC PLAY SUBCOMMAND - ${e}`);
-    await interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
+    console.log(`*** ERROR IN MUSIC SEARCH SUBCOMMAND - ${e}`);
+    await interaction.editReply("Something went wrong. Please try again.");
   }
 };
