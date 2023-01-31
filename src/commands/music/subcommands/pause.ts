@@ -32,5 +32,5 @@ export const handlePauseSubcommand = async (interaction: Interaction<ChatInputCo
   interaction.client.distube.pause(interaction.guildId);
 
   // Reply to user
-  interaction.reply({ content: "⏸ | Paused!", ephemeral: true });
+  interaction.reply("⏸ | Paused!");
 };
