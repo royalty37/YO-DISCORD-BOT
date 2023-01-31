@@ -70,25 +70,37 @@ export const generateReplyObject = (queue: Queue) => {
 // Updates latest queue message with new embed description
 export const updateLatestQueueMessage = async (queue: Queue) => {
   if (latestQueueInteraction) {
-    await latestQueueInteraction.editReply(generateReplyObject(queue));
+    try {
+      await latestQueueInteraction.editReply(generateReplyObject(queue));
+    } catch (e) {
+      console.log("*** UPDATE LATEST QUEUE MESSAGE ERROR - INTERACTION PROBABLY EXPIRED");
+    }
   }
 };
 
 // Updates latest queue message with new embed description saying no songs in queue - called on queue end
 export const finishLatestQueueMessage = async () => {
   if (latestQueueInteraction) {
-    await latestQueueInteraction.editReply({
-      embeds: [
-        new EmbedBuilder().setColor("Random").setTitle("🎶 | Current queue:").setDescription("No songs in queue."),
-      ],
-    });
+    try {
+      await latestQueueInteraction.editReply({
+        embeds: [
+          new EmbedBuilder().setColor("Random").setTitle("🎶 | Current queue:").setDescription("No songs in queue."),
+        ],
+      });
+    } catch (e) {
+      console.log("*** FINISH LATEST QUEUE MESSAGE ERROR - INTERACTION PROBABLY EXPIRED");
+    }
   }
 };
 
 // Sets latest queue message interaction and deletes previous queue message
 export const setLatestQueueMessage = (interaction: Interaction<ChatInputCommandInteraction>) => {
   if (latestQueueInteraction) {
-    latestQueueInteraction.deleteReply();
+    try {
+      latestQueueInteraction.deleteReply();
+    } catch (e) {
+      console.log("*** SET LATEST QUEUE MESSAGE ERROR - INTERACTION PROBABLY EXPIRED");
+    }
   }
 
   latestQueueInteraction = interaction;
