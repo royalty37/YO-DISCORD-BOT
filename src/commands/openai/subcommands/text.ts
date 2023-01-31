@@ -53,10 +53,11 @@ export const handleTextSubcommand = async (interaction: Interaction<ChatInputCom
     } else {
       // If response is invalid (no res), send error message
       await interaction.editReply("Something went wrong. Please try again.");
+      console.error("OPEN AI TEXT SUBCOMMAND - NO RESPONSE");
     }
   } catch (e) {
     // If error, log error and send error message
     await interaction.editReply("Something went wrong. Please try again.");
-    console.error("OPEN AI TEXT SUBCOMMAND EXECEPTION: " + e);
+    console.error("*** OPEN AI TEXT SUBCOMMAND EXECEPTION: " + e);
   }
 };

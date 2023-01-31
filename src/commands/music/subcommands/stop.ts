@@ -12,16 +12,19 @@ export const handleStopSubcommand = async (interaction: Interaction<ChatInputCom
   // If no guildId, return
   if (!interaction.guildId) {
     console.log("*** MUSIC SKIP SUBCOMMAND - NO GUILD ID");
-    return void interaction.reply("Something went wrong. Please try again.");
+    return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
   }
 
+  // Get queue from distube
   const queue = interaction.client.distube.getQueue(interaction.guildId);
 
+  // If no queue, return
   if (!queue) {
     console.error("*** MUSIC SKIP SUBCOMMAND - NO QUEUE");
-    return interaction.reply("❌ | No song is playing!");
+    return interaction.reply({ content: "❌ | No song is playing!", ephemeral: true });
   }
 
+  // Stop queue
   queue.stop();
 
   console.log("*** MUSIC STOP SUBCOMMAND - STOPPED QUEUE");

@@ -15,8 +15,13 @@ const data = new SlashCommandBuilder()
 
 // Channel command execute function
 const execute = async (interaction: Interaction<ChatInputCommandInteraction>) => {
-  if (interaction.options.getSubcommand() === subcommands.CLEAN) {
+  const subcommand = interaction.options.getSubcommand();
+
+  if (subcommand === subcommands.CLEAN) {
     handleCleanSubcommand(interaction);
+  } else {
+    interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
+    console.error(`*** CHANNEL - Subcommand doesn't exist: ${subcommand}`);
   }
 };
 

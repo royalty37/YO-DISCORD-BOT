@@ -26,7 +26,9 @@ const execute = async (interaction: Interaction<ChatInputCommandInteraction>) =>
     return void interaction.reply("This command is disabled in dev mode.");
   }
 
-  switch (interaction.options.getSubcommand()) {
+  const subcommand = interaction.options.getSubcommand();
+
+  switch (subcommand) {
     case subcommands.POLL:
       await handlePollSubcommand(interaction);
       break;
@@ -34,7 +36,8 @@ const execute = async (interaction: Interaction<ChatInputCommandInteraction>) =>
       await handleClearSubcommand(interaction);
       break;
     default:
-      console.log("*** ERROR: No subcommand found.");
+      interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
+      console.log(`*** BUMBOY - Subcommand doesn't exist: ${interaction.options.getSubcommand()}`);
   }
 };
 

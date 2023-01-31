@@ -13,6 +13,7 @@ const echoCommand: Command = {
       option.setName("input").setDescription("Input to echo back").setRequired(INPUT_REQUIRED)
     ),
   execute: async (interaction: Interaction<ChatInputCommandInteraction>) => {
+    // Get input from user and reply with it
     const echoMessage = interaction.options.getString(INPUT_OPTION_NAME, INPUT_REQUIRED);
     await interaction.reply(echoMessage);
   },

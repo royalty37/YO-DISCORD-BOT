@@ -41,13 +41,13 @@ export const handlePlaySubcommand = async (
   try {
     const member = interaction.member as GuildMember;
 
-    // Select either the member's voice channel or the bot's voice channel
-    const voiceChannel = member.voice.channel ?? interaction.client.distube.voices.collection.first()?.channel;
+    // Select either the bot's voice channel or the member's voice channel
+    const voiceChannel = interaction.client.distube.voices.collection.first()?.channel ?? member.voice.channel;
 
     // If member is not in a voice channel and bot is not in a voice channel, return
     if (!voiceChannel) {
       console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - MEMBER NOT IN VOICE CHANNEL AND BOT NOT IN VOICE CHANNEL");
-      return void interaction.followUp("You must be in a voice channel or the bot must be!");
+      return void interaction.reply({ content: "You must be in a voice channel or the bot must be!", ephemeral: true });
     }
 
     const textChannel = interaction.channel as GuildTextBasedChannel;
@@ -55,23 +55,23 @@ export const handlePlaySubcommand = async (
     // If no text channel, return
     if (!textChannel) {
       console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - NO TEXT CHANNEL");
-      return void interaction.followUp("Something went wrong. Please try again.");
+      return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
     }
 
     // Get song from song option
     const song = interaction.options.getString(SONG_OPTION_NAME, INPUT_REQUIRED);
 
-    await interaction.reply(`🔍 | **Searching for ${song}...**`);
+    await interaction.reply({ content: `🔍 | **Searching for ${song}...**`, ephemeral: true });
     const message = await interaction.fetchReply();
 
     // If using playskip, follow up with skip message
     if (skip) {
-      await interaction.followUp(`⏭ | **Skipping current song to play new song...**`);
+      await interaction.followUp({ content: `⏭ | **Skipping current song to play new song...**`, ephemeral: true });
     }
 
     // If using playtop, follow up with top message
     if (top) {
-      await interaction.followUp(`⏫ | **Adding new song to the top of the queue...**`);
+      await interaction.followUp({ content: `⏫ | **Adding new song to the top of the queue...**`, ephemeral: true });
     }
 
     // Play song
@@ -100,6 +100,6 @@ export const handlePlaySubcommand = async (
     updateLatestQueueMessage(queue);
   } catch (e) {
     console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND -", e);
-    await interaction.reply("Something went wrong. Please try again.");
+    await interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
   }
 };

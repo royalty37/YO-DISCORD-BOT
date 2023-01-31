@@ -10,7 +10,7 @@ export const pauseSubcommand = (sc: SlashCommandSubcommandBuilder) =>
 export const handlePauseSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   if (!interaction.guildId) {
     console.log("*** MUSIC PAUSE SUBCOMMAND - NO GUILD ID");
-    return void interaction.reply("Something went wrong. Please try again.");
+    return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
   }
 
   // Get queue from distube
@@ -19,18 +19,18 @@ export const handlePauseSubcommand = async (interaction: Interaction<ChatInputCo
   // If no queue, no music is playing
   if (!queue) {
     console.log("*** MUSIC PAUSE SUBCOMMAND - NO QUEUE");
-    return void interaction.reply("❌ | No music is being played!");
+    return void interaction.reply({ content: "❌ | No music is being played!", ephemeral: true });
   }
 
   // If music is already paused, don't pause it again
   if (queue.paused) {
     console.log("*** MUSIC PAUSE SUBCOMMAND - ALREADY PAUSED");
-    return void interaction.reply("❌ | Music is already paused!");
+    return void interaction.reply({ content: "❌ | Music is already paused!", ephemeral: true });
   }
 
   // Pause the music
   interaction.client.distube.pause(interaction.guildId);
 
   // Reply to user
-  interaction.reply("⏸ | Paused!");
+  interaction.reply({ content: "⏸ | Paused!", ephemeral: true });
 };

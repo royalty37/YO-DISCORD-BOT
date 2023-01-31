@@ -41,8 +41,8 @@ const execute = async (interaction: Interaction<ChatInputCommandInteraction>) =>
       handleRandomStorySubcommand(interaction);
       break;
     default:
-      interaction.reply("Something went wrong. Please try again.");
-      console.error("Subcommand doesn't exist: " + subcommand);
+      interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
+      console.error("*** OPENAI - Subcommand doesn't exist: " + subcommand);
   }
 };
 

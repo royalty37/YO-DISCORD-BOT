@@ -30,20 +30,23 @@ export const handleSearchSubcommand = async (interaction: Interaction<ChatInputC
   try {
     const member = interaction.member as GuildMember;
 
-    // Select either the member's voice channel or the bot's voice channel
-    const voiceChannel = member.voice.channel ?? interaction.client.distube.voices.collection.first()?.channel;
+    // Select either the bot's voice channel or the member's voice channel
+    const voiceChannel = interaction.client.distube.voices.collection.first()?.channel ?? member.voice.channel;
 
     // If member is not in a voice channel and bot is not in a voice channel, return
     if (!voiceChannel) {
       console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - MEMBER NOT IN VOICE CHANNEL AND BOT NOT IN VOICE CHANNEL");
-      return void interaction.followUp("You must be in a voice channel or the bot must be!");
+      return void interaction.reply({
+        content: "❌ | You must be in a voice channel or the bot must be!",
+        ephemeral: true,
+      });
     }
 
     const textChannel = interaction.channel as GuildTextBasedChannel;
 
     if (!textChannel) {
       console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - NO TEXT CHANNEL");
-      return void interaction.followUp("Something went wrong. Please try again.");
+      return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
     }
 
     // Get song from song option
@@ -125,7 +128,7 @@ export const handleSearchSubcommand = async (interaction: Interaction<ChatInputC
       }
     });
   } catch (e) {
-    console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND -", e);
-    await interaction.reply("Something went wrong. Please try again.");
+    console.log(`*** ERROR IN MUSIC PLAY SUBCOMMAND - ${e}`);
+    await interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
   }
 };

@@ -18,10 +18,14 @@ const data = new SlashCommandBuilder()
 
 // Info command execute function
 const execute = async (interaction: Interaction<ChatInputCommandInteraction>) => {
-  if (interaction.options.getSubcommand() === subcommands.USER) {
+  const subcommand = interaction.options.getSubcommand();
+  if (subcommand === subcommands.USER) {
     handleUserSubcommand(interaction);
-  } else if (interaction.options.getSubcommand() === subcommands.SERVER) {
+  } else if (subcommand === subcommands.SERVER) {
     handleServerSubcommand(interaction);
+  } else {
+    interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
+    console.error(`*** INFO - Subcommand doesn't exist: ${subcommand}`);
   }
 };
 

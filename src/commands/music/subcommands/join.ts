@@ -22,25 +22,29 @@ export const handleJoinSubcommand = async (interaction: Interaction<ChatInputCom
 
   // If channel is not provided, get channel from user's voice channel
   if (!channel) {
-    channel = (interaction.member as GuildMember).voice.channel;
+    const member = interaction.member as GuildMember;
+    channel = member.voice.channel;
   }
 
   // If channel is not provided, return error message
   if (!channel) {
     console.error("*** MUSIC JOIN SUBCOMMAND - NO CHANNEL");
-    return void interaction.reply("❌ | You must be in a voice channel or provide a voice channel to join!");
+    return void interaction.reply({
+      content: "❌ | You must be in a voice channel or provide a voice channel to join!",
+      ephemeral: true,
+    });
   }
 
   if (channel.type !== ChannelType.GuildVoice) {
     console.error("*** MUSIC JOIN SUBCOMMAND - NOT VOICE CHANNEL");
-    return void interaction.reply("❌ | You must provide a voice channel to join!");
+    return void interaction.reply({ content: "❌ | You must provide a voice channel to join!", ephemeral: true });
   }
 
   if (!interaction.guildId) {
     console.log("*** MUSIC RESUME SUBCOMMAND - NO GUILD ID");
-    return void interaction.reply("Something went wrong. Please try again.");
+    return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
   }
 
   await interaction.client.distube.voices.join(channel as VoiceChannel);
-  interaction.reply(`Joined the voice channel: ${channel.name}!`);
+  interaction.reply({ content: `Joined the voice channel: ${channel.name}!`, ephemeral: true });
 };

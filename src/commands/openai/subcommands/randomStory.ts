@@ -39,7 +39,8 @@ export const handleRandomStorySubcommand = async (interaction: Interaction<ChatI
     const res = await new OpenAIService().createCompletion(completionInput);
 
     // Log response
-    console.log(`*** OPENAI RES:${res}\n\nEND OF RES ***`);
+    console.log(`*** OPENAI RANDOM-STORY WORDS: ${words}`);
+    console.log(`*** OPENAI RES:${res}\n\nEND OF RES`);
 
     // If response is valid, prepare to send response
     if (res) {
@@ -55,10 +56,11 @@ export const handleRandomStorySubcommand = async (interaction: Interaction<ChatI
     } else {
       // If response is invalid (no res), send error message
       await interaction.editReply("Something went wrong. Please try again.");
+      console.error("*** OPENAI RANDOM STORY - NO RESPONSE");
     }
   } catch (e) {
     // If error, log error and send error message
-    console.error("OPEN AI RANDOM STORY SUBCOMMAND EXECEPTION: " + e);
     await interaction.editReply("Something went wrong. Please try again.");
+    console.error("*** OPEN AI RANDOM STORY SUBCOMMAND EXECEPTION: " + e);
   }
 };

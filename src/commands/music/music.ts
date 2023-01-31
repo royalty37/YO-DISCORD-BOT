@@ -63,8 +63,10 @@ const data = new SlashCommandBuilder()
 
 // Music command execute function
 const execute = async (interaction: Interaction<ChatInputCommandInteraction>) => {
+  const subcommand = interaction.options.getSubcommand();
+
   // Switch statement for subcommands to handle subcommand execution accordingly
-  switch (interaction.options.getSubcommand()) {
+  switch (subcommand) {
     case subcommands.PLAY:
     case subcommands.SHORTHAND_PLAY:
       handlePlaySubcommand(interaction);
@@ -114,7 +116,8 @@ const execute = async (interaction: Interaction<ChatInputCommandInteraction>) =>
       handleSeekSubcommand(interaction);
       break;
     default:
-      console.log("*** ERROR: No subcommand found.");
+      interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
+      console.log(`*** MUSIC - Subcommand doesn't exist: ${subcommand}`);
   }
 };
 

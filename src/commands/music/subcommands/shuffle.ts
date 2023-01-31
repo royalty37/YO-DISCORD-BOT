@@ -11,7 +11,7 @@ export const shuffleSubcommand = (sc: SlashCommandSubcommandBuilder) =>
 export const handleShuffleSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   if (!interaction.guildId) {
     console.log("*** MUSIC PAUSE SUBCOMMAND - NO GUILD ID");
-    return void interaction.reply("Something went wrong. Please try again.");
+    return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
   }
 
   // Get queue from distube
@@ -20,12 +20,12 @@ export const handleShuffleSubcommand = async (interaction: Interaction<ChatInput
   // If no queue, no music is playing
   if (!queue) {
     console.log("*** MUSIC PAUSE SUBCOMMAND - NO QUEUE");
-    return void interaction.reply("❌ | No music is being played!");
+    return void interaction.reply({ content: "❌ | No music is being played!", ephemeral: true });
   }
 
   queue.shuffle();
   console.log("*** MUSIC SHUFFLE SUBCOMMAND - SHUFFLED QUEUE");
-  await interaction.reply("🔀 | Current queue shuffled!");
+  await interaction.reply({ content: "🔀 | Current queue shuffled!", ephemeral: true });
 
   // Update latest queue message upon shuffle
   updateLatestQueueMessage(queue);

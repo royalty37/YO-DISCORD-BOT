@@ -30,7 +30,7 @@ export const handleSeekSubcommand = async (interaction: Interaction<ChatInputCom
   // If no guild ID, return
   if (!interaction.guildId) {
     console.log("*** MUSIC RESUME SUBCOMMAND - NO GUILD ID");
-    return void interaction.reply("Something went wrong. Please try again.");
+    return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
   }
 
   // Get DisTube queue from client from interaction
@@ -39,7 +39,7 @@ export const handleSeekSubcommand = async (interaction: Interaction<ChatInputCom
   // If no queue, return
   if (!queue) {
     console.log("*** MUSIC RESUME SUBCOMMAND - NO QUEUE");
-    return void interaction.reply("❌ | No music is being played!");
+    return void interaction.reply({ content: "❌ | No music is being played!", ephemeral: true });
   }
 
   // Get minutes and seconds from interaction
@@ -53,5 +53,5 @@ export const handleSeekSubcommand = async (interaction: Interaction<ChatInputCom
   queue.seek(totalSeconds);
 
   // Reply with seeked to
-  interaction.reply(`⏩ | Seeked to ${minutes}:${seconds}`);
+  interaction.reply({ content: `⏩ | Seeked to ${minutes}:${seconds}`, ephemeral: true });
 };

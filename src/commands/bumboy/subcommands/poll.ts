@@ -35,15 +35,9 @@ export const pollSubcommand = (sc: SlashCommandSubcommandBuilder) =>
 export const handlePollSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   // If poll is already running, send message and early return
   if (pollIsRunning) {
-    return void (await interaction.reply("BUMBOY poll is already running!\n\nCheck above!"));
+    await interaction.reply("BUMBOY poll is already running!\n\nCheck above!");
+    return console.log("*** BUMBOY POLL - Poll is already running.");
   }
-
-  // Set pollRunning to true
-  pollIsRunning = true;
-
-  await interaction.deferReply();
-
-  await interaction.guild?.members.fetch();
 
   // Fetch all members then fetch the Vice Plus role to get all members with that role
   const vicePlusRole = await interaction.guild?.roles.fetch(VICE_PLUS_ROLE_ID);
@@ -51,9 +45,17 @@ export const handlePollSubcommand = async (interaction: Interaction<ChatInputCom
 
   // If no Vice Plus role or BUMBOY role, send error message and early return
   if (!vicePlusRole?.members || !bumboyRole) {
-    pollIsRunning = false;
-    return void (await interaction.editReply("Something went wrong. Please try again."));
+    await interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
+    return console.error("*** BUMBOY POLL - No Vice Plus role or BUMBOY role.");
   }
+
+  // Set pollRunning to true
+  pollIsRunning = true;
+
+  await interaction.deferReply();
+
+  // Fetch all members
+  await interaction.guild?.members.fetch();
 
   // Get current BUMBOYS record from database
   const currentBumboysRecord = await getBumboys();
@@ -67,14 +69,15 @@ export const handlePollSubcommand = async (interaction: Interaction<ChatInputCom
       await clearBumboys();
     } else {
       pollIsRunning = false;
-      return void (await interaction.editReply(
+      interaction.editReply(
         `BUMBOY poll can only be run once every 12 hours.\n\n${
           currentBumboys.length
             ? `Current BUMBOYS are:\n\n${currentBumboys.map((b) => `💩 **${b.user.username}** 💩`).join("\n\n")}`
             : "There are currently no BUMBOYS..."
         }
               \n\nTry again later at ${dayjs(currentBumboysRecord.clearTime).format("DD/MM/YYYY h:mm:ss a")}`
-      ));
+      );
+      return console.log("*** BUMBOY POLL - BUMBOY poll can only be run once every 12 hours.");
     }
   }
 

@@ -11,13 +11,13 @@ export const handleNowPlayingSubcommand = async (interaction: Interaction<ChatIn
   // If no guild ID, return
   if (!interaction.guildId) {
     console.log("*** MUSIC RESUME SUBCOMMAND - NO GUILD ID");
-    return void interaction.reply("Something went wrong. Please try again.");
+    return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
   }
 
   // If no channel, return
   if (!interaction.channel) {
     console.log("*** MUSIC RESUME SUBCOMMAND - NO CHANNEL");
-    return void interaction.reply("Something went wrong. Please try again.");
+    return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
   }
 
   // Get DisTube queue from client from interaction
@@ -26,7 +26,7 @@ export const handleNowPlayingSubcommand = async (interaction: Interaction<ChatIn
   // If no queue, return
   if (!queue) {
     console.log("*** MUSIC RESUME SUBCOMMAND - NO QUEUE");
-    return void interaction.reply("❌ | No music is being played!");
+    return void interaction.reply({ content: "❌ | No music is being played!", ephemeral: true });
   }
 
   // Get currently playing song

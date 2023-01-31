@@ -36,7 +36,7 @@ export const handleRepeatSubcommand = async (interaction: Interaction<ChatInputC
   // If no queue, return without updating queue message
   if (!queue) {
     console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - NO QUEUE - CANNOT UPDATE QUEUE MESSAGE");
-    return void interaction.reply("❌ | No music is being played!");
+    return void interaction.reply({ content: "❌ | No music is being played!", ephemeral: true });
   }
 
   // Get mode options or fallback to 0 (disabled) if none supplied

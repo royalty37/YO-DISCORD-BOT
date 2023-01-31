@@ -2,13 +2,17 @@ import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "disc
 import { Interaction } from "../../../types/types";
 import { subcommands } from "../music";
 
+const INDEX_OPTION_NAME = "index";
+
+const INDEX_REQUIRED = true;
+
 // Music skipto subcommand
 export const skipToSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc
     .setName(subcommands.SKIPTO)
     .setDescription("Skips to the provided index/number in the queue.")
     .addIntegerOption((option) =>
-      option.setName("index").setDescription("Index/number of song to skip to.").setRequired(true)
+      option.setName(INDEX_OPTION_NAME).setDescription("Index/number of song to skip to.").setRequired(INDEX_REQUIRED)
     );
 
 // Music previous subcommand execution
@@ -28,7 +32,7 @@ export const handleSkipToSubcommand = async (interaction: Interaction<ChatInputC
   }
 
   // Get index from options
-  const index = interaction.options.getInteger("index", true);
+  const index = interaction.options.getInteger(INDEX_OPTION_NAME, INDEX_REQUIRED);
 
   // Send reply to user
   await interaction.reply(`⏭️ | Skipping to track number ${index} in the queue!`);

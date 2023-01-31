@@ -1,5 +1,5 @@
 import { Client, Events, BaseInteraction, Message } from "discord.js";
-import { YoClient } from "../types/types";
+import { YoClient, Interaction } from "../types/types";
 import { filterMessages } from "../utils/messageUtils/messageUtils";
 
 // Register client events
@@ -29,8 +29,8 @@ export const registerClientEvents = (client: YoClient) => {
           await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
         }
       }
-    } else if (interaction.isButton()) {
-      console.log("*** BUTTON CLICKED");
+    } else {
+      console.log("*** Interaction is not a chat input command");
     }
   });
 

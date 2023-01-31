@@ -1,7 +1,13 @@
 import { ChatInputCommandInteraction, ComponentType, SlashCommandSubcommandBuilder } from "discord.js";
 import { subcommands } from "../music";
 import { Interaction } from "../../../types/types";
-import { setLatestQueueMessage, currentIndex, setCurrentIndex, generateReplyObject } from "../actions/queueActions";
+import {
+  setLatestQueueMessage,
+  currentIndex,
+  setCurrentIndex,
+  generateReplyObject,
+  updateLatestQueueMessage,
+} from "../actions/queueActions";
 
 // Music queue subcommand
 export const queueSubcommand = (sc: SlashCommandSubcommandBuilder) =>
@@ -12,13 +18,13 @@ export const handleQueueSubcommand = async (interaction: Interaction<ChatInputCo
   // If no guild ID, return
   if (!interaction.guildId) {
     console.log("*** MUSIC RESUME SUBCOMMAND - NO GUILD ID");
-    return void interaction.reply("Something went wrong. Please try again.");
+    return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
   }
 
   // If no channel, return
   if (!interaction.channel) {
     console.log("*** MUSIC RESUME SUBCOMMAND - NO CHANNEL");
-    return void interaction.reply("Something went wrong. Please try again.");
+    return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
   }
 
   // Get DisTube queue from client from interaction
@@ -27,7 +33,7 @@ export const handleQueueSubcommand = async (interaction: Interaction<ChatInputCo
   // If no queue, return
   if (!queue) {
     console.log("*** MUSIC RESUME SUBCOMMAND - NO QUEUE");
-    return void interaction.reply("❌ | No music is being played!");
+    return void interaction.reply({ content: "❌ | No music is being played!", ephemeral: true });
   }
 
   // Set current index to 0 for new queue message
@@ -55,6 +61,6 @@ export const handleQueueSubcommand = async (interaction: Interaction<ChatInputCo
       setCurrentIndex(currentIndex + 1);
     }
 
-    await interaction.update(generateReplyObject(queue));
+    updateLatestQueueMessage(queue);
   });
 };
