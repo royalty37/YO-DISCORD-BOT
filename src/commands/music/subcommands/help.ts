@@ -34,7 +34,7 @@ const HELP_EMBED_DESCRIPTIONS = [
 
 // Music help subcommand
 export const helpSubcommand = (sc: SlashCommandSubcommandBuilder) =>
-  sc.setName(subcommands.HELP).setDescription("Leaves the voice channel (if in one).");
+  sc.setName(subcommands.HELP).setDescription("Shows subcommands and descriptions of /music command.");
 
 // Music help subcommand execution
 export const handleHelpSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
