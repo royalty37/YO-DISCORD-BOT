@@ -88,8 +88,15 @@ export const handleSearchSubcommand = async (interaction: Interaction<ChatInputC
     const resultsForSelectMenu: Array<SelectMenuComponentOptionData[]> = [];
     let currentResultsForSelectMenu: SelectMenuComponentOptionData[] = [];
     results.forEach((result, index) => {
+      let label = `${index + 1}. ${result.name}`;
+      // SelectOptions cannot have more than 100 characters in the label
+      // If label is longer than 100 characters, truncate it to 97 characters plus "..." (100 total)
+      if (label.length > 100) {
+        label = label.substring(0, 97) + "...";
+      }
+
       const resultToAppend = {
-        label: `${index + 1}. ${result.name}`,
+        label,
         value: `${index}`,
         description: `${result.formattedDuration} - ${result.uploader.name}`,
       };
@@ -204,6 +211,6 @@ export const handleSearchSubcommand = async (interaction: Interaction<ChatInputC
     });
   } catch (e) {
     console.log(`*** ERROR IN MUSIC SEARCH SUBCOMMAND - ${e}`);
-    await interaction.editReply("Something went wrong. Please try again.");
+    await interaction.editReply({ content: "Something went wrong. Please try again.", embeds: [], components: [] });
   }
 };

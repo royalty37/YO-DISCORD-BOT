@@ -12,10 +12,11 @@ import { shuffleSubcommand, handleShuffleSubcommand } from "./subcommands/shuffl
 import { skipToSubcommand, handleSkipToSubcommand } from "./subcommands/skipto";
 import { searchSubcommand, handleSearchSubcommand } from "./subcommands/search";
 import { repeatSubcommand, handleRepeatSubcommand } from "./subcommands/repeat";
+import { seekSubcommand, handleSeekSubcommand } from "./subcommands/seek";
+import { helpSubcommand, handleHelpSubcommand } from "./subcommands/help";
 import { playSkipSubcommand } from "./subcommands/playskip";
-import { Command, Interaction } from "../../types/types";
 import { playTopSubcommand } from "./subcommands/playtop";
-import { handleSeekSubcommand, seekSubcommand } from "./subcommands/seek";
+import { Command, Interaction } from "../../types/types";
 
 // Enum for subcommands
 export enum subcommands {
@@ -37,6 +38,7 @@ export enum subcommands {
   SEARCH = "search",
   REPEAT = "repeat",
   SEEK = "seek",
+  HELP = "help",
 }
 
 // Music command SlashCommandBuilder
@@ -59,7 +61,8 @@ const data = new SlashCommandBuilder()
   .addSubcommand(skipToSubcommand)
   .addSubcommand(searchSubcommand)
   .addSubcommand(repeatSubcommand)
-  .addSubcommand(seekSubcommand);
+  .addSubcommand(seekSubcommand)
+  .addSubcommand(helpSubcommand);
 
 // Music command execute function
 const execute = async (interaction: Interaction<ChatInputCommandInteraction>) => {
@@ -114,6 +117,9 @@ const execute = async (interaction: Interaction<ChatInputCommandInteraction>) =>
       break;
     case subcommands.SEEK:
       handleSeekSubcommand(interaction);
+      break;
+    case subcommands.HELP:
+      handleHelpSubcommand(interaction);
       break;
     default:
       interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
