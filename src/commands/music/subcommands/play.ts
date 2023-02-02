@@ -58,10 +58,12 @@ export const handlePlaySubcommand = async (
       return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
     }
 
+    await interaction.deferReply({ ephemeral: true });
+
     // Get song from song option
     const song = interaction.options.getString(SONG_OPTION_NAME, INPUT_REQUIRED);
 
-    await interaction.reply({ content: `🔍 | **Searching for ${song}...**`, ephemeral: true });
+    await interaction.editReply(`🔍 | **Searching for ${song}...**`);
     const message = await interaction.fetchReply();
 
     // If using playskip, follow up with skip message
@@ -100,6 +102,6 @@ export const handlePlaySubcommand = async (
     updateLatestQueueMessage(queue);
   } catch (e) {
     console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND -", e);
-    await interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
+    await interaction.editReply({ content: "Something went wrong. Please try again.", ephemeral: true });
   }
 };
