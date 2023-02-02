@@ -102,6 +102,6 @@ export const handlePlaySubcommand = async (
     updateLatestQueueMessage(queue);
   } catch (e) {
     console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND -", e);
-    await interaction.editReply({ content: "Something went wrong. Please try again.", ephemeral: true });
+    await interaction.editReply("Something went wrong. Please try again.");
   }
 };
