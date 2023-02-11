@@ -2,6 +2,7 @@ import { ChatInputCommandInteraction, SlashCommandStringOption, SlashCommandSubc
 import OpenAIService from "../../../apis/openaiService";
 import { splitMessage } from "../../../utils/messageUtils/messageUtils";
 import { subcommands } from "../openai";
+import { Interaction } from "../../../types/types";
 
 const INPUT_OPTION_NAME = "input";
 const INPUT_REQUIRED = true;
@@ -23,7 +24,7 @@ export const editSubcommand = (sc: SlashCommandSubcommandBuilder) =>
     );
 
 // openai edit subcommand execution
-export const handleEditSubcommand = async (interaction: ChatInputCommandInteraction) => {
+export const handleEditSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   try {
     await interaction.deferReply();
 
@@ -35,7 +36,8 @@ export const handleEditSubcommand = async (interaction: ChatInputCommandInteract
     const res = await new OpenAIService().createEdit(input, instruction);
 
     // Log response
-    console.log(`*** OPENAI RES:${res}\n\nEND OF RES ***`);
+    console.log(`*** OPEN AI EDIT INPUT: ${input}`);
+    console.log(`*** OPENAI RES:${res}\n\nEND OF RES`);
 
     // If response is valid, prepare to send
     if (res) {
@@ -49,10 +51,11 @@ export const handleEditSubcommand = async (interaction: ChatInputCommandInteract
     } else {
       // If no res, send error message
       await interaction.editReply("Something went wrong. Please try again.");
+      console.error('*** OPENAI EDIT - NO RESPONSE')
     }
   } catch (e) {
     // If error, log error and send error message
     await interaction.editReply("Something went wrong. Please try again.");
-    console.error("OPEN AI EDIT SUBCOMMAND EXECEPTION: " + e);
+    console.error("*** OPEN AI EDIT SUBCOMMAND EXECEPTION: " + e);
   }
 };

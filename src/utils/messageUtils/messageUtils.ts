@@ -48,3 +48,8 @@ export const filterBannedWords = async (message: Message<boolean>) => {
     }
   }
 };
+
+export const filterMessages = async (message: Message<boolean>) => {
+  await filterInvites(message);
+  await filterBannedWords(message);
+};

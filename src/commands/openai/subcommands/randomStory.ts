@@ -3,6 +3,7 @@ import OpenAIService from "../../../apis/openaiService";
 import { subcommands } from "../openai";
 import { getUniqueRandomWords } from "../../../utils/wordUtils/wordUtils";
 import { splitMessage } from "../../../utils/messageUtils/messageUtils";
+import { Interaction } from "../../../types/types";
 
 // Max number of random words to generate - setting it much higher will sometimes break request
 const MAX_WORDS = 20;
@@ -24,7 +25,7 @@ export const randomStorySubcommand = (sc: SlashCommandSubcommandBuilder) =>
     );
 
 // openai random-story subcommand execution
-export const handleRandomStorySubcommand = async (interaction: ChatInputCommandInteraction) => {
+export const handleRandomStorySubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   try {
     await interaction.deferReply();
 
@@ -38,7 +39,8 @@ export const handleRandomStorySubcommand = async (interaction: ChatInputCommandI
     const res = await new OpenAIService().createCompletion(completionInput);
 
     // Log response
-    console.log(`*** OPENAI RES:${res}\n\nEND OF RES ***`);
+    console.log(`*** OPENAI RANDOM-STORY WORDS: ${words}`);
+    console.log(`*** OPENAI RES:${res}\n\nEND OF RES`);
 
     // If response is valid, prepare to send response
     if (res) {
@@ -54,10 +56,11 @@ export const handleRandomStorySubcommand = async (interaction: ChatInputCommandI
     } else {
       // If response is invalid (no res), send error message
       await interaction.editReply("Something went wrong. Please try again.");
+      console.error("*** OPENAI RANDOM STORY - NO RESPONSE");
     }
   } catch (e) {
     // If error, log error and send error message
-    console.error("OPEN AI RANDOM STORY SUBCOMMAND EXECEPTION: " + e);
     await interaction.editReply("Something went wrong. Please try again.");
+    console.error("*** OPEN AI RANDOM STORY SUBCOMMAND EXECEPTION: " + e);
   }
 };

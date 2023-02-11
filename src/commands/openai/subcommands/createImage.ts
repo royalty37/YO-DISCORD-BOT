@@ -1,12 +1,13 @@
 import {
-  ChatInputCommandInteraction,
   SlashCommandStringOption,
   SlashCommandSubcommandBuilder,
   EmbedBuilder,
   Colors,
+  ChatInputCommandInteraction,
 } from "discord.js";
 import OpenAIService from "../../../apis/openaiService";
 import { subcommands } from "../openai";
+import { Interaction } from "../../../types/types";
 
 const INPUT_OPTION_NAME = "input";
 const INPUT_REQUIRED = true;
@@ -21,7 +22,7 @@ export const createImageSubcommand = (sc: SlashCommandSubcommandBuilder) =>
     );
 
 // openai create-image subcommand execution
-export const handleCreateImageSubcommand = async (interaction: ChatInputCommandInteraction) => {
+export const handleCreateImageSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   try {
     await interaction.deferReply();
 
@@ -32,7 +33,8 @@ export const handleCreateImageSubcommand = async (interaction: ChatInputCommandI
     const res = await new OpenAIService().createImage(input);
 
     // Log response
-    console.log(`*** OPENAI RES:\n\n${res}\n\nEND OF RES ***`);
+    console.log(`*** OPEN AI CREATE-IMAGE INPUT: ${input}`);
+    console.log(`*** OPENAI RESPONSE:\n\n${res}\n\nEND OF RES`);
 
     // If response is valid, send embed with image
     if (res) {
@@ -49,12 +51,13 @@ export const handleCreateImageSubcommand = async (interaction: ChatInputCommandI
     } else {
       // If response is invalid, send error message
       await interaction.editReply("Something went wrong. Please try again.");
+      console.error('*** OPEN AI CREATE-IMAGE SUBCOMMAND - NO RESPONSE')
     }
   } catch (e) {
     // If error, log error and send error message
     await interaction.editReply(
       "Something went wrong. Please try again.\n\nOpenAI potentially interpreted your input as NSFW."
     );
-    console.error("OPEN AI CREATE-IMAGE SUBCOMMAND EXECEPTION: " + e);
+    console.error("*** OPEN AI CREATE-IMAGE SUBCOMMAND EXECEPTION: " + e);
   }
 };

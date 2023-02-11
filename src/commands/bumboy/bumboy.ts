@@ -1,7 +1,8 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
-import Command from "../../types/Command";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { pollSubcommand, handlePollSubcommand } from "./subcommands/poll";
 import { clearSubcommand, handleClearSubcommand } from "./subcommands/clear";
+import { isDevMode } from "../../index";
+import { Command, Interaction } from "../../types/types";
 
 // TODO: Fix remaining time bug - sometimes shows message after poll finishes
 
@@ -20,8 +21,14 @@ const data = new SlashCommandBuilder()
   .addSubcommand(clearSubcommand);
 
 // Bumboy command execute function
-const execute = async (interaction: ChatInputCommandInteraction) => {
-  switch (interaction.options.getSubcommand()) {
+const execute = async (interaction: Interaction<ChatInputCommandInteraction>) => {
+  if (isDevMode) {
+    return void interaction.reply("This command is disabled in dev mode.");
+  }
+
+  const subcommand = interaction.options.getSubcommand();
+
+  switch (subcommand) {
     case subcommands.POLL:
       await handlePollSubcommand(interaction);
       break;
@@ -29,7 +36,8 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
       await handleClearSubcommand(interaction);
       break;
     default:
-      console.log("*** ERROR: No subcommand found.");
+      interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
+      console.log(`*** BUMBOY - Subcommand doesn't exist: ${interaction.options.getSubcommand()}`);
   }
 };
 

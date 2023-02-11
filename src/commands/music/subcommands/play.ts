@@ -1,6 +1,12 @@
-import { QueryType } from "discord-player";
-import { ChatInputCommandInteraction, SlashCommandStringOption, SlashCommandSubcommandBuilder } from "discord.js";
-import YoClient from "../../../types/YoClient";
+import {
+  ChatInputCommandInteraction,
+  GuildMember,
+  GuildTextBasedChannel,
+  SlashCommandStringOption,
+  SlashCommandSubcommandBuilder,
+} from "discord.js";
+import { Interaction } from "../../../types/types";
+import { updateLatestQueueMessage } from "../actions/queueActions";
 import { subcommands } from "../music";
 
 const INPUT_REQUIRED = true;
@@ -10,7 +16,7 @@ const SONG_OPTION_NAME = "song";
 export const playSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc
     .setName(subcommands.PLAY)
-    .setDescription("Search for and play a song!")
+    .setDescription("Search for and play a song (or add to the end of the queue)!")
     .addStringOption((option: SlashCommandStringOption) =>
       option.setName(SONG_OPTION_NAME).setDescription("Song to play!").setRequired(INPUT_REQUIRED)
     );
@@ -25,76 +31,77 @@ export const shorthandPlaySubcommand = (sc: SlashCommandSubcommandBuilder) =>
     );
 
 // This is the function that handles the play subcommand
-export const handlePlaySubcommand = async (interaction: ChatInputCommandInteraction) => {
-  // Get client off of interaction
-  const client: YoClient = interaction.client as YoClient;
+// skip used to skip the song that is currently playing
+// top used to play the song at the top of the queue
+export const handlePlaySubcommand = async (
+  interaction: Interaction<ChatInputCommandInteraction>,
+  skip = false,
+  top = false
+) => {
+  try {
+    const member = interaction.member as GuildMember;
 
-  await interaction.deferReply();
+    // Select either the bot's voice channel or the member's voice channel
+    const voiceChannel = interaction.client.distube.voices.collection.first()?.channel ?? member.voice.channel;
 
-  const guild = client.guilds.cache.get(interaction.guildId ?? "");
-  const channel = guild?.channels.cache.get(interaction.channelId ?? "");
-  const song = interaction.options.getString(SONG_OPTION_NAME, INPUT_REQUIRED);
+    // If member is not in a voice channel and bot is not in a voice channel, return
+    if (!voiceChannel) {
+      console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - MEMBER NOT IN VOICE CHANNEL AND BOT NOT IN VOICE CHANNEL");
+      return void interaction.reply({ content: "You must be in a voice channel or the bot must be!", ephemeral: true });
+    }
 
-  if (!guild || !channel) {
-    return void interaction.followUp({ content: "There was an error while executing this command!" });
-  }
+    const textChannel = interaction.channel as GuildTextBasedChannel;
 
-  // Search for song and get search result
-  const searchResult = await client.player
-    .search(song, {
-      requestedBy: interaction.user,
-      searchEngine: QueryType.AUTO,
-    })
-    .catch(() => {
-      console.error("*** Exception in Play Subcommand - Player.search***");
+    // If no text channel, return
+    if (!textChannel) {
+      console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - NO TEXT CHANNEL");
+      return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
+    }
+
+    await interaction.deferReply({ ephemeral: true });
+
+    // Get song from song option
+    const song = interaction.options.getString(SONG_OPTION_NAME, INPUT_REQUIRED);
+
+    await interaction.editReply(`🔍 | **Searching for ${song}...**`);
+    const message = await interaction.fetchReply();
+
+    // If using playskip, follow up with skip message
+    if (skip) {
+      await interaction.followUp({ content: `⏭ | **Skipping current song to play new song...**`, ephemeral: true });
+    }
+
+    // If using playtop, follow up with top message
+    if (top) {
+      await interaction.followUp({ content: `⏫ | **Adding new song to the top of the queue...**`, ephemeral: true });
+    }
+
+    // Play song
+    await interaction.client.distube.play(voiceChannel, song, {
+      textChannel,
+      member,
+      message,
+      skip,
+      position: top ? 1 : undefined,
     });
 
-  if (!searchResult || !searchResult.tracks.length) {
-    return void interaction.followUp("No results were found!");
-  }
-
-  // Create a queue for the guild if one doesn't exist
-  const queue = client.player.createQueue(guild, {
-    ytdlOptions: {
-      filter: "audioonly",
-      highWaterMark: 1 << 30,
-      dlChunkSize: 0,
-    },
-    metadata: channel,
-  });
-
-  const member = guild.members.cache.get(interaction.user.id) ?? (await guild.members.fetch(interaction.user.id));
-
-  if (!member.voice.channel) {
-    return void interaction.followUp("You must be in a voice channel!");
-  }
-
-  if (!interaction.guildId) {
-    return void interaction.followUp("There was an error while executing this command!");
-  }
-
-  // Connect to the voice channel and add the track to the queue
-  // If exception is thrown, delete the queue and return
-  try {
-    if (!queue.connection) {
-      await queue.connect(member.voice.channel);
+    // If no guild id, return without updating queue message
+    if (!interaction.guildId) {
+      return console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - NO GUILD ID - CANNOT UPDATE QUEUE MESSAGE");
     }
-  } catch {
-    client.player.deleteQueue(interaction.guildId);
-    return void interaction.followUp("Could not join your voice channel!");
-  }
 
-  // Add track to queue and play if not already playing
-  await interaction.followUp(`⏱ | Loading your ${searchResult.playlist ? "playlist" : "track"}...`);
-  searchResult.playlist ? queue.addTracks(searchResult.tracks) : queue.addTrack(searchResult.tracks[0]);
+    // Get queue
+    const queue = interaction.client.distube.getQueue(interaction.guildId);
 
-  // If the queue is not playing, play it
-  if (!queue.playing) {
-    await queue.play();
-  }
+    // If no queue, return without updating queue message
+    if (!queue) {
+      return console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - NO QUEUE - CANNOT UPDATE QUEUE MESSAGE");
+    }
 
-  // If the queue is paused, unpause it
-  if (queue.setPaused(false)) {
-    interaction.followUp("▶ | Queued song - Resumed!");
+    // Update latest queue message upon play
+    updateLatestQueueMessage(queue);
+  } catch (e) {
+    console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND -", e);
+    await interaction.editReply("Something went wrong. Please try again.");
   }
 };

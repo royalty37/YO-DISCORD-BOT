@@ -1,13 +1,14 @@
 import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
 import { Interaction } from "../../../types/types";
+import { updateLatestQueueMessage } from "../actions/queueActions";
 import { subcommands } from "../music";
 
-// Music pause subcommand
-export const pauseSubcommand = (sc: SlashCommandSubcommandBuilder) =>
-  sc.setName(subcommands.PAUSE).setDescription("Pauses the current song.");
+// Music previous subcommand
+export const previousSubcommand = (sc: SlashCommandSubcommandBuilder) =>
+  sc.setName(subcommands.SHUFFLE).setDescription("Shuffles the queue.");
 
-// Music pause subcommand execution
-export const handlePauseSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
+// Music previous subcommand execution
+export const handleShuffleSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   if (!interaction.guildId) {
     console.log("*** MUSIC PAUSE SUBCOMMAND - NO GUILD ID");
     return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
@@ -22,15 +23,13 @@ export const handlePauseSubcommand = async (interaction: Interaction<ChatInputCo
     return void interaction.reply({ content: "❌ | No music is being played!", ephemeral: true });
   }
 
-  // If music is already paused, don't pause it again
-  if (queue.paused) {
-    console.log("*** MUSIC PAUSE SUBCOMMAND - ALREADY PAUSED");
-    return void interaction.reply({ content: "❌ | Music is already paused!", ephemeral: true });
-  }
+  // Send reply to user
+  await interaction.reply({ content: "⏮ | Playing previous song!", ephemeral: true });
+  console.log("*** MUSIC SHUFFLE SUBCOMMAND - SHUFFLED QUEUE");
 
-  // Pause the music
-  interaction.client.distube.pause(interaction.guildId);
+  // Play previous song
+  queue.previous();
 
-  // Reply to user
-  interaction.reply("⏸ | Paused!");
+  // Update latest queue message upon shuffle
+  updateLatestQueueMessage(queue);
 };

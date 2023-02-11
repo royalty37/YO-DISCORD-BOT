@@ -1,3 +1,4 @@
 .env
+.env-cmdrc
 node_modules
 build

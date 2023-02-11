@@ -1,20 +1,22 @@
 import fs from "fs";
 import path from "path";
 import { REST, Routes } from "discord.js";
-import Command from "./types/Command";
-import { discordToken, clientId } from "./clientUtils";
+import { Command } from "./types/types";
 
-if (!discordToken) {
-  console.error("*** ERROR: DISCORD_TOKEN OR TEST_DISCORD_TOKEN environment variable not found.");
+// Check if DISCORD_TOKEN or TEST_DISCORD_TOKEN environment variable is set - if not, exit
+if (!process.env.DISCORD_TOKEN) {
+  console.error("*** ERROR: DISCORD_TOKEN environment variable not found.");
   process.exit(1);
 }
 
+// Check if GUILD_ID environment variable is set - if not, exit
 if (!process.env.GUILD_ID) {
   console.error("*** ERROR: GUILD_ID environment variable not found.");
   process.exit(1);
 }
 
-if (!clientId) {
+// Check if CLIENT_ID or TEST_CLIENT_ID environment variable is set - if not, exit
+if (!process.env.CLIENT_ID) {
   console.error("*** ERROR: CLIENT_ID or TEST_CLIENT_ID environment variable not found.");
   process.exit(1);
 }
@@ -37,7 +39,7 @@ for (const cf of commandFolders) {
 }
 
 // Create a new REST instance
-const rest = new REST({ version: "10" }).setToken(discordToken);
+const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
 
 // Define a function that will be used to register the commands
 const deployCommands = async () => {
@@ -45,14 +47,13 @@ const deployCommands = async () => {
     console.log(`*** Started refreshing ${commands.length} application (/) commands.`);
 
     // The put method is used to fully refresh all commands in the guild with the current set
-    const data: any = await rest.put(Routes.applicationGuildCommands(clientId!, process.env.GUILD_ID!), {
+    const data: any = await rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID!, process.env.GUILD_ID!), {
       body: commands,
     });
 
     console.log(`*** Successfully reloaded ${data.length} application (/) commands.`);
   } catch (error) {
-    // And of course, make sure you catch and log any errors!
-    console.error(error);
+    console.error(`***EXCEPTION deploying commands: ${error}`);
   }
 };
 

@@ -3,7 +3,8 @@ import { textSubcommand, handleTextSubcommand } from "./subcommands/text";
 import { editSubcommand, handleEditSubcommand } from "./subcommands/edit";
 import { createImageSubcommand, handleCreateImageSubcommand } from "./subcommands/createImage";
 import { randomStorySubcommand, handleRandomStorySubcommand } from "./subcommands/randomStory";
-import Command from "../../types/Command";
+import { helpSubcommand, handleHelpSubcommand } from "./subcommands/help";
+import { Command, Interaction } from "../../types/types";
 
 // Enum for subcommands
 export enum subcommands {
@@ -11,6 +12,7 @@ export enum subcommands {
   EDIT = "edit",
   CREATE_IMAGE = "create-image",
   RANDOM_STORY = "random-story",
+  HELP = "help",
 }
 
 // OpenAI command SlashCommandBuilder
@@ -20,10 +22,11 @@ const data = new SlashCommandBuilder()
   .addSubcommand(textSubcommand)
   .addSubcommand(editSubcommand)
   .addSubcommand(createImageSubcommand)
-  .addSubcommand(randomStorySubcommand);
+  .addSubcommand(randomStorySubcommand)
+  .addSubcommand(helpSubcommand);
 
 // OpenAI command execute function
-const execute = async (interaction: ChatInputCommandInteraction) => {
+const execute = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   const subcommand = interaction.options.getSubcommand();
 
   // Switch statement for subcommands to handle subcommand execution accordingly
@@ -40,9 +43,12 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     case subcommands.RANDOM_STORY:
       handleRandomStorySubcommand(interaction);
       break;
+    case subcommands.HELP:
+      handleHelpSubcommand(interaction);
+      break;
     default:
-      interaction.reply("Something went wrong. Please try again.");
-      console.error("Subcommand doesn't exist: " + subcommand);
+      interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
+      console.error("*** OPENAI - Subcommand doesn't exist: " + subcommand);
   }
 };
 
