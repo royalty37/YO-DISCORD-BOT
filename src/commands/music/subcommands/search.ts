@@ -31,6 +31,7 @@ export const searchSubcommand = (sc: SlashCommandSubcommandBuilder) =>
 // This is the function that handles the search subcommand
 export const handleSearchSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
   try {
+    await interaction.deferReply({ ephemeral: true });
     const member = interaction.member as GuildMember;
 
     // Select either the bot's voice channel or the member's voice channel
@@ -39,10 +40,7 @@ export const handleSearchSubcommand = async (interaction: Interaction<ChatInputC
     // If member is not in a voice channel and bot is not in a voice channel, return
     if (!voiceChannel) {
       console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - MEMBER NOT IN VOICE CHANNEL AND BOT NOT IN VOICE CHANNEL");
-      return void interaction.reply({
-        content: "❌ | You must be in a voice channel or the bot must be!",
-        ephemeral: true,
-      });
+      return void interaction.editReply("❌ | You must be in a voice channel or the bot must be!");
     }
 
     const textChannel = interaction.channel as GuildTextBasedChannel;
@@ -50,13 +48,11 @@ export const handleSearchSubcommand = async (interaction: Interaction<ChatInputC
     // If no text channel, return
     if (!textChannel) {
       console.log("*** ERROR IN MUSIC PLAY SUBCOMMAND - NO TEXT CHANNEL");
-      return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
+      return void interaction.editReply("Something went wrong. Please try again.");
     }
 
     // Get song from song option
     const song = interaction.options.getString(SONG_OPTION_NAME, INPUT_REQUIRED);
-
-    await interaction.deferReply({ ephemeral: true });
 
     // Search for song - limit to 50 results
     const results = await interaction.client.distube.search(song, {
@@ -207,7 +203,9 @@ export const handleSearchSubcommand = async (interaction: Interaction<ChatInputC
 
     // Listen for select collector end and send timeout message
     selectCollector.on("end", async () => {
-      await interaction.editReply("❌ | You took too long to select a song.");
+      if (interaction.isRepliable()) {
+        await interaction.editReply("❌ | You took too long to select a song.");
+      }
     });
   } catch (e) {
     console.log(`*** ERROR IN MUSIC SEARCH SUBCOMMAND - ${e}`);
