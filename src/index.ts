@@ -2,20 +2,17 @@ import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
 import { Client, Collection, GatewayIntentBits } from "discord.js";
-import { DisTube } from "distube";
-import { YtDlpPlugin } from "@distube/yt-dlp";
-import { SpotifyPlugin } from "@distube/spotify";
-import { SoundCloudPlugin } from "@distube/soundcloud";
 import { YoClient } from "./types/types";
 import { registerClientEvents } from "./events/clientEvents";
-import { registerDistubeEvents } from "./events/distubeEvents";
+import { registerPlayerEvents } from "./events/playerEvents";
 import { registerProcessEvents } from "./events/processEvents";
 import { initMongo } from "./mongoSetup";
 import { scheduleJobs } from "./scheduleJobs";
+import { Player } from "discord-player";
 
 dotenv.config();
 
-export let isDevMode = !!process.env.DEV;
+export const isDevMode = !!process.env.DEV;
 
 // Check if DISCORD_TOKEN environment variable is set - if not, exit
 if (!process.env.DISCORD_TOKEN) {
@@ -36,20 +33,12 @@ const client = new Client({
 }) as YoClient;
 
 client.commands = new Collection<string, any>();
-client.distube = new DisTube(client, {
-  searchSongs: 5,
-  searchCooldown: 10,
-  leaveOnEmpty: true,
-  leaveOnFinish: false,
-  leaveOnStop: false,
-  emitAddListWhenCreatingQueue: false,
-  emitAddSongWhenCreatingQueue: false,
-  plugins: [new YtDlpPlugin({ update: true }), new SpotifyPlugin(), new SoundCloudPlugin()],
-});
+client.player = new Player(client);
+client.player.extractors.loadDefault();
 
 // Register Client and Player events
 registerClientEvents(client);
-registerDistubeEvents(client.distube);
+registerPlayerEvents(client.player);
 registerProcessEvents();
 
 // Initiate mongoDB connection
@@ -68,13 +57,16 @@ for (const cf of commandFolders) {
     .filter((file) => file.endsWith(".js") || file.endsWith(".ts"));
 
   for (const file of commandFiles) {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const command = require(`./commands/${cf}/${file}`);
 
     // Set a new item in the Collection only if command has both 'data' and 'execute' properties
     if (command.data && command.execute) {
       client.commands.set(command.data.name, command);
     } else {
-      console.log(`*** WARNING: Command at ${file} is missing 'data' or 'execute' property.`);
+      console.log(
+        `*** WARNING: Command at ${file} is missing 'data' or 'execute' property.`,
+      );
     }
   }
 }

@@ -1,7 +1,14 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
-import { Queue } from "distube";
-import { Interaction } from "../../../types/types";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+} from "discord.js";
 import { REPEAT_MODE_ARRAY } from "../constants/musicConstants";
+
+import type { ChatInputCommandInteraction } from "discord.js";
+import type { GuildQueue } from "discord-player";
+import type { Interaction } from "../../../types/types";
 
 // CurrentIndex of embedDescription in existing queue message
 export let currentIndex = 0;
@@ -13,17 +20,20 @@ export let latestQueueInteraction: Interaction<ChatInputCommandInteraction>;
 export let embedDescriptions: string[] = [];
 
 // Generates embed descriptions for queue message
-const generateEmbedDescription = (queue: Queue) => {
+const generateEmbedDescription = (queue: GuildQueue) => {
   const newEmbedDescriptions: string[] = [];
   let currentEmbedDescription = "";
-  queue.songs.forEach((song, index) => {
-    const songToAppend = `${index + 1}. ${song.name}${index === 0 ? " (currently playing)" : ""}\n\n`;
+  const tracks = queue.tracks.toArray();
+  tracks.forEach((track, index) => {
+    const songToAppend = `${index + 1}. ${track.title}${
+      index === 0 ? " (currently playing)" : ""
+    }\n\n`;
     if (index !== 0 && index % 10 === 0) {
       newEmbedDescriptions.push(currentEmbedDescription);
       currentEmbedDescription = songToAppend;
     } else {
       currentEmbedDescription += songToAppend;
-      if (index === queue.songs.length - 1) {
+      if (index === tracks.length - 1) {
         newEmbedDescriptions.push(currentEmbedDescription);
       }
     }
@@ -33,7 +43,7 @@ const generateEmbedDescription = (queue: Queue) => {
 };
 
 // Generates/regenerates reply object when pressing next/previous buttons
-export const generateReplyObject = (queue: Queue) => {
+export const generateReplyObject = (queue: GuildQueue) => {
   generateEmbedDescription(queue);
 
   // If currentIndex is out of bounds, set it to the last index (page number decreases as songs are removed from queue)
@@ -45,10 +55,16 @@ export const generateReplyObject = (queue: Queue) => {
     embeds: [
       new EmbedBuilder()
         .setColor("Random")
-        .setTitle(`🎶 | Repeat mode: **${REPEAT_MODE_ARRAY[queue.repeatMode]}** | Current queue:`)
-        .setThumbnail(queue.songs[currentIndex].thumbnail ?? null)
+        .setTitle(
+          `🎶 | Repeat mode: **${
+            REPEAT_MODE_ARRAY[queue.repeatMode]
+          }** | Current queue:`,
+        )
+        .setThumbnail(queue.tracks.toArray()[currentIndex].thumbnail ?? null)
         .setDescription(embedDescriptions[currentIndex])
-        .setFooter({ text: `Page ${currentIndex + 1} of ${embedDescriptions.length}` }),
+        .setFooter({
+          text: `Page ${currentIndex + 1} of ${embedDescriptions.length}`,
+        }),
     ],
     components: [
       new ActionRowBuilder<ButtonBuilder>().addComponents([
@@ -68,12 +84,14 @@ export const generateReplyObject = (queue: Queue) => {
 };
 
 // Updates latest queue message with new embed description
-export const updateLatestQueueMessage = async (queue: Queue) => {
+export const updateLatestQueueMessage = async (queue: GuildQueue) => {
   if (latestQueueInteraction) {
     try {
       await latestQueueInteraction.editReply(generateReplyObject(queue));
     } catch (e) {
-      console.log("*** UPDATE LATEST QUEUE MESSAGE ERROR - INTERACTION PROBABLY EXPIRED");
+      console.log(
+        "*** UPDATE LATEST QUEUE MESSAGE ERROR - INTERACTION PROBABLY EXPIRED",
+      );
     }
   }
 };
@@ -84,22 +102,31 @@ export const finishLatestQueueMessage = async () => {
     try {
       await latestQueueInteraction.editReply({
         embeds: [
-          new EmbedBuilder().setColor("Random").setTitle("🎶 | Current queue:").setDescription("No songs in queue."),
+          new EmbedBuilder()
+            .setColor("Random")
+            .setTitle("🎶 | Current queue:")
+            .setDescription("No songs in queue."),
         ],
       });
     } catch (e) {
-      console.log("*** FINISH LATEST QUEUE MESSAGE ERROR - INTERACTION PROBABLY EXPIRED");
+      console.log(
+        "*** FINISH LATEST QUEUE MESSAGE ERROR - INTERACTION PROBABLY EXPIRED",
+      );
     }
   }
 };
 
 // Sets latest queue message interaction and deletes previous queue message
-export const setLatestQueueMessage = (interaction: Interaction<ChatInputCommandInteraction>) => {
+export const setLatestQueueMessage = (
+  interaction: Interaction<ChatInputCommandInteraction>,
+) => {
   if (latestQueueInteraction) {
     try {
       latestQueueInteraction.deleteReply();
     } catch (e) {
-      console.log("*** SET LATEST QUEUE MESSAGE ERROR - INTERACTION PROBABLY EXPIRED");
+      console.log(
+        "*** SET LATEST QUEUE MESSAGE ERROR - INTERACTION PROBABLY EXPIRED",
+      );
     }
   }
 

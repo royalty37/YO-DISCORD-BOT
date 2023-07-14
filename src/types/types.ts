@@ -1,15 +1,15 @@
-import {
+import type {
   SlashCommandBuilder,
   SlashCommandSubcommandsOnlyBuilder,
   Client,
   Collection,
   BaseInteraction,
 } from "discord.js";
-import { DisTube } from "distube";
+import type { Player } from "discord-player";
 
 export type YoClient = Client<boolean> & {
   commands: Collection<string, any>;
-  distube: DisTube;
+  player: Player;
 };
 
 export type Interaction<T extends BaseInteraction> = T & {

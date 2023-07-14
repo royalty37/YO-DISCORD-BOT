@@ -1,31 +1,45 @@
-import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
-import { subcommands } from "../music";
+import {
+  ChatInputCommandInteraction,
+  SlashCommandSubcommandBuilder,
+} from "discord.js";
+import { Subcommands } from "../music";
 import { Interaction } from "../../../types/types";
 import { finishLatestQueueMessage } from "../actions/queueActions";
+import { useQueue } from "discord-player";
 
 // Music skip subcommand
 export const stopSubcommand = (sc: SlashCommandSubcommandBuilder) =>
-  sc.setName(subcommands.STOP).setDescription("Skips the current song.");
+  sc
+    .setName(Subcommands.STOP)
+    .setDescription("Stops music and clears the queue.");
 
 // Music leave subcommand execution
-export const handleStopSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
+export const handleStopSubcommand = async (
+  interaction: Interaction<ChatInputCommandInteraction>,
+) => {
   // If no guildId, return
   if (!interaction.guildId) {
-    console.log("*** MUSIC SKIP SUBCOMMAND - NO GUILD ID");
-    return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
+    console.log("*** MUSIC STOP SUBCOMMAND - NO GUILD ID");
+    return void interaction.reply({
+      content: "Something went wrong. Please try again.",
+      ephemeral: true,
+    });
   }
 
   // Get queue from distube
-  const queue = interaction.client.distube.getQueue(interaction.guildId);
+  const queue = useQueue(interaction.guildId);
 
   // If no queue, return
   if (!queue) {
-    console.error("*** MUSIC SKIP SUBCOMMAND - NO QUEUE");
-    return interaction.reply({ content: "❌ | No song is playing!", ephemeral: true });
+    console.error("*** MUSIC STOP SUBCOMMAND - NO QUEUE");
+    return interaction.reply({
+      content: "❌ | No song is playing!",
+      ephemeral: true,
+    });
   }
 
-  // Stop queue
-  queue.stop();
+  // Clear queue
+  queue.clear();
 
   console.log("*** MUSIC STOP SUBCOMMAND - STOPPED QUEUE");
   await interaction.reply(`⏹️ | Stopped!`);

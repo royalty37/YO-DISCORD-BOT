@@ -1,1 +1,1 @@
-export const REPEAT_MODE_ARRAY = ["Disabled", "Song", "Queue"];
+export const REPEAT_MODE_ARRAY = ["Off", "Track", "Queue", "Autoplay"];

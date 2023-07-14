@@ -1,64 +1,55 @@
-import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandSubcommandBuilder } from "discord.js";
-import { subcommands } from "../music";
-import { Interaction } from "../../../types/types";
+import { useQueue } from "discord-player";
+import { Subcommands } from "../music";
+import { createTrackEmbed } from "../../../utils/messageUtils/messageUtils";
+
+import type {
+  ChatInputCommandInteraction,
+  SlashCommandSubcommandBuilder,
+} from "discord.js";
+import type { Interaction } from "../../../types/types";
 
 // Music nowplaying subcommand
 export const nowPlayingSubcommand = (sc: SlashCommandSubcommandBuilder) =>
-  sc.setName(subcommands.NOWPLAYING).setDescription("Shows currently playing song.");
+  sc
+    .setName(Subcommands.NOWPLAYING)
+    .setDescription("Shows currently playing song.");
 
 // Music nowplaying subcommand execution
-export const handleNowPlayingSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
+export const handleNowPlayingSubcommand = async (
+  interaction: Interaction<ChatInputCommandInteraction>,
+) => {
   // If no guild ID, return
   if (!interaction.guildId) {
     console.log("*** MUSIC RESUME SUBCOMMAND - NO GUILD ID");
-    return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
+    return void interaction.reply({
+      content: "Something went wrong. Please try again.",
+      ephemeral: true,
+    });
   }
 
   // If no channel, return
   if (!interaction.channel) {
     console.log("*** MUSIC RESUME SUBCOMMAND - NO CHANNEL");
-    return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
+    return void interaction.reply({
+      content: "Something went wrong. Please try again.",
+      ephemeral: true,
+    });
   }
 
   // Get DisTube queue from client from interaction
-  const queue = interaction.client.distube.getQueue(interaction.guildId);
+  const queue = useQueue(interaction.guildId);
 
   // If no queue, return
-  if (!queue) {
+  if (!queue || !queue.currentTrack) {
     console.log("*** MUSIC RESUME SUBCOMMAND - NO QUEUE");
-    return void interaction.reply({ content: "❌ | No music is being played!", ephemeral: true });
+    return void interaction.reply({
+      content: "❌ | No music is being played!",
+      ephemeral: true,
+    });
   }
-
-  // Get currently playing song
-  const song = queue.songs[0];
 
   // Send embed show currently playing song
   await interaction.reply({
-    embeds: [
-      new EmbedBuilder()
-        .setColor("Random")
-        .setTitle("🎶 | Currently playing:")
-        .setDescription(`**${song.name}!**\n\n${song.url}`)
-        .setThumbnail(song.thumbnail ?? null)
-        .addFields([
-          {
-            name: "**Duration:**",
-            value: song.formattedDuration ?? "Unknown",
-            inline: true,
-          },
-          {
-            name: "**Views**",
-            value: song.views.toString(),
-            inline: true,
-          },
-          {
-            name: "**Likes**",
-            value: song.likes.toString(),
-            inline: true,
-          },
-        ])
-        .setFooter({ text: `Requested by: ${song.user?.username}`, iconURL: song.user?.displayAvatarURL() })
-        .setTimestamp(),
-    ],
+    embeds: [createTrackEmbed(queue.currentTrack)],
   });
 };

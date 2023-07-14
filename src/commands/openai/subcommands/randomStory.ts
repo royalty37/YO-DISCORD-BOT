@@ -1,9 +1,14 @@
-import { ChatInputCommandInteraction, SlashCommandIntegerOption, SlashCommandSubcommandBuilder } from "discord.js";
 import OpenAIService from "../../../apis/openaiService";
-import { subcommands } from "../openai";
+import { Subcommands } from "../openai";
 import { getUniqueRandomWords } from "../../../utils/wordUtils/wordUtils";
 import { splitMessage } from "../../../utils/messageUtils/messageUtils";
-import { Interaction } from "../../../types/types";
+
+import type {
+  ChatInputCommandInteraction,
+  SlashCommandIntegerOption,
+  SlashCommandSubcommandBuilder,
+} from "discord.js";
+import type { Interaction } from "../../../types/types";
 
 // Max number of random words to generate - setting it much higher will sometimes break request
 const MAX_WORDS = 20;
@@ -14,18 +19,24 @@ const NO_OF_WORDS_OPTION_NAME = "no-of-words";
 // Takes in optional number representing number of random words/ideas to include in story
 export const randomStorySubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc
-    .setName(subcommands.RANDOM_STORY)
-    .setDescription("Generates a random story involving random words from a list of approx. 300k words")
+    .setName(Subcommands.RANDOM_STORY)
+    .setDescription(
+      "Generates a random story involving random words from a list of approx. 300k words",
+    )
     .addIntegerOption((option: SlashCommandIntegerOption) =>
       option
         .setName(NO_OF_WORDS_OPTION_NAME)
-        .setDescription(`Number of random words/ideas to include in story (up to ${MAX_WORDS})`)
+        .setDescription(
+          `Number of random words/ideas to include in story (up to ${MAX_WORDS})`,
+        )
         .setMinValue(1)
-        .setMaxValue(MAX_WORDS)
+        .setMaxValue(MAX_WORDS),
     );
 
 // openai random-story subcommand execution
-export const handleRandomStorySubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
+export const handleRandomStorySubcommand = async (
+  interaction: Interaction<ChatInputCommandInteraction>,
+) => {
   try {
     await interaction.deferReply();
 
@@ -34,7 +45,8 @@ export const handleRandomStorySubcommand = async (interaction: Interaction<ChatI
 
     // Get random words from randomWords util, fallback to 10 if noOfWords isn't supplied
     const words = getUniqueRandomWords(noOfWords ?? 10);
-    const completionInput = "Write a random story involving the following words: " + words.join(", ");
+    const completionInput =
+      "Write a random story involving the following words: " + words.join(", ");
     // Call OpenAI API createCompletion but build my own input
     const res = await new OpenAIService().createCompletion(completionInput);
 
@@ -46,7 +58,7 @@ export const handleRandomStorySubcommand = async (interaction: Interaction<ChatI
     if (res) {
       // Create reply with input and suffix (if provided)
       const reply = `**RANDOM WORDS:**\n${words.join(
-        ", "
+        ", ",
       )}\n\n**INSTRUCTION**:\n${completionInput}\n\n**OPENAI RESPONSE:**${res}`;
 
       // Reply is sometimes > 2000 characters, so split into multiple messages

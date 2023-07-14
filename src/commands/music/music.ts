@@ -1,5 +1,9 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { playSubcommand, shorthandPlaySubcommand, handlePlaySubcommand } from "./subcommands/play";
+import {
+  playSubcommand,
+  shorthandPlaySubcommand,
+  handlePlaySubcommand,
+} from "./subcommands/play";
 import { pauseSubcommand, handlePauseSubcommand } from "./subcommands/pause";
 import { resumeSubcommand, handleResumeSubcommand } from "./subcommands/resume";
 import { joinSubcommand, handleJoinSubcommand } from "./subcommands/join";
@@ -7,8 +11,14 @@ import { leaveSubcommand, handleLeaveSubcommand } from "./subcommands/leave";
 import { skipSubcommand, handleSkipSubcommand } from "./subcommands/skip";
 import { stopSubcommand, handleStopSubcommand } from "./subcommands/stop";
 import { queueSubcommand, handleQueueSubcommand } from "./subcommands/queue";
-import { nowPlayingSubcommand, handleNowPlayingSubcommand } from "./subcommands/nowplaying";
-import { shuffleSubcommand, handleShuffleSubcommand } from "./subcommands/shuffle";
+import {
+  nowPlayingSubcommand,
+  handleNowPlayingSubcommand,
+} from "./subcommands/nowplaying";
+import {
+  shuffleSubcommand,
+  handleShuffleSubcommand,
+} from "./subcommands/shuffle";
 import { skipToSubcommand, handleSkipToSubcommand } from "./subcommands/skipto";
 import { searchSubcommand, handleSearchSubcommand } from "./subcommands/search";
 import { repeatSubcommand, handleRepeatSubcommand } from "./subcommands/repeat";
@@ -19,7 +29,7 @@ import { playTopSubcommand } from "./subcommands/playtop";
 import { Command, Interaction } from "../../types/types";
 
 // Enum for subcommands
-export enum subcommands {
+export enum Subcommands {
   PLAY = "play",
   SHORTHAND_PLAY = "p",
   PAUSE = "pause",
@@ -65,64 +75,69 @@ const data = new SlashCommandBuilder()
   .addSubcommand(helpSubcommand);
 
 // Music command execute function
-const execute = async (interaction: Interaction<ChatInputCommandInteraction>) => {
+const execute = async (
+  interaction: Interaction<ChatInputCommandInteraction>,
+) => {
   const subcommand = interaction.options.getSubcommand();
 
   // Switch statement for subcommands to handle subcommand execution accordingly
   switch (subcommand) {
-    case subcommands.PLAY:
-    case subcommands.SHORTHAND_PLAY:
+    case Subcommands.PLAY:
+    case Subcommands.SHORTHAND_PLAY:
       handlePlaySubcommand(interaction);
       break;
-    case subcommands.PAUSE:
+    case Subcommands.PAUSE:
       handlePauseSubcommand(interaction);
       break;
-    case subcommands.RESUME:
+    case Subcommands.RESUME:
       handleResumeSubcommand(interaction);
       break;
-    case subcommands.JOIN:
+    case Subcommands.JOIN:
       handleJoinSubcommand(interaction);
       break;
-    case subcommands.LEAVE:
+    case Subcommands.LEAVE:
       handleLeaveSubcommand(interaction);
       break;
-    case subcommands.SKIP:
+    case Subcommands.SKIP:
       handleSkipSubcommand(interaction);
       break;
-    case subcommands.STOP:
+    case Subcommands.STOP:
       handleStopSubcommand(interaction);
       break;
-    case subcommands.QUEUE:
+    case Subcommands.QUEUE:
       handleQueueSubcommand(interaction);
       break;
-    case subcommands.NOWPLAYING:
+    case Subcommands.NOWPLAYING:
       handleNowPlayingSubcommand(interaction);
       break;
-    case subcommands.PLAYSKIP:
+    case Subcommands.PLAYSKIP:
       handlePlaySubcommand(interaction, true);
       break;
-    case subcommands.PLAYTOP:
+    case Subcommands.PLAYTOP:
       handlePlaySubcommand(interaction, false, true);
-    case subcommands.SHUFFLE:
+    case Subcommands.SHUFFLE:
       handleShuffleSubcommand(interaction);
       break;
-    case subcommands.SKIPTO:
+    case Subcommands.SKIPTO:
       handleSkipToSubcommand(interaction);
       break;
-    case subcommands.SEARCH:
+    case Subcommands.SEARCH:
       handleSearchSubcommand(interaction);
       break;
-    case subcommands.REPEAT:
+    case Subcommands.REPEAT:
       handleRepeatSubcommand(interaction);
       break;
-    case subcommands.SEEK:
+    case Subcommands.SEEK:
       handleSeekSubcommand(interaction);
       break;
-    case subcommands.HELP:
+    case Subcommands.HELP:
       handleHelpSubcommand(interaction);
       break;
     default:
-      interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
+      interaction.reply({
+        content: "Something went wrong. Please try again.",
+        ephemeral: true,
+      });
       console.log(`*** MUSIC - Subcommand doesn't exist: ${subcommand}`);
   }
 };

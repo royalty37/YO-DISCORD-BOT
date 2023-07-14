@@ -1,7 +1,8 @@
 import { EMOJI_LIST } from "./emojiList";
 
 // Get a single random emoji
-export const getRandomEmoji = () => EMOJI_LIST[Math.floor(Math.random() * EMOJI_LIST.length)];
+export const getRandomEmoji = () =>
+  EMOJI_LIST[Math.floor(Math.random() * EMOJI_LIST.length)];
 
 // Get n random emojis from array containing list of 1800 or so emojis (emojiList.ts)
 export const getURandomEmojis = (n: number) => {

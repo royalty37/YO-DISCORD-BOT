@@ -1,6 +1,11 @@
-import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandSubcommandBuilder } from "discord.js";
-import { subcommands } from "../openai";
-import { Interaction } from "../../../types/types";
+import { EmbedBuilder } from "discord.js";
+import { Subcommands } from "../openai";
+
+import type {
+  ChatInputCommandInteraction,
+  SlashCommandSubcommandBuilder,
+} from "discord.js";
+import type { Interaction } from "../../../types/types";
 
 const HELP_EMBED_DESCRIPTION =
   "**OpenAI Subcommands**\n\n" +
@@ -11,10 +16,14 @@ const HELP_EMBED_DESCRIPTION =
 
 // Openai help subcommand
 export const helpSubcommand = (sc: SlashCommandSubcommandBuilder) =>
-  sc.setName(subcommands.HELP).setDescription("Shows subcommands and descriptions of /openai command.");
+  sc
+    .setName(Subcommands.HELP)
+    .setDescription("Shows subcommands and descriptions of /openai command.");
 
 // Openai help subcommand execution
-export const handleHelpSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
+export const handleHelpSubcommand = async (
+  interaction: Interaction<ChatInputCommandInteraction>,
+) => {
   // Send help message
   await interaction.reply({
     embeds: [

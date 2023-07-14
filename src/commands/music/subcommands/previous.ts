@@ -1,35 +1,51 @@
-import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
-import { Interaction } from "../../../types/types";
 import { updateLatestQueueMessage } from "../actions/queueActions";
-import { subcommands } from "../music";
+import { Subcommands } from "../music";
+import { useHistory } from "discord-player";
+
+import type {
+  ChatInputCommandInteraction,
+  SlashCommandSubcommandBuilder,
+} from "discord.js";
+import type { Interaction } from "../../../types/types";
 
 // Music previous subcommand
 export const previousSubcommand = (sc: SlashCommandSubcommandBuilder) =>
-  sc.setName(subcommands.SHUFFLE).setDescription("Shuffles the queue.");
+  sc.setName(Subcommands.SHUFFLE).setDescription("Shuffles the queue.");
 
 // Music previous subcommand execution
-export const handleShuffleSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
+export const handleShuffleSubcommand = async (
+  interaction: Interaction<ChatInputCommandInteraction>,
+) => {
   if (!interaction.guildId) {
     console.log("*** MUSIC PAUSE SUBCOMMAND - NO GUILD ID");
-    return void interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
+    return void interaction.reply({
+      content: "Something went wrong. Please try again.",
+      ephemeral: true,
+    });
   }
 
-  // Get queue from distube
-  const queue = interaction.client.distube.getQueue(interaction.guildId);
+  // Get history
+  const history = useHistory(interaction.guildId);
 
   // If no queue, no music is playing
-  if (!queue) {
-    console.log("*** MUSIC PAUSE SUBCOMMAND - NO QUEUE");
-    return void interaction.reply({ content: "❌ | No music is being played!", ephemeral: true });
+  if (!history) {
+    console.log("*** MUSIC PAUSE SUBCOMMAND - NO HISTORY");
+    return void interaction.reply({
+      content: "❌ | No queue history!",
+      ephemeral: true,
+    });
   }
 
   // Send reply to user
-  await interaction.reply({ content: "⏮ | Playing previous song!", ephemeral: true });
-  console.log("*** MUSIC SHUFFLE SUBCOMMAND - SHUFFLED QUEUE");
+  await interaction.reply({
+    content: "⏮ | Playing previous song!",
+    ephemeral: true,
+  });
+  console.log("*** MUSIC PREVIOUS SUBCOMMAND - GOING TO PREVIOUS TRACK");
 
   // Play previous song
-  queue.previous();
+  history.previous();
 
   // Update latest queue message upon shuffle
-  updateLatestQueueMessage(queue);
+  updateLatestQueueMessage(history.queue);
 };

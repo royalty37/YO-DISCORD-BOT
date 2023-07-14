@@ -1,13 +1,19 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
+import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 import { textSubcommand, handleTextSubcommand } from "./subcommands/text";
 import { editSubcommand, handleEditSubcommand } from "./subcommands/edit";
-import { createImageSubcommand, handleCreateImageSubcommand } from "./subcommands/createImage";
-import { randomStorySubcommand, handleRandomStorySubcommand } from "./subcommands/randomStory";
+import {
+  createImageSubcommand,
+  handleCreateImageSubcommand,
+} from "./subcommands/createImage";
+import {
+  randomStorySubcommand,
+  handleRandomStorySubcommand,
+} from "./subcommands/randomStory";
 import { helpSubcommand, handleHelpSubcommand } from "./subcommands/help";
 import { Command, Interaction } from "../../types/types";
 
 // Enum for subcommands
-export enum subcommands {
+export enum Subcommands {
   TEXT = "text",
   EDIT = "edit",
   CREATE_IMAGE = "create-image",
@@ -26,28 +32,33 @@ const data = new SlashCommandBuilder()
   .addSubcommand(helpSubcommand);
 
 // OpenAI command execute function
-const execute = async (interaction: Interaction<ChatInputCommandInteraction>) => {
+const execute = async (
+  interaction: Interaction<ChatInputCommandInteraction>,
+) => {
   const subcommand = interaction.options.getSubcommand();
 
   // Switch statement for subcommands to handle subcommand execution accordingly
   switch (subcommand) {
-    case subcommands.TEXT:
+    case Subcommands.TEXT:
       handleTextSubcommand(interaction);
       break;
-    case subcommands.EDIT:
+    case Subcommands.EDIT:
       handleEditSubcommand(interaction);
       break;
-    case subcommands.CREATE_IMAGE:
+    case Subcommands.CREATE_IMAGE:
       handleCreateImageSubcommand(interaction);
       break;
-    case subcommands.RANDOM_STORY:
+    case Subcommands.RANDOM_STORY:
       handleRandomStorySubcommand(interaction);
       break;
-    case subcommands.HELP:
+    case Subcommands.HELP:
       handleHelpSubcommand(interaction);
       break;
     default:
-      interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
+      interaction.reply({
+        content: "Something went wrong. Please try again.",
+        ephemeral: true,
+      });
       console.error("*** OPENAI - Subcommand doesn't exist: " + subcommand);
   }
 };

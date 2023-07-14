@@ -6,13 +6,20 @@ import {
   SlashCommandSubcommandBuilder,
   User,
 } from "discord.js";
-import { subcommands } from "../bumboy";
+import { Subcommands } from "../bumboy";
 import { getUniqueRandomEmojis } from "../../../utils/emojiUtils/emojiUtils";
-import { saveBumboys, getBumboys, clearBumboys } from "../actions/bumboyActions";
+import {
+  saveBumboys,
+  getBumboys,
+  clearBumboys,
+} from "../actions/bumboyActions";
 import dayjs from "dayjs";
 import { clearBumboysJob } from "../jobs/bumboyJobs";
 import { Interaction } from "../../../types/types";
-import { VICE_PLUS_ROLE_ID, BUMBOY_ROLE_ID } from "../../../utils/discordUtils/roleUtils";
+import {
+  VICE_PLUS_ROLE_ID,
+  BUMBOY_ROLE_ID,
+} from "../../../utils/discordUtils/roleUtils";
 
 // Emoji that represents a vote in description
 const VOTE_EMOJI = "🟢";
@@ -29,10 +36,14 @@ let pollIsRunning = false;
 
 export const pollSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc
-    .setName(subcommands.POLL)
-    .setDescription("Vices cast their vote for who will be demoted to bumboy for the next 24 hours!");
+    .setName(Subcommands.POLL)
+    .setDescription(
+      "Vices cast their vote for who will be demoted to bumboy for the next 24 hours!",
+    );
 
-export const handlePollSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
+export const handlePollSubcommand = async (
+  interaction: Interaction<ChatInputCommandInteraction>,
+) => {
   // If poll is already running, send message and early return
   if (pollIsRunning) {
     await interaction.reply("BUMBOY poll is already running!\n\nCheck above!");
@@ -45,7 +56,10 @@ export const handlePollSubcommand = async (interaction: Interaction<ChatInputCom
 
   // If no Vice Plus role or BUMBOY role, send error message and early return
   if (!vicePlusRole?.members || !bumboyRole) {
-    await interaction.reply({ content: "Something went wrong. Please try again.", ephemeral: true });
+    await interaction.reply({
+      content: "Something went wrong. Please try again.",
+      ephemeral: true,
+    });
     return console.error("*** BUMBOY POLL - No Vice Plus role or BUMBOY role.");
   }
 
@@ -62,7 +76,11 @@ export const handlePollSubcommand = async (interaction: Interaction<ChatInputCom
 
   if (currentBumboysRecord && bumboyRole) {
     const currentBumboyIds = currentBumboysRecord.bumboys.map((b) => b.id);
-    const currentBumboys = Array.from(bumboyRole.members.filter((m) => currentBumboyIds.includes(m.id)).values());
+    const currentBumboys = Array.from(
+      bumboyRole.members
+        .filter((m) => currentBumboyIds.includes(m.id))
+        .values(),
+    );
 
     // If there are BUMBOYS in Discord, clear Ids in database and continue, otherwise print current BUMBOYS and early return
     if (currentBumboys.length === 0) {
@@ -72,12 +90,18 @@ export const handlePollSubcommand = async (interaction: Interaction<ChatInputCom
       interaction.editReply(
         `BUMBOY poll can only be run once every 12 hours.\n\n${
           currentBumboys.length
-            ? `Current BUMBOYS are:\n\n${currentBumboys.map((b) => `💩 **${b.user.username}** 💩`).join("\n\n")}`
+            ? `Current BUMBOYS are:\n\n${currentBumboys
+                .map((b) => `💩 **${b.user.username}** 💩`)
+                .join("\n\n")}`
             : "There are currently no BUMBOYS..."
         }
-              \n\nTry again later at ${dayjs(currentBumboysRecord.clearTime).format("DD/MM/YYYY h:mm:ss a")}`
+              \n\nTry again later at ${dayjs(
+                currentBumboysRecord.clearTime,
+              ).format("DD/MM/YYYY h:mm:ss a")}`,
       );
-      return console.log("*** BUMBOY POLL - BUMBOY poll can only be run once every 12 hours.");
+      return console.log(
+        "*** BUMBOY POLL - BUMBOY poll can only be run once every 12 hours.",
+      );
     }
   }
 
@@ -85,7 +109,9 @@ export const handlePollSubcommand = async (interaction: Interaction<ChatInputCom
   const includedMembers = vicePlusRole.members.random(NO_OF_OPTIONS);
 
   // Array of members names in Vice Plus role that will not be included in the poll
-  const nonIncludedMembers = vicePlusRole.members.filter((m) => !includedMembers.includes(m));
+  const nonIncludedMembers = vicePlusRole.members.filter(
+    (m) => !includedMembers.includes(m),
+  );
 
   // Get a random emoji for each option - VICE PLUS
   const emojis = getUniqueRandomEmojis(includedMembers.length);
@@ -100,10 +126,14 @@ export const handlePollSubcommand = async (interaction: Interaction<ChatInputCom
   const generateDescription = (): string => {
     // Generate percentage for each option on poll
     const generatePercentage = (index: number): string => {
-      const percentage = (votes[index] / votes.reduce((a, b) => a + b, 0)) * 100 || 0;
+      const percentage =
+        (votes[index] / votes.reduce((a, b) => a + b, 0)) * 100 || 0;
 
       // If percentage is a decimal, round to 2 decimal places
-      if (percentage.toString().includes(".") && percentage.toString().split(".")[1].length > 2) {
+      if (
+        percentage.toString().includes(".") &&
+        percentage.toString().split(".")[1].length > 2
+      ) {
         return percentage.toFixed(2);
       }
 
@@ -115,18 +145,31 @@ export const handlePollSubcommand = async (interaction: Interaction<ChatInputCom
       "The BUMBOY poll is a poll to determine who will be demoted to BUMBOY and have their nickname changed for 24 hours. This doesn't revoke any permissions (except for the ability to change your nickname), but the BUMBOY must suffer the embarrassment of being the BUMBOY.\n\n" +
       "This poll is a non multi vote poll, which means you can only cast a single vote. To change your vote, remove your existing vote (reaction) and cast a new vote.\n\nOnly members of the Vice Plus role may participate.\n\nThe BUMBOY poll can only be run once every 24 hours.\n\n" +
       "Luckily, the following members are exempt from todays YOZA Bumboy vote (Discord only allows a maximum of 20 reacts on a message):\n\n" +
-      nonIncludedMembers.map((m) => `🍀 ${m.user.username} ${m.nickname ? `(${m.nickname})` : ""} 🍀`).join("\n\n") +
+      nonIncludedMembers
+        .map(
+          (m) =>
+            `🍀 ${m.user.username} ${m.nickname ? `(${m.nickname})` : ""} 🍀`,
+        )
+        .join("\n\n") +
       "\n\nMembers included in todays BUMBOY poll are:\n\n" +
       // Sort options by vote count, then map to generate information about each option, and join each option with a double new line
       // Spread options into new array to avoid mutating original array on sort
       [...includedMembers]
-        .sort((a, b) => votes[includedMembers.indexOf(b)] - votes[includedMembers.indexOf(a)])
+        .sort(
+          (a, b) =>
+            votes[includedMembers.indexOf(b)] -
+            votes[includedMembers.indexOf(a)],
+        )
         .map((o) => {
           // Generate green emoji bar for each option showing vote count
-          const votesEmojis = VOTE_EMOJI.repeat(votes[includedMembers.indexOf(o)]);
-          return `${emojis[includedMembers.indexOf(o)]} ${o.user.username}${o.nickname ? ` (${o.nickname})` : ""}\n ${
-            votesEmojis ? `${votesEmojis} | ` : ""
-          }${votes[includedMembers.indexOf(o)]} (${generatePercentage(includedMembers.indexOf(o))}%)`;
+          const votesEmojis = VOTE_EMOJI.repeat(
+            votes[includedMembers.indexOf(o)],
+          );
+          return `${emojis[includedMembers.indexOf(o)]} ${o.user.username}${
+            o.nickname ? ` (${o.nickname})` : ""
+          }\n ${votesEmojis ? `${votesEmojis} | ` : ""}${
+            votes[includedMembers.indexOf(o)]
+          } (${generatePercentage(includedMembers.indexOf(o))}%)`;
         })
         .join("\n\n")
     );
@@ -189,7 +232,8 @@ export const handlePollSubcommand = async (interaction: Interaction<ChatInputCom
     // If reaction is not a valid option (reaction outside of bounds of supplied options or random emoji), remove reaction and early return
     if (
       !(
-        emojis.includes(reaction.emoji.name ?? "") && emojis.indexOf(reaction.emoji.name ?? "") < includedMembers.length
+        emojis.includes(reaction.emoji.name ?? "") &&
+        emojis.indexOf(reaction.emoji.name ?? "") < includedMembers.length
       )
     ) {
       return void reaction.remove();
@@ -237,7 +281,7 @@ export const handlePollSubcommand = async (interaction: Interaction<ChatInputCom
   });
 
   // On Remove listener
-  collector.on("remove", (reaction: MessageReaction, user: User) => {
+  collector.on("remove", (reaction: MessageReaction) => {
     // Get index of reaction emoji in EMOJI_NUMBERS array and decrement vote count for that index
     const index = emojis.indexOf(reaction.emoji.name ?? "");
     votes[index]--;
@@ -257,23 +301,34 @@ export const handlePollSubcommand = async (interaction: Interaction<ChatInputCom
     if (!maxVotes) {
       pollEmbed.setDescription(
         generateDescription() +
-          "\n\n**BUMBOY poll has ended**\n\nUnfortunately, no votes were cast. 😔😔😔\n\nThis however means that the BUMBOY poll can be run again immediately!"
+          "\n\n**BUMBOY poll has ended**\n\nUnfortunately, no votes were cast. 😔😔😔\n\nThis however means that the BUMBOY poll can be run again immediately!",
       );
     } else if (newBumboys.length === 1) {
       // If there is only one winner, add winner to description
       pollEmbed.setDescription(
         generateDescription() +
-          `\n\n**BUMBOY Poll has ended**\n\n💩 **${newBumboys[0].user.username}${
+          `\n\n**BUMBOY Poll has ended**\n\n💩 **${
+            newBumboys[0].user.username
+          }${
             newBumboys[0].nickname ? ` (${newBumboys[0].nickname})` : ""
-          }** 💩 is the todays BUMBOY with ${maxVotes} ${maxVotes > 1 ? `votes` : `vote`}.\n\n`
+          }** 💩 is the todays BUMBOY with ${maxVotes} ${
+            maxVotes > 1 ? `votes` : `vote`
+          }.\n\n`,
       );
     } else {
       // If there are multiple winners, add winners to description
       pollEmbed.setDescription(
         generateDescription() +
           `\n\n**BUMBOY Poll has ended**\n\nTodays BUMBOYS are:\n\n ${newBumboys
-            .map((w) => `💩 **${w.user.username}${w.nickname ? ` (${w.nickname})` : ""}** 💩`)
-            .join("\n")}\n\n with ${maxVotes} ${maxVotes > 1 ? `votes` : `vote`} each.`
+            .map(
+              (w) =>
+                `💩 **${w.user.username}${
+                  w.nickname ? ` (${w.nickname})` : ""
+                }** 💩`,
+            )
+            .join("\n")}\n\n with ${maxVotes} ${
+            maxVotes > 1 ? `votes` : `vote`
+          } each.`,
       );
     }
 
@@ -287,8 +342,15 @@ export const handlePollSubcommand = async (interaction: Interaction<ChatInputCom
       setTimeout(async () => {
         console.log(`*** MAKING MEMBER BUMBOY: ${newBumboys[i].user.username}`);
         // Spread in managed roles when setting to avoid exception (for instance server booster role)
-        await newBumboys[i].roles.set([BUMBOY_ROLE_ID, ...newBumboys[i].roles.cache.filter((r) => r.managed).values()]);
-        await newBumboys[i].setNickname(newBumboys.length === 1 ? `💩 THE BUMBOY 💩` : `💩 BUMBOY ${i + 1} 💩`);
+        await newBumboys[i].roles.set([
+          BUMBOY_ROLE_ID,
+          ...newBumboys[i].roles.cache.filter((r) => r.managed).values(),
+        ]);
+        await newBumboys[i].setNickname(
+          newBumboys.length === 1
+            ? `💩 THE BUMBOY 💩`
+            : `💩 BUMBOY ${i + 1} 💩`,
+        );
 
         i++;
 
@@ -304,7 +366,9 @@ export const handlePollSubcommand = async (interaction: Interaction<ChatInputCom
     await setBumboys();
 
     // Save BUMBOY IDs and nicknames to database
-    await saveBumboys(newBumboys.map((b) => ({ id: b.id, nickname: b.nickname })));
+    await saveBumboys(
+      newBumboys.map((b) => ({ id: b.id, nickname: b.nickname })),
+    );
 
     // Schedule job to promote bumboys back to Vice Plus after 12 hours and reset their nicknames
     clearBumboysJob(interaction.client);

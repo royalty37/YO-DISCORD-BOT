@@ -1,5 +1,5 @@
 import { Client, Events, BaseInteraction, Message } from "discord.js";
-import { YoClient, Interaction } from "../types/types";
+import { YoClient } from "../types/types";
 import { filterMessages } from "../utils/messageUtils/messageUtils";
 
 // Register client events
@@ -9,10 +9,14 @@ export const registerClientEvents = (client: YoClient) => {
     // If interaction is a chat input command, return
     if (interaction.isChatInputCommand()) {
       // Get command from client commands collection
-      const command = (interaction.client as YoClient).commands.get(interaction.commandName);
+      const command = (interaction.client as YoClient).commands.get(
+        interaction.commandName,
+      );
       // If command is not found, log error and return
       if (!command) {
-        return console.error(`*** No command matching ${interaction.commandName} was found.`);
+        return console.error(
+          `*** No command matching ${interaction.commandName} was found.`,
+        );
       }
 
       // Try to execute command
@@ -22,11 +26,18 @@ export const registerClientEvents = (client: YoClient) => {
         // If error, log error and send error message
         console.error(error);
         if (interaction.replied) {
-          await interaction.channel?.send("There was an error while executing the last command!");
+          await interaction.channel?.send(
+            "There was an error while executing the last command!",
+          );
         } else if (interaction.deferred) {
-          await interaction.editReply("There was an error while executing this command!");
+          await interaction.editReply(
+            "There was an error while executing this command!",
+          );
         } else {
-          await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+          await interaction.reply({
+            content: "There was an error while executing this command!",
+            ephemeral: true,
+          });
         }
       }
     } else {
@@ -35,9 +46,9 @@ export const registerClientEvents = (client: YoClient) => {
   });
 
   // ClientReady event
-  client.once(Events.ClientReady, (client: Client<boolean>) => {
+  client.once(Events.ClientReady, (c: Client<boolean>) => {
     // Log client ready when client is ready
-    console.log(`*** Ready! Logged in as ${client?.user?.tag}`);
+    console.log(`*** Ready! Logged in as ${c?.user?.tag}`);
   });
 
   client.on(Events.ShardError, (error: Error) => {

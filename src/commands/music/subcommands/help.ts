@@ -7,7 +7,7 @@ import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
 } from "discord.js";
-import { subcommands } from "../music";
+import { Subcommands } from "../music";
 import { Interaction } from "../../../types/types";
 
 const HELP_EMBED_DESCRIPTIONS = [
@@ -34,10 +34,14 @@ const HELP_EMBED_DESCRIPTIONS = [
 
 // Music help subcommand
 export const helpSubcommand = (sc: SlashCommandSubcommandBuilder) =>
-  sc.setName(subcommands.HELP).setDescription("Shows subcommands and descriptions of /music command.");
+  sc
+    .setName(Subcommands.HELP)
+    .setDescription("Shows subcommands and descriptions of /music command.");
 
 // Music help subcommand execution
-export const handleHelpSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
+export const handleHelpSubcommand = async (
+  interaction: Interaction<ChatInputCommandInteraction>,
+) => {
   await interaction.deferReply({ ephemeral: true });
 
   // Page index
@@ -50,7 +54,9 @@ export const handleHelpSubcommand = async (interaction: Interaction<ChatInputCom
         .setColor("Random")
         .setTitle("ℹ️ | Music Help")
         .setDescription(HELP_EMBED_DESCRIPTIONS[currentIndex])
-        .setFooter({ text: `Page ${currentIndex + 1} of ${HELP_EMBED_DESCRIPTIONS.length}` }),
+        .setFooter({
+          text: `Page ${currentIndex + 1} of ${HELP_EMBED_DESCRIPTIONS.length}`,
+        }),
     ],
     components: [
       new ActionRowBuilder<ButtonBuilder>().addComponents([

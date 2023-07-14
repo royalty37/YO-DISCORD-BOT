@@ -4,7 +4,7 @@ import {
   SlashCommandSubcommandBuilder,
   SlashCommandUserOption,
 } from "discord.js";
-import { subcommands } from "../info";
+import { Subcommands } from "../info";
 import { Interaction } from "../../../types/types";
 
 const USER_OPTION_NAME = "user";
@@ -12,14 +12,18 @@ const USER_OPTION_NAME = "user";
 // Info User subcommand - has optional user parameter that if not provided will default to the user who invoked the command
 export const userSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc
-    .setName(subcommands.USER)
+    .setName(Subcommands.USER)
     .setDescription("Provides information about the user")
     .addUserOption((option: SlashCommandUserOption) =>
-      option.setName(USER_OPTION_NAME).setDescription("The user's info you want")
+      option
+        .setName(USER_OPTION_NAME)
+        .setDescription("The user's info you want"),
     );
 
 // User subcommand execution - prints info about user
-export const handleUserSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
+export const handleUserSubcommand = async (
+  interaction: Interaction<ChatInputCommandInteraction>,
+) => {
   // Get user from user option
   const user = interaction.options.getUser(USER_OPTION_NAME);
 
@@ -28,13 +32,15 @@ export const handleUserSubcommand = async (interaction: Interaction<ChatInputCom
   if (user) {
     const member = await interaction.guild?.members.fetch({ user });
     await interaction.reply(
-      `***USER INFO***\nUsername: ${user.username}\nUser ID: ${interaction.user.id}\nUser joined: ${member?.joinedAt}.\nUser created: ${user.createdAt}`
+      `***USER INFO***\nUsername: ${user.username}\nUser ID: ${interaction.user.id}\nUser joined: ${member?.joinedAt}.\nUser created: ${user.createdAt}`,
     );
   } else {
     await interaction.reply(
-      `***USER INFO***\nUsername: ${interaction.user.username}\nUser ID: ${interaction.user.id}\nUser joined: ${
+      `***USER INFO***\nUsername: ${interaction.user.username}\nUser ID: ${
+        interaction.user.id
+      }\nUser joined: ${
         (interaction.member as GuildMember).joinedAt
-      }.\nUser created: ${interaction.user.createdAt}`
+      }.\nUser created: ${interaction.user.createdAt}`,
     );
   }
 };

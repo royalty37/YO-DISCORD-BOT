@@ -1,7 +1,13 @@
-import { ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
+import {
+  ChatInputCommandInteraction,
+  SlashCommandSubcommandBuilder,
+} from "discord.js";
 import { getBumboys } from "../actions/bumboyActions";
-import { BUMBOY_ROLE_ID, VICE_PLUS_ROLE_ID } from "../../../utils/discordUtils/roleUtils";
-import { subcommands } from "../bumboy";
+import {
+  BUMBOY_ROLE_ID,
+  VICE_PLUS_ROLE_ID,
+} from "../../../utils/discordUtils/roleUtils";
+import { Subcommands } from "../bumboy";
 import { performForceClear } from "../jobs/bumboyJobs";
 import { Interaction } from "../../../types/types";
 
@@ -11,13 +17,18 @@ import { Interaction } from "../../../types/types";
 const MY_ID = "218945393579261954";
 
 export const clearSubcommand = (sc: SlashCommandSubcommandBuilder) =>
-  sc.setName(subcommands.CLEAR).setDescription("Resets all data related to the latest BUMBOY poll.");
+  sc
+    .setName(Subcommands.CLEAR)
+    .setDescription("Resets all data related to the latest BUMBOY poll.");
 
-export const handleClearSubcommand = async (interaction: Interaction<ChatInputCommandInteraction>) => {
+export const handleClearSubcommand = async (
+  interaction: Interaction<ChatInputCommandInteraction>,
+) => {
   // Only I can use this command
   if (interaction.user.id !== MY_ID) {
     await interaction.reply({
-      content: "You do not have permission to use this command. Only the president can use this command.",
+      content:
+        "You do not have permission to use this command. Only the president can use this command.",
       ephemeral: true,
     });
     return console.log("*** BUMBOY CLEAR - User is not the president.");
@@ -29,7 +40,10 @@ export const handleClearSubcommand = async (interaction: Interaction<ChatInputCo
 
   if (!bumboyRole || !vicePlusRole) {
     console.log("*** ERROR: No BUMBOY or no Vice Plus role found.");
-    return void interaction.reply({ content: "Something went wrong. Please try again later.", ephemeral: true });
+    return void interaction.reply({
+      content: "Something went wrong. Please try again later.",
+      ephemeral: true,
+    });
   }
 
   await interaction.deferReply();
@@ -42,5 +56,7 @@ export const handleClearSubcommand = async (interaction: Interaction<ChatInputCo
 
   performForceClear(interaction.client, currentBumboyRecord);
 
-  interaction.editReply("The BUMBOY roles have been forcefully cleared by the president!");
+  interaction.editReply(
+    "The BUMBOY roles have been forcefully cleared by the president!",
+  );
 };

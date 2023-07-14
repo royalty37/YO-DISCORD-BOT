@@ -7,24 +7,27 @@ const DB_NAME = "YOZA-BOT";
 
 // Return type from Database
 export type CurrentBumboysRecord = {
-  bumboys: bumboyData[];
+  bumboys: BumboyData[];
   clearTime: Date;
 };
 
 // BUMBOY datatype - holds ID and old nickname
-type bumboyData = {
+type BumboyData = {
   id: string;
   nickname: string | null;
 };
 
 // Delete record holding current BUMBOYs from database
 export const clearBumboys = async () => {
-  await mongoClient.db(DB_NAME).collection("bumboys").deleteOne({ name: "current" });
+  await mongoClient
+    .db(DB_NAME)
+    .collection("bumboys")
+    .deleteOne({ name: "current" });
   console.log(`*** Successfully cleared BUMBOY IDs from MONGODB: ${DB_NAME}`);
 };
 
 // Save array of BUMBOY IDs and clear time (12 hours from now) to database
-export const saveBumboys = async (bumboys: bumboyData[]) => {
+export const saveBumboys = async (bumboys: BumboyData[]) => {
   if (bumboys.length === 0) {
     return void console.error("*** ERROR: No BUMBOY IDs to save.");
   }
@@ -32,7 +35,11 @@ export const saveBumboys = async (bumboys: bumboyData[]) => {
   await mongoClient
     .db(DB_NAME)
     .collection("bumboys")
-    .insertOne({ name: "current", bumboys, clearTime: dayjs().add(12, "hours").toDate() });
+    .insertOne({
+      name: "current",
+      bumboys,
+      clearTime: dayjs().add(12, "hours").toDate(),
+    });
   console.log(`*** Successfully saved BUMBOY IDs to MONGODB: ${DB_NAME}`);
 };
 

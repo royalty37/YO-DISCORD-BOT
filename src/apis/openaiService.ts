@@ -14,7 +14,10 @@ class OpenAIService {
   }
 
   // Create a completion - essentially functions like ChatGPT
-  public async createCompletion(input: string, suffix?: string): Promise<string | undefined> {
+  public async createCompletion(
+    input: string,
+    suffix?: string,
+  ): Promise<string | undefined> {
     const res = await this.openai.createCompletion({
       model: "text-davinci-003",
       max_tokens: 4000,
@@ -27,7 +30,10 @@ class OpenAIService {
   }
 
   // Create an edit - this AI model SUCKS, honestly does dumb shit
-  public async createEdit(input: string, instruction: string): Promise<string | undefined> {
+  public async createEdit(
+    input: string,
+    instruction: string,
+  ): Promise<string | undefined> {
     const res = await this.openai.createEdit({
       model: "text-davinci-edit-001",
       input,
