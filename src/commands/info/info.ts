@@ -1,10 +1,12 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction, SlashCommandSubcommandBuilder } from "discord.js";
+import { SlashCommandBuilder } from "discord.js";
 import { userSubcommand, handleUserSubcommand } from "./subcommands/user";
 import { serverSubcommand, handleServerSubcommand } from "./subcommands/server";
-import Command from "../../types/Command";
+
+import type { ChatInputCommandInteraction } from "discord.js";
+import type { Command, Interaction } from "../../types/types";
 
 // Subcommands enum for info command
-export enum subcommands {
+export enum Subcommands {
   USER = "user",
   SERVER = "server",
 }
@@ -17,11 +19,20 @@ const data = new SlashCommandBuilder()
   .addSubcommand(userSubcommand);
 
 // Info command execute function
-const execute = async (interaction: ChatInputCommandInteraction) => {
-  if (interaction.options.getSubcommand() === subcommands.USER) {
+const execute = async (
+  interaction: Interaction<ChatInputCommandInteraction>,
+) => {
+  const subcommand = interaction.options.getSubcommand();
+  if (subcommand === Subcommands.USER) {
     handleUserSubcommand(interaction);
-  } else if (interaction.options.getSubcommand() === subcommands.SERVER) {
+  } else if (subcommand === Subcommands.SERVER) {
     handleServerSubcommand(interaction);
+  } else {
+    interaction.reply({
+      content: "Something went wrong. Please try again.",
+      ephemeral: true,
+    });
+    console.error(`*** INFO - Subcommand doesn't exist: ${subcommand}`);
   }
 };
 

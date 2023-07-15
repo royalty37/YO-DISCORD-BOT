@@ -1,4 +1,4 @@
-import YoClient from "../../types/YoClient";
+import { YoClient } from "../../types/types";
 import { getMyGuild } from "./guildUtils";
 
 // Channel ID of text channel dedicated to this bot

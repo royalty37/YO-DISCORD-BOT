@@ -1,18 +1,28 @@
-import {
-  SlashCommandBuilder,
+import { SlashCommandBuilder, EmbedBuilder, Colors } from "discord.js";
+
+import type {
   ChatInputCommandInteraction,
   SlashCommandStringOption,
-  EmbedBuilder,
-  Colors,
-  MessageReaction,
   User,
+  MessageReaction,
   SlashCommandBooleanOption,
   SlashCommandNumberOption,
 } from "discord.js";
-import Command from "../../types/Command";
+import type { Command, Interaction } from "../../types/types";
 
 // Array of emoji numbers that correspond to possible options
-const EMOJI_NUMBERS = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"];
+const EMOJI_NUMBERS = [
+  "1️⃣",
+  "2️⃣",
+  "3️⃣",
+  "4️⃣",
+  "5️⃣",
+  "6️⃣",
+  "7️⃣",
+  "8️⃣",
+  "9️⃣",
+  "🔟",
+];
 
 // Emoji that represents a vote in description
 const VOTE_EMOJI = "🟢";
@@ -34,13 +44,19 @@ const data = new SlashCommandBuilder()
     option
       .setName(QUESTION_OPTION_NAME)
       .setDescription("Question to ask on poll. Must have AT LEAST 2 options.")
-      .setRequired(QUESTION_REQUIRED)
+      .setRequired(QUESTION_REQUIRED),
   )
   .addBooleanOption((option: SlashCommandBooleanOption) =>
-    option.setName(ALLOW_MULTIVOTE_OPTION_NAME).setDescription("Allow multiple votes").setRequired(MULTIVOTE_REQUIRED)
+    option
+      .setName(ALLOW_MULTIVOTE_OPTION_NAME)
+      .setDescription("Allow multiple votes")
+      .setRequired(MULTIVOTE_REQUIRED),
   )
   .addNumberOption((option: SlashCommandNumberOption) =>
-    option.setName(DURATION_OPTION_NAME).setDescription("Poll duration (in minutes)").setRequired(DURATION_REQUIRED)
+    option
+      .setName(DURATION_OPTION_NAME)
+      .setDescription("Poll duration (in minutes)")
+      .setRequired(DURATION_REQUIRED),
   );
 
 // Add options to poll command
@@ -50,18 +66,29 @@ for (let i = 1; i <= NO_OF_OPTIONS; i++) {
       .setName(OPTION_NAME_PREFIX + i)
       .setDescription(`Option ${i} for poll`)
       // First 2 options are required
-      .setRequired(i <= 2)
+      .setRequired(i <= 2),
   );
 }
 
 // Poll command execute function
-const execute = async (interaction: ChatInputCommandInteraction) => {
+const execute = async (
+  interaction: Interaction<ChatInputCommandInteraction>,
+) => {
   await interaction.deferReply();
 
   // Get Question, Allow-Multi-Vote and Duration from options
-  const question = interaction.options.getString(QUESTION_OPTION_NAME, QUESTION_REQUIRED);
-  const allowMultiVote = interaction.options.getBoolean(ALLOW_MULTIVOTE_OPTION_NAME, MULTIVOTE_REQUIRED);
-  const duration = interaction.options.getNumber(DURATION_OPTION_NAME, DURATION_REQUIRED);
+  const question = interaction.options.getString(
+    QUESTION_OPTION_NAME,
+    QUESTION_REQUIRED,
+  );
+  const allowMultiVote = interaction.options.getBoolean(
+    ALLOW_MULTIVOTE_OPTION_NAME,
+    MULTIVOTE_REQUIRED,
+  );
+  const duration = interaction.options.getNumber(
+    DURATION_OPTION_NAME,
+    DURATION_REQUIRED,
+  );
 
   // Loop through and get possible options
   const options: string[] = [];
@@ -79,10 +106,14 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
   const generateDescription = (): string => {
     // Generate percentage for each option on poll
     const generatePercentage = (index: number): string => {
-      const percentage = (votes[index] / votes.reduce((a, b) => a + b, 0)) * 100 || 0;
+      const percentage =
+        (votes[index] / votes.reduce((a, b) => a + b, 0)) * 100 || 0;
 
       // If percentage is a decimal, round to 2 decimal places
-      if (percentage.toString().includes(".") && percentage.toString().split(".")[1].length > 2) {
+      if (
+        percentage.toString().includes(".") &&
+        percentage.toString().split(".")[1].length > 2
+      ) {
         return percentage.toFixed(2);
       }
 
@@ -91,7 +122,9 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
 
     // Generate description for poll embed, start with an explanation of the poll type and how to participate
     return (
-      `This is a ${allowMultiVote ? "" : "non "}multi vote poll, which means participants are ${
+      `This is a ${
+        allowMultiVote ? "" : "non "
+      }multi vote poll, which means participants are ${
         allowMultiVote
           ? "allowed to cast multiple votes"
           : "only allowed to cast a single vote. To change your vote, remove your existing vote (reaction) and cast a new one"
@@ -103,9 +136,11 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
         .map((o) => {
           // Generate green emoji bar for each option showing vote count
           const votesEmojis = VOTE_EMOJI.repeat(votes[options.indexOf(o)]);
-          return `${EMOJI_NUMBERS[options.indexOf(o)]} ${o}\n ${votesEmojis ? `${votesEmojis} | ` : ""}${
-            votes[options.indexOf(o)]
-          } (${generatePercentage(options.indexOf(o))}%)`;
+          return `${EMOJI_NUMBERS[options.indexOf(o)]} ${o}\n ${
+            votesEmojis ? `${votesEmojis} | ` : ""
+          }${votes[options.indexOf(o)]} (${generatePercentage(
+            options.indexOf(o),
+          )}%)`;
         })
         .join("\n\n")
     );
@@ -143,15 +178,15 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
   });
 
   // Recursive function edit embed every minute to show remaining duration
-  const updateDuration = async (duration: number) => {
+  const updateDuration = async (d: number) => {
     setTimeout(async () => {
       pollEmbed.setFooter({
-        text: getFooterText(duration),
+        text: getFooterText(d),
       });
       await message.edit({ embeds: [pollEmbed] });
 
-      if (duration > 0 && !collector.ended) {
-        updateDuration(duration - 1);
+      if (d > 0 && !collector.ended) {
+        updateDuration(d - 1);
       }
     }, 60000);
   };
@@ -212,7 +247,7 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
   });
 
   // On Remove listener
-  collector.on("remove", (reaction: MessageReaction, user: User) => {
+  collector.on("remove", (reaction: MessageReaction) => {
     // Get index of reaction emoji in EMOJI_NUMBERS array and decrement vote count for that index
     const index = EMOJI_NUMBERS.indexOf(reaction.emoji.name ?? "");
     votes[index]--;
@@ -231,15 +266,18 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
     // If no votes, write a sad no votes message to description
     if (!maxVotes) {
       pollEmbed.setDescription(
-        generateDescription() + "\n\n**Poll has ended**\n\nUnfortunately, no votes were cast. 😔😔😔"
+        generateDescription() +
+          "\n\n**Poll has ended**\n\nUnfortunately, no votes were cast. 😔😔😔",
       );
     } else if (winners.length === 1) {
       // If there is only one winner, add winner to description
       pollEmbed.setDescription(
         generateDescription() +
-          `\n\n**Poll has ended**\n\n👑 **${winners[0]}** 👑 is the winner with ${maxVotes} ${
+          `\n\n**Poll has ended**\n\n👑 **${
+            winners[0]
+          }** 👑 is the winner with ${maxVotes} ${
             maxVotes > 1 ? "votes" : "vote"
-          }.`
+          }.`,
       );
     } else {
       // If there are multiple winners, add winners to description
@@ -247,7 +285,9 @@ const execute = async (interaction: ChatInputCommandInteraction) => {
         generateDescription() +
           `\n\n**Poll has ended**\n\nWinners are:\n\n ${winners
             .map((w) => `👑 **${w}** 👑`)
-            .join("\n")}\n\n with ${maxVotes} ${maxVotes > 1 ? "votes" : "vote"} each.`
+            .join("\n")}\n\n with ${maxVotes} ${
+            maxVotes > 1 ? "votes" : "vote"
+          } each.`,
       );
     }
 

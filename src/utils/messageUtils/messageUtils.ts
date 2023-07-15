@@ -1,4 +1,7 @@
-import { Message } from "discord.js";
+import { EmbedBuilder } from "discord.js";
+
+import type { Message } from "discord.js";
+import type { Track } from "discord-player";
 
 // Function to split message into multiple messages if message is > 2000 (or max length) characters
 // maxLength defaults to 2000 as that's the max length of a Discord message
@@ -18,14 +21,18 @@ export const splitMessage = (message: string, maxLength = 2000): string[] => {
 };
 
 // Regex for invite links
-const INVITE_REGEX = new RegExp(/(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[a-z0-9]/);
+const INVITE_REGEX = new RegExp(
+  /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[a-z0-9]/,
+);
 
 // Function to filter/remove messages that contain Discord invite links
 export const filterInvites = async (message: Message<boolean>) => {
   if (INVITE_REGEX.test(message.content)) {
     console.log("*** Deleting Discord invite");
     await message.delete();
-    await message.channel.send(`Discord invites are not allowed ${message.author.username}!`);
+    await message.channel.send(
+      `Discord invites are not allowed ${message.author.username}!`,
+    );
   }
 };
 
@@ -44,7 +51,38 @@ export const filterBannedWords = async (message: Message<boolean>) => {
     if (message.content.toLowerCase().includes(bannedWord)) {
       console.log("*** Deleting banned word");
       await message.delete();
-      await message.channel.send(`Banned word detected ${message.author.username}!`);
+      await message.channel.send(
+        `Banned word detected ${message.author.username}!`,
+      );
     }
   }
 };
+
+export const filterMessages = async (message: Message<boolean>) => {
+  await filterInvites(message);
+  await filterBannedWords(message);
+};
+
+export const createTrackEmbed = (track: Track) =>
+  new EmbedBuilder()
+    .setColor("Random")
+    .setTitle("🎶 | Added song to the queue:")
+    .setDescription(`[${track.title}](${track.url} 'optional hovertext')`)
+    .setThumbnail(track.thumbnail)
+    .addFields([
+      {
+        name: "**Duration:**",
+        value: track.duration,
+        inline: true,
+      },
+      {
+        name: "**Views**",
+        value: track.views.toString(),
+        inline: true,
+      },
+    ])
+    .setFooter({
+      text: `Requested by: ${track.requestedBy?.username}`,
+      iconURL: track.requestedBy?.displayAvatarURL(),
+    })
+    .setTimestamp();

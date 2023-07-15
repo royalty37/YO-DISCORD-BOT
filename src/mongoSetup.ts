@@ -2,10 +2,13 @@ import { MongoClient, ServerApiVersion } from "mongodb";
 
 export let mongoClient: MongoClient;
 
+// Initiate mongoDB connection
 export const initMongo = async () => {
   try {
     if (!process.env.MONGODB_URI) {
-      console.error("*** ERROR: MONGO_URI environment variable not set in env.");
+      console.error(
+        "*** ERROR: MONGO_URI environment variable not set in env.",
+      );
       process.exit(1);
     }
 

@@ -1,9 +1,9 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
-import Command from "../../types/Command";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { Command, Interaction } from "../../types/types";
 import { cleanSubcommand, handleCleanSubcommand } from "./subcommands/clean";
 
 // Subcommands enum for channel command
-export enum subcommands {
+export enum Subcommands {
   CLEAN = "clean",
 }
 
@@ -14,9 +14,19 @@ const data = new SlashCommandBuilder()
   .addSubcommand(cleanSubcommand);
 
 // Channel command execute function
-const execute = async (interaction: ChatInputCommandInteraction) => {
-  if (interaction.options.getSubcommand() === subcommands.CLEAN) {
+const execute = async (
+  interaction: Interaction<ChatInputCommandInteraction>,
+) => {
+  const subcommand = interaction.options.getSubcommand();
+
+  if (subcommand === Subcommands.CLEAN) {
     handleCleanSubcommand(interaction);
+  } else {
+    interaction.reply({
+      content: "Something went wrong. Please try again.",
+      ephemeral: true,
+    });
+    console.error(`*** CHANNEL - Subcommand doesn't exist: ${subcommand}`);
   }
 };
 

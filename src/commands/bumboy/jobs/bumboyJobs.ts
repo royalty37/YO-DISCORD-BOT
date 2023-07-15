@@ -1,24 +1,38 @@
 import dayjs from "dayjs";
 import { GuildMember } from "discord.js";
 import { Job, scheduleJob } from "node-schedule";
-import YoClient from "../../../types/YoClient";
+import { YoClient } from "../../../types/types";
 import { getBotChannel } from "../../../utils/discordUtils/channelUtils";
 import { getMyGuild } from "../../../utils/discordUtils/guildUtils";
-import { getBumboys, clearBumboys, CurrentBumboysRecord } from "../actions/bumboyActions";
-import { VICE_PLUS_ROLE_ID, BUMBOY_ROLE_ID } from "../../../utils/discordUtils/roleUtils";
+import {
+  getBumboys,
+  clearBumboys,
+  CurrentBumboysRecord,
+} from "../actions/bumboyActions";
+import {
+  VICE_PLUS_ROLE_ID,
+  BUMBOY_ROLE_ID,
+} from "../../../utils/discordUtils/roleUtils";
 
 let scheduledJob: Job;
 
-const performClear = async (client: YoClient, currentBumboyRecord: CurrentBumboysRecord | null) => {
+const performClear = async (
+  client: YoClient,
+  currentBumboyRecord: CurrentBumboysRecord | null,
+) => {
   if (!currentBumboyRecord) {
-    console.log("*** NO CURRENT BUMBOYS TO CLEAR, WILL STILL CHECK ROLE IN DISCORD");
+    console.log(
+      "*** NO CURRENT BUMBOYS TO CLEAR, WILL STILL CHECK ROLE IN DISCORD",
+    );
   }
 
   // Fetch Guild off client and cache members
   const guild = await getMyGuild(client);
   await guild?.members.fetch();
 
-  console.log("*** Promoting bumboys back to Vice Plus and resetting nicknames...");
+  console.log(
+    "*** Promoting bumboys back to Vice Plus and resetting nicknames...",
+  );
   const bumboysPostClear: GuildMember[] = [];
 
   // Weird recursive function to reset roles and nicknames with a 1 second delay between each
@@ -26,15 +40,26 @@ const performClear = async (client: YoClient, currentBumboyRecord: CurrentBumboy
   const resetBumboysWithDelay = async () => {
     setTimeout(async () => {
       if (currentBumboyRecord?.bumboys?.length) {
-        const member = guild?.members.cache.find((m) => m.id === currentBumboyRecord?.bumboys[i].id);
+        const member = guild?.members.cache.find(
+          (m) => m.id === currentBumboyRecord?.bumboys[i].id,
+        );
 
         if (!member) {
-          console.error(`*** ERROR: Member not found: ${currentBumboyRecord.bumboys[i].id}`);
+          console.error(
+            `*** ERROR: Member not found: ${currentBumboyRecord.bumboys[i].id}`,
+          );
         } else {
-          console.log(`*** RESETTING ROLE AND NICKNAME FOR: ${member.user.username}`);
+          console.log(
+            `*** RESETTING ROLE AND NICKNAME FOR: ${member.user.username}`,
+          );
           // Spread in managed roles when setting to avoid exception (for instance server booster role)
-          await member.roles.set([VICE_PLUS_ROLE_ID, ...member.roles.cache.filter((r) => r.managed).values()]);
-          await member.setNickname(currentBumboyRecord.bumboys[i].nickname ?? "");
+          await member.roles.set([
+            VICE_PLUS_ROLE_ID,
+            ...member.roles.cache.filter((r) => r.managed).values(),
+          ]);
+          await member.setNickname(
+            currentBumboyRecord.bumboys[i].nickname ?? "",
+          );
 
           bumboysPostClear.push(member);
         }
@@ -42,7 +67,10 @@ const performClear = async (client: YoClient, currentBumboyRecord: CurrentBumboy
         i++;
       }
 
-      if (currentBumboyRecord?.bumboys && i < currentBumboyRecord.bumboys.length) {
+      if (
+        currentBumboyRecord?.bumboys &&
+        i < currentBumboyRecord.bumboys.length
+      ) {
         resetBumboysWithDelay();
       } else {
         await clearBumboys();
@@ -52,10 +80,17 @@ const performClear = async (client: YoClient, currentBumboyRecord: CurrentBumboy
           botChannel?.send(
             "Following members have been promoted back to Vice Plus and had their nicknames reset:\n\n" +
               bumboysPostClear
-                .map((w) => `💩 **${w.user.username}${w.nickname ? ` (${w.nickname})` : ""}** 💩`)
+                .map(
+                  (w) =>
+                    `💩 **${w.user.username}${
+                      w.nickname ? ` (${w.nickname})` : ""
+                    }** 💩`,
+                )
                 .join("\n\n") +
-              `\n\nYou are no longer ${bumboysPostClear.length === 1 ? "a BUMBOY" : "BUMBOYS"} (for now)...\n\n` +
-              `The BUMBOY poll can now be run again!`
+              `\n\nYou are no longer ${
+                bumboysPostClear.length === 1 ? "a BUMBOY" : "BUMBOYS"
+              } (for now)...\n\n` +
+              `The BUMBOY poll can now be run again!`,
           );
 
           console.log("*** BUMBOY FROM DATABASE FINISHED BEING CLEARED");
@@ -63,7 +98,9 @@ const performClear = async (client: YoClient, currentBumboyRecord: CurrentBumboy
 
         // Check if any bumboys are still in the server - probably bugged so clear them too
         const bumboysStillInServer = Array.from(
-          guild?.members.cache.filter((m) => m.roles.cache.has(BUMBOY_ROLE_ID)).values()
+          guild?.members.cache
+            .filter((m) => m.roles.cache.has(BUMBOY_ROLE_ID))
+            .values(),
         );
 
         // Another weird recursive function - essentially the same as above
@@ -71,9 +108,14 @@ const performClear = async (client: YoClient, currentBumboyRecord: CurrentBumboy
         const resetBuggedBumboysWithDelay = async () => {
           setTimeout(() => {
             const member = bumboysStillInServer[j];
-            console.log(`*** RESETTING ROLE FOR BUGGED BUMBOY: ${member.user.username}`);
+            console.log(
+              `*** RESETTING ROLE FOR BUGGED BUMBOY: ${member.user.username}`,
+            );
             // Only reset role as nickname wasn't stored in the database
-            member.roles.set([VICE_PLUS_ROLE_ID, ...member.roles.cache.filter((r) => r.managed).values()]);
+            member.roles.set([
+              VICE_PLUS_ROLE_ID,
+              ...member.roles.cache.filter((r) => r.managed).values(),
+            ]);
 
             j++;
 
@@ -101,7 +143,10 @@ const performClear = async (client: YoClient, currentBumboyRecord: CurrentBumboy
 };
 
 // Function to run president force clears bumboys, cancels scheduled job if there is one then clears bumboys
-export const performForceClear = async (client: YoClient, currentBumboyRecord: CurrentBumboysRecord | null) => {
+export const performForceClear = async (
+  client: YoClient,
+  currentBumboyRecord: CurrentBumboysRecord | null,
+) => {
   if (scheduledJob) {
     scheduledJob.cancel();
     console.log("*** SCHEDULED BUMBOY CLEAR CANCELLED");
@@ -123,10 +168,14 @@ export const clearBumboysJob = async (client: YoClient) => {
     } else {
       // Schedule job to clear bumboys at clearTime stored in database
       console.log("*** SCHEDULING JOB TO CLEAR BUMBOYS");
-      scheduledJob = scheduleJob("Clear Bumboys", currentBumboyRecord.clearTime, async () => {
-        await performClear(client, currentBumboyRecord);
-        console.log("*** BUMBOY SCHEDULED CLEAR FINISHED");
-      });
+      scheduledJob = scheduleJob(
+        "Clear Bumboys",
+        currentBumboyRecord.clearTime,
+        async () => {
+          await performClear(client, currentBumboyRecord);
+          console.log("*** BUMBOY SCHEDULED CLEAR FINISHED");
+        },
+      );
     }
   } else {
     console.log("*** NO CURRENT BUMBOYS RECORD TO CLEAR");
