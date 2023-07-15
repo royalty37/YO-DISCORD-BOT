@@ -1,4 +1,7 @@
-import { finishLatestQueueMessage } from "../actions/queueActions";
+import {
+  finishLatestQueueMessage,
+  updateLatestQueueMessage,
+} from "../actions/queueActions";
 import { useQueue } from "discord-player";
 import { Subcommands } from "../music";
 
@@ -52,6 +55,9 @@ export const handleSkipSubcommand = async (
     queue.node.skip();
     console.log("*** MUSIC SKIP SUBCOMMAND - SKIPPED SONG");
     interaction.reply(`⏭️ | Skipped!`);
+
+    // Update latest queue message
+    await updateLatestQueueMessage(queue);
   } catch (e) {
     console.error(`*** MUSIC SKIP SUBCOMMAND - EXCEPTION: ${e}`);
     interaction.reply({

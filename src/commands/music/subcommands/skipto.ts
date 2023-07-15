@@ -1,5 +1,6 @@
 import { Subcommands } from "../music";
 import { useQueue } from "discord-player";
+import { updateLatestQueueMessage } from "../actions/queueActions";
 
 import type {
   ChatInputCommandInteraction,
@@ -57,4 +58,7 @@ export const handleSkipToSubcommand = async (
   // Index - 1 because of how I've done my queue message - 1 is currently playing and isn't even in the queue
   queue.tracks.remove((_, i) => i < index - 2);
   queue.node.skip();
+
+  // Update latest queue message
+  updateLatestQueueMessage(queue);
 };
