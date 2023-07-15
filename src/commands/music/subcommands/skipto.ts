@@ -54,6 +54,7 @@ export const handleSkipToSubcommand = async (
   console.log(`*** MUSIC SKIPTO SUBCOMMAND - SKIPPED TO ${index}`);
 
   // Skip to index - catch error if invalid index
-  // Index - 1 because of how I've done my queue message - 1 is currently playing
-  queue.tracks.remove((_, i) => i < index - 1);
+  // Index - 1 because of how I've done my queue message - 1 is currently playing and isn't even in the queue
+  queue.tracks.remove((_, i) => i < index - 2);
+  queue.node.skip();
 };

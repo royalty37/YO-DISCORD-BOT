@@ -19,6 +19,7 @@ import type {
 } from "discord.js";
 import type { Interaction } from "../../../types/types";
 import { useQueue } from "discord-player";
+import { VoiceConnectionState, joinVoiceChannel } from "@discordjs/voice";
 
 const INPUT_REQUIRED = true;
 const SONG_OPTION_NAME = "song";
@@ -188,12 +189,56 @@ export const handleSearchSubcommand = async (
 
     // Listen for selection and play song
     selectCollector.once("collect", async (selectInteraction) => {
+      // If no guild id, return without updating queue message
+      if (!interaction.guildId) {
+        return console.log(
+          "*** ERROR IN MUSIC PLAY SUBCOMMAND - NO GUILD ID - CANNOT UPDATE QUEUE MESSAGE",
+        );
+      }
+
+      // Get queue
+      const queue = useQueue(interaction.guildId);
+
       if (selectInteraction.customId === "select-song") {
         console.log("*** MUSIC SEARCH - SELECTED SONG");
+
+        // If no queue, assume no connection and join voice channel with workaround
+        if (!queue) {
+          // TODO: Remove this temporary workaround to Disconnection bug in Discord
+          const connection = joinVoiceChannel({
+            channelId: member.voice.channel!.id,
+            guildId: interaction.guildId,
+            adapterCreator: member.voice.channel!.guild.voiceAdapterCreator,
+          });
+
+          connection.on(
+            "stateChange",
+            (
+              oldState: VoiceConnectionState,
+              newState: VoiceConnectionState,
+            ) => {
+              const oldNetworking = Reflect.get(oldState, "networking");
+              const newNetworking = Reflect.get(newState, "networking");
+
+              const networkStateChangeHandler = (
+                oldNetworkState: any,
+                newNetworkState: any,
+              ) => {
+                const newUdp = Reflect.get(newNetworkState, "udp");
+                clearInterval(newUdp?.keepAliveInterval);
+              };
+
+              oldNetworking?.off("stateChange", networkStateChangeHandler);
+              newNetworking?.on("stateChange", networkStateChangeHandler);
+            },
+          );
+        }
+
         await interaction.client.player.play(
           member.voice.channel!,
           tracks[parseInt(selectInteraction.values[0])],
           {
+            requestedBy: interaction.user,
             nodeOptions: {
               metadata: interaction,
             },
@@ -201,16 +246,6 @@ export const handleSearchSubcommand = async (
         );
 
         await interaction.deleteReply();
-
-        // If no guild id, return without updating queue message
-        if (!interaction.guildId) {
-          return console.log(
-            "*** ERROR IN MUSIC PLAY SUBCOMMAND - NO GUILD ID - CANNOT UPDATE QUEUE MESSAGE",
-          );
-        }
-
-        // Get queue
-        const queue = useQueue(interaction.guildId);
 
         // If no queue, return without updating queue message
         if (!queue) {

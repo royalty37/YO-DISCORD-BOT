@@ -65,15 +65,17 @@ export const handleSeekSubcommand = async (
     MINUTES_AND_SECONDS_REQUIRED,
   );
 
-  // Calculate total seconds
-  const totalSeconds = minutes * 60 + seconds;
+  // Calculate total MS
+  const totalMS = (minutes * 60 + seconds) * 1000;
 
-  // Seek to total seconds
-  timeline.setPosition(totalSeconds);
+  // Seek to total MS
+  timeline.setPosition(totalMS);
 
   // Reply with seeked to
   interaction.reply({
-    content: `⏩ | Seeked to ${minutes}:${seconds}`,
+    content: `⏩ | Seeked to ${minutes}:${
+      seconds < 10 ? `0${seconds}` : seconds
+    }`,
     ephemeral: true,
   });
 };

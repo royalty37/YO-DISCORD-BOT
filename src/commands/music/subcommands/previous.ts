@@ -10,10 +10,10 @@ import type { Interaction } from "../../../types/types";
 
 // Music previous subcommand
 export const previousSubcommand = (sc: SlashCommandSubcommandBuilder) =>
-  sc.setName(Subcommands.SHUFFLE).setDescription("Shuffles the queue.");
+  sc.setName(Subcommands.PREVIOUS).setDescription("Plays the previous song.");
 
 // Music previous subcommand execution
-export const handleShuffleSubcommand = async (
+export const handlePreviousSubcommand = async (
   interaction: Interaction<ChatInputCommandInteraction>,
 ) => {
   if (!interaction.guildId) {

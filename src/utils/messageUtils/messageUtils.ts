@@ -67,7 +67,7 @@ export const createTrackEmbed = (track: Track) =>
   new EmbedBuilder()
     .setColor("Random")
     .setTitle("🎶 | Added song to the queue:")
-    .setDescription(`**${track.title}!**`)
+    .setDescription(`[${track.title}](${track.url} 'optional hovertext')`)
     .setThumbnail(track.thumbnail)
     .addFields([
       {

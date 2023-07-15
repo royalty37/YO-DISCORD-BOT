@@ -22,14 +22,16 @@ const HELP_EMBED_DESCRIPTIONS = [
     "**8. join <channel> (optional)** - Joins the supplied voice channel otherwise joins the voice channel you are in.\n\n" +
     "**9. leave** - Leaves the voice channel.\n\n" +
     "**10. skip** - Skips the current song.\n\n",
-  "**11. skipto <position>** - Skips to the specified position in the queue.\n\n" +
+  "**Music Subcommands**\n\n" +
+    "**11. skipto <position>** - Skips to the specified position in the queue.\n\n" +
     "**12. stop** - Stops the current song/queue.\n\n" +
     "**13. previous** - Plays the previous song in the queue.\n\n" +
     "**14. queue** - Shows the current queue.\n\n" +
     "**15. nowplaying** - Shows the current song.\n\n" +
     "**16. shuffle** - Shuffles the current queue.\n\n" +
     "**17. repeat <mode> (Disabled/Track/Queue)** - Sets the repeat mode.\n\n" +
-    "**18. seek <minutes> <seconds>** - Seeks to the specified time in the current song.\n\n",
+    "**18. seek <minutes> <seconds>** - Seeks to the specified time in the current song.\n\n" +
+    "**19. lyrics <song>** - Prints the lyrics searched for or the song currently playing.\n\n",
 ];
 
 // Music help subcommand

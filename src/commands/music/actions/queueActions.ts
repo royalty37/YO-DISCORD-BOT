@@ -24,6 +24,10 @@ const generateEmbedDescription = (queue: GuildQueue) => {
   const newEmbedDescriptions: string[] = [];
   let currentEmbedDescription = "";
   const tracks = queue.tracks.toArray();
+  if (queue.currentTrack) {
+    tracks.unshift(queue.currentTrack);
+  }
+
   tracks.forEach((track, index) => {
     const songToAppend = `${index + 1}. ${track.title}${
       index === 0 ? " (currently playing)" : ""
@@ -51,6 +55,12 @@ export const generateReplyObject = (queue: GuildQueue) => {
     currentIndex = embedDescriptions.length - 1;
   }
 
+  // Create array with current track as first element...
+  const tracks = queue.tracks.toArray();
+  if (queue.currentTrack) {
+    tracks.unshift(queue.currentTrack);
+  }
+
   return {
     embeds: [
       new EmbedBuilder()
@@ -60,7 +70,7 @@ export const generateReplyObject = (queue: GuildQueue) => {
             REPEAT_MODE_ARRAY[queue.repeatMode]
           }** | Current queue:`,
         )
-        .setThumbnail(queue.tracks.toArray()[currentIndex].thumbnail ?? null)
+        .setThumbnail(tracks[currentIndex]?.thumbnail ?? null)
         .setDescription(embedDescriptions[currentIndex])
         .setFooter({
           text: `Page ${currentIndex + 1} of ${embedDescriptions.length}`,
@@ -91,6 +101,7 @@ export const updateLatestQueueMessage = async (queue: GuildQueue) => {
     } catch (e) {
       console.log(
         "*** UPDATE LATEST QUEUE MESSAGE ERROR - INTERACTION PROBABLY EXPIRED",
+        { e },
       );
     }
   }
@@ -111,6 +122,7 @@ export const finishLatestQueueMessage = async () => {
     } catch (e) {
       console.log(
         "*** FINISH LATEST QUEUE MESSAGE ERROR - INTERACTION PROBABLY EXPIRED",
+        { e },
       );
     }
   }
@@ -126,6 +138,7 @@ export const setLatestQueueMessage = (
     } catch (e) {
       console.log(
         "*** SET LATEST QUEUE MESSAGE ERROR - INTERACTION PROBABLY EXPIRED",
+        { e },
       );
     }
   }

@@ -103,9 +103,8 @@ export const registerPlayerEvents = (player: Player) => {
 
   player.events.on(
     PlayerEvent.debug,
-    async (queue: GuildQueue, message: string) => {
+    async (_: GuildQueue, message: string) => {
       console.log(`Player debug event: ${message}`);
-      updateLatestQueueMessage(queue);
     },
   );
 };

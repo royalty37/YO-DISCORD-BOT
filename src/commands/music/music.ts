@@ -24,6 +24,11 @@ import { searchSubcommand, handleSearchSubcommand } from "./subcommands/search";
 import { repeatSubcommand, handleRepeatSubcommand } from "./subcommands/repeat";
 import { seekSubcommand, handleSeekSubcommand } from "./subcommands/seek";
 import { helpSubcommand, handleHelpSubcommand } from "./subcommands/help";
+import { lyricsSubcommand, handleLyricsSubcommand } from "./subcommands/lyrics";
+import {
+  previousSubcommand,
+  handlePreviousSubcommand,
+} from "./subcommands/previous";
 import { playSkipSubcommand } from "./subcommands/playskip";
 import { playTopSubcommand } from "./subcommands/playtop";
 import { Command, Interaction } from "../../types/types";
@@ -49,6 +54,7 @@ export enum Subcommands {
   REPEAT = "repeat",
   SEEK = "seek",
   HELP = "help",
+  LYRICS = "lyrics",
 }
 
 // Music command SlashCommandBuilder
@@ -72,7 +78,9 @@ const data = new SlashCommandBuilder()
   .addSubcommand(searchSubcommand)
   .addSubcommand(repeatSubcommand)
   .addSubcommand(seekSubcommand)
-  .addSubcommand(helpSubcommand);
+  .addSubcommand(previousSubcommand)
+  .addSubcommand(helpSubcommand)
+  .addSubcommand(lyricsSubcommand);
 
 // Music command execute function
 const execute = async (
@@ -132,6 +140,12 @@ const execute = async (
       break;
     case Subcommands.HELP:
       handleHelpSubcommand(interaction);
+      break;
+    case Subcommands.LYRICS:
+      handleLyricsSubcommand(interaction);
+      break;
+    case Subcommands.PREVIOUS:
+      handlePreviousSubcommand(interaction);
       break;
     default:
       interaction.reply({

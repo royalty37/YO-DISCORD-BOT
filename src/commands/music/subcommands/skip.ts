@@ -39,8 +39,8 @@ export const handleSkipSubcommand = async (
 
   try {
     // If only one song in queue, stop the queue and return
-    if (queue.tracks.toArray().length === 1) {
-      interaction.client.distube.stop(interaction.guildId);
+    if (!queue.tracks.toArray().length) {
+      queue?.node.stop();
       console.log("*** MUSIC SKIP SUBCOMMAND - STOPPED QUEUE");
       interaction.reply("⏹️ | Stopped the music!");
 
