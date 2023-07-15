@@ -29,9 +29,9 @@ const generateEmbedDescription = (queue: GuildQueue) => {
   }
 
   tracks.forEach((track, index) => {
-    const songToAppend = `${index + 1}. ${track.title}${
-      index === 0 ? " (currently playing)" : ""
-    }\n\n`;
+    const songToAppend = `${index + 1}. [${track.title}](${
+      track.url
+    } 'optional hovertext')${index === 0 ? " (currently playing)" : ""}\n\n`;
     if (index !== 0 && index % 10 === 0) {
       newEmbedDescriptions.push(currentEmbedDescription);
       currentEmbedDescription = songToAppend;

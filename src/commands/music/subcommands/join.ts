@@ -8,6 +8,7 @@ import type {
   ChatInputCommandInteraction,
   VoiceChannel,
 } from "discord.js";
+import type { VoiceConnectionState } from "@discordjs/voice";
 import type { Interaction } from "../../../types/types";
 
 // Music join subcommand
@@ -58,11 +59,31 @@ export const handleJoinSubcommand = async (
     });
   }
 
-  joinVoiceChannel({
+  const connection = joinVoiceChannel({
     channelId: channel.id,
     guildId: interaction.guildId,
     adapterCreator: (channel as VoiceChannel).guild.voiceAdapterCreator,
   });
+
+  // TODO: Remove
+  connection.on(
+    "stateChange",
+    (oldState: VoiceConnectionState, newState: VoiceConnectionState) => {
+      const oldNetworking = Reflect.get(oldState, "networking");
+      const newNetworking = Reflect.get(newState, "networking");
+
+      const networkStateChangeHandler = (
+        oldNetworkState: any,
+        newNetworkState: any,
+      ) => {
+        const newUdp = Reflect.get(newNetworkState, "udp");
+        clearInterval(newUdp?.keepAliveInterval);
+      };
+
+      oldNetworking?.off("stateChange", networkStateChangeHandler);
+      newNetworking?.on("stateChange", networkStateChangeHandler);
+    },
+  );
 
   interaction.reply({
     content: `Joined the voice channel: ${channel.name}!`,
