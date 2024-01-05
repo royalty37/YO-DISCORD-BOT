@@ -8,11 +8,16 @@ export const registerClientEvents = (client: YoClient) => {
   client.on(Events.InteractionCreate, async (interaction: BaseInteraction) => {
     // If interaction is a chat input command, return
     if (interaction.isChatInputCommand()) {
-      // Uncomment if Sams playing up
+      // Uncomment if Sam's playing up
       // if (interaction.member?.user.id === "256931816290779147") {
-      //   await interaction.reply("You're a bumass Sam");
+      //   await interaction.reply("You're a bum ass Sam");
       //   return;
       // }
+
+      if (interaction.member?.user.id === "265963861012774913") {
+        await interaction.reply("Sassy's a gay cunt");
+        return;
+      }
 
       // Get command from client commands collection
       const command = (interaction.client as YoClient).commands.get(
