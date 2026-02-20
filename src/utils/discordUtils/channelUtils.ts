@@ -1,13 +1,15 @@
 import { YoClient } from "../../types/types";
 import { getMyGuild } from "./guildUtils";
 
-// Channel ID of text channel dedicated to this bot
-const BOT_CHANNEL_ID = "1057644079682437140";
-
-// Returns the text channel dedicated to this bot - if it exists and is indeed text based
 export const getBotChannel = async (client: YoClient) => {
+  const botChannelId = process.env.BOT_CHANNEL_ID;
+  if (!botChannelId) {
+    console.error("*** ERROR: BOT_CHANNEL_ID environment variable is not set");
+    return;
+  }
+
   const guild = await getMyGuild(client);
-  const channel = await guild?.channels.fetch(BOT_CHANNEL_ID);
+  const channel = await guild?.channels.fetch(botChannelId);
 
   if (!channel) {
     console.error("*** ERROR: Channel not found");

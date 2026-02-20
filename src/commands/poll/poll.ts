@@ -122,12 +122,10 @@ const execute = async (
 
     // Generate description for poll embed, start with an explanation of the poll type and how to participate
     return (
-      `This is a ${
-        allowMultiVote ? "" : "non "
-      }multi vote poll, which means participants are ${
-        allowMultiVote
-          ? "allowed to cast multiple votes"
-          : "only allowed to cast a single vote. To change your vote, remove your existing vote (reaction) and cast a new one"
+      `This is a ${allowMultiVote ? "" : "non "
+      }multi vote poll, which means participants are ${allowMultiVote
+        ? "allowed to cast multiple votes"
+        : "only allowed to cast a single vote. To change your vote, remove your existing vote (reaction) and cast a new one"
       }. Vote by reacting with the emoji corresponding to the option you want to vote for.\n\n` +
       // Sort options by vote count, then map to generate information about each option, and join each option with a double new line
       // Spread options into new array to avoid mutating original array on sort
@@ -136,11 +134,10 @@ const execute = async (
         .map((o) => {
           // Generate green emoji bar for each option showing vote count
           const votesEmojis = VOTE_EMOJI.repeat(votes[options.indexOf(o)]);
-          return `${EMOJI_NUMBERS[options.indexOf(o)]} ${o}\n ${
-            votesEmojis ? `${votesEmojis} | ` : ""
-          }${votes[options.indexOf(o)]} (${generatePercentage(
-            options.indexOf(o),
-          )}%)`;
+          return `${EMOJI_NUMBERS[options.indexOf(o)]} ${o}\n ${votesEmojis ? `${votesEmojis} | ` : ""
+            }${votes[options.indexOf(o)]} (${generatePercentage(
+              options.indexOf(o),
+            )}%)`;
         })
         .join("\n\n")
     );
@@ -148,12 +145,10 @@ const execute = async (
 
   // Function to generate footer text for poll embed, if no duration is provided, then remaining duration is not shown (used for poll end)
   const getFooterText = (remainingDurationParam?: number): string =>
-    `Poll created by ${interaction.user.username}${
-      remainingDurationParam
-        ? `\n\nPoll will end in approximately ${remainingDurationParam} ${
-            remainingDurationParam > 1 ? "minutes" : "minute"
-          }.`
-        : ""
+    `Poll created by ${interaction.user.username}${remainingDurationParam
+      ? `\n\nPoll will end in approximately ${remainingDurationParam} ${remainingDurationParam > 1 ? "minutes" : "minute"
+      }.`
+      : ""
     }`;
 
   // Create initial poll embed - No votes yet
@@ -267,27 +262,24 @@ const execute = async (
     if (!maxVotes) {
       pollEmbed.setDescription(
         generateDescription() +
-          "\n\n**Poll has ended**\n\nUnfortunately, no votes were cast. 😔😔😔",
+        "\n\n**Poll has ended**\n\nUnfortunately, no votes were cast. 😔😔😔",
       );
     } else if (winners.length === 1) {
       // If there is only one winner, add winner to description
       pollEmbed.setDescription(
         generateDescription() +
-          `\n\n**Poll has ended**\n\n👑 **${
-            winners[0]
-          }** 👑 is the winner with ${maxVotes} ${
-            maxVotes > 1 ? "votes" : "vote"
-          }.`,
+        `\n\n**Poll has ended**\n\n👑 **${winners[0]
+        }** 👑 is the winner with ${maxVotes} ${maxVotes > 1 ? "votes" : "vote"
+        }.`,
       );
     } else {
       // If there are multiple winners, add winners to description
       pollEmbed.setDescription(
         generateDescription() +
-          `\n\n**Poll has ended**\n\nWinners are:\n\n ${winners
-            .map((w) => `👑 **${w}** 👑`)
-            .join("\n")}\n\n with ${maxVotes} ${
-            maxVotes > 1 ? "votes" : "vote"
-          } each.`,
+        `\n\n**Poll has ended**\n\nWinners are:\n\n ${winners
+          .map((w) => `👑 **${w}** 👑`)
+          .join("\n")}\n\n with ${maxVotes} ${maxVotes > 1 ? "votes" : "vote"
+        } each.`,
       );
     }
 
@@ -301,4 +293,4 @@ const pollCommand: Command = {
   execute,
 };
 
-module.exports = pollCommand;
+export default pollCommand;

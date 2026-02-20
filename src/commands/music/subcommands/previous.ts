@@ -17,7 +17,7 @@ export const handlePreviousSubcommand = async (
   interaction: Interaction<ChatInputCommandInteraction>,
 ) => {
   if (!interaction.guildId) {
-    console.log("*** MUSIC PAUSE SUBCOMMAND - NO GUILD ID");
+    console.log("*** MUSIC PREVIOUS SUBCOMMAND - NO GUILD ID");
     return void interaction.reply({
       content: "Something went wrong. Please try again.",
       ephemeral: true,
@@ -29,7 +29,7 @@ export const handlePreviousSubcommand = async (
 
   // If no queue, no music is playing
   if (!history) {
-    console.log("*** MUSIC PAUSE SUBCOMMAND - NO HISTORY");
+    console.log("*** MUSIC PREVIOUS SUBCOMMAND - NO HISTORY");
     return void interaction.reply({
       content: "❌ | No queue history!",
       ephemeral: true,

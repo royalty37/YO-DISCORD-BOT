@@ -30,4 +30,4 @@ const echoCommand: Command = {
   },
 };
 
-module.exports = echoCommand;
+export default echoCommand;

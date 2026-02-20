@@ -1,5 +1,6 @@
 import type {
   SlashCommandBuilder,
+  SlashCommandOptionsOnlyBuilder,
   SlashCommandSubcommandsOnlyBuilder,
   Client,
   Collection,
@@ -18,8 +19,9 @@ export type Interaction<T extends BaseInteraction> = T & {
 
 export type Command = {
   data:
-    | SlashCommandBuilder
-    | SlashCommandSubcommandsOnlyBuilder
-    | Omit<SlashCommandBuilder, "addSubcommandGroup" | "addSubcommand">;
+  | SlashCommandBuilder
+  | SlashCommandOptionsOnlyBuilder
+  | SlashCommandSubcommandsOnlyBuilder
+  | Omit<SlashCommandBuilder, "addSubcommandGroup" | "addSubcommand">;
   execute: (interaction: any) => Promise<void>;
 };

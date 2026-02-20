@@ -17,8 +17,8 @@ export const cleanSubcommand = (sc: SlashCommandSubcommandBuilder) =>
 export const handleCleanSubcommand = async (
   interaction: Interaction<ChatInputCommandInteraction>,
 ) => {
-  interaction.deferReply();
-  interaction.editReply("Cleaning channel...");
+  await interaction.deferReply();
+  await interaction.editReply("Cleaning channel...");
 
   // Fetch all messages in channel in batches of 100 as this is the most that can be fetched at once
   const messages: Message[] = [];

@@ -35,7 +35,7 @@ export const handleLyricsSubcommand = async (
     });
   }
 
-  interaction.deferReply();
+  await interaction.deferReply();
 
   const lyricsFinder = lyricsExtractor();
 

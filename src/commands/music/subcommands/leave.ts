@@ -17,7 +17,7 @@ export const handleLeaveSubcommand = async (
   interaction: Interaction<ChatInputCommandInteraction>,
 ) => {
   if (!interaction.guildId) {
-    console.log("*** MUSIC RESUME SUBCOMMAND - NO GUILD ID");
+    console.log("*** MUSIC LEAVE SUBCOMMAND - NO GUILD ID");
     return void interaction.reply({
       content: "Something went wrong. Please try again.",
       ephemeral: true,
@@ -32,15 +32,6 @@ export const handleLeaveSubcommand = async (
     console.error("*** MUSIC LEAVE SUBCOMMAND - NOT IN VOICE CHANNEL");
     return void interaction.reply({
       content: "❌ | I'm not in a voice channel!",
-      ephemeral: true,
-    });
-  }
-
-  // If no guild ID, return
-  if (!interaction.guildId) {
-    console.log("*** MUSIC LEAVE SUBCOMMAND - NO GUILD ID");
-    return void interaction.reply({
-      content: "Something went wrong. Please try again.",
       ephemeral: true,
     });
   }

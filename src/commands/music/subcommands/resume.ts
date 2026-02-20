@@ -24,7 +24,6 @@ export const handleResumeSubcommand = async (
   }
 
   const timeline = useTimeline(interaction.guildId);
-  // Get DisTube queue from client from interaction
 
   if (!timeline) {
     console.log("*** MUSIC RESUME SUBCOMMAND - NO TIMELINE");

@@ -14,4 +14,4 @@ const pingCommand: Command = {
   },
 };
 
-module.exports = pingCommand;
+export default pingCommand;

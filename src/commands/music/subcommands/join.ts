@@ -52,7 +52,7 @@ export const handleJoinSubcommand = async (
   }
 
   if (!interaction.guildId) {
-    console.log("*** MUSIC RESUME SUBCOMMAND - NO GUILD ID");
+    console.log("*** MUSIC JOIN SUBCOMMAND - NO GUILD ID");
     return void interaction.reply({
       content: "Something went wrong. Please try again.",
       ephemeral: true,

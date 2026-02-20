@@ -13,14 +13,21 @@ const data = new SlashCommandBuilder()
   .setDescription("Subcommands for Discord channel management.")
   .addSubcommand(cleanSubcommand);
 
-// Channel command execute function
+const subcommandHandlers: Record<
+  string,
+  (interaction: Interaction<ChatInputCommandInteraction>) => void
+> = {
+  [Subcommands.CLEAN]: handleCleanSubcommand,
+};
+
 const execute = async (
   interaction: Interaction<ChatInputCommandInteraction>,
 ) => {
   const subcommand = interaction.options.getSubcommand();
+  const handler = subcommandHandlers[subcommand];
 
-  if (subcommand === Subcommands.CLEAN) {
-    handleCleanSubcommand(interaction);
+  if (handler) {
+    handler(interaction);
   } else {
     interaction.reply({
       content: "Something went wrong. Please try again.",
@@ -35,4 +42,5 @@ const channelCommand: Command = {
   execute,
 };
 
-module.exports = channelCommand;
+export default channelCommand;
+

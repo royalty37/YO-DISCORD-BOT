@@ -1,12 +1,14 @@
 import { Guild } from "discord.js";
 import { YoClient } from "../../types/types";
 
-// Guild ID of my personal Discord channel
-const GUILD_ID = "249728245212119043";
-
 export const getMyGuild = async (client: YoClient): Promise<Guild> => {
+  const guildId = process.env.GUILD_ID;
+  if (!guildId) {
+    throw new Error("GUILD_ID environment variable is not set");
+  }
+
   console.log("*** FETCHING MY GUILD");
-  const guild = await client.guilds.fetch(GUILD_ID);
+  const guild = await client.guilds.fetch(guildId);
 
   if (!guild) {
     console.error("*** ERROR: Guild not found");

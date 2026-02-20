@@ -41,8 +41,6 @@ registerClientEvents(client);
 registerPlayerEvents(client.player);
 registerProcessEvents();
 
-// Initiate mongoDB connection
-initMongo();
 
 // Get commandsPath and command folders within
 const commandsPath = path.join(__dirname, "commands");
@@ -58,7 +56,8 @@ for (const cf of commandFolders) {
 
   for (const file of commandFiles) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const command = require(`./commands/${cf}/${file}`);
+    const imported = require(`./commands/${cf}/${file}`);
+    const command = imported.default ?? imported;
 
     // Set a new item in the Collection only if command has both 'data' and 'execute' properties
     if (command.data && command.execute) {
@@ -71,11 +70,13 @@ for (const cf of commandFolders) {
   }
 }
 
-const login = async () => {
+const start = async () => {
+  // Ensure MongoDB is connected before bot starts
+  await initMongo();
   // Login to Discord with DISCORD_TOKEN
   await client.login(process.env.DISCORD_TOKEN);
   // Reschedule jobs
   scheduleJobs(client);
 };
 
-login();
+start();

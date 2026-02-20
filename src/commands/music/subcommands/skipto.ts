@@ -29,16 +29,15 @@ export const handleSkipToSubcommand = async (
   interaction: Interaction<ChatInputCommandInteraction>,
 ) => {
   if (!interaction.guildId) {
-    console.log("*** MUSIC PAUSE SUBCOMMAND - NO GUILD ID");
+    console.log("*** MUSIC SKIPTO SUBCOMMAND - NO GUILD ID");
     return void interaction.reply("Something went wrong. Please try again.");
   }
 
-  // Get queue from distube
   const queue = useQueue(interaction.guildId);
 
   // If no queue, no music is playing
   if (!queue) {
-    console.log("*** MUSIC PAUSE SUBCOMMAND - NO QUEUE");
+    console.log("*** MUSIC SKIPTO SUBCOMMAND - NO QUEUE");
     return void interaction.reply("❌ | No music is being played!");
   }
 

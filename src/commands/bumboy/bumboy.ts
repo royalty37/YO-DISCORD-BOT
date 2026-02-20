@@ -22,7 +22,14 @@ const data = new SlashCommandBuilder()
   .addSubcommand(pollSubcommand)
   .addSubcommand(clearSubcommand);
 
-// Bumboy command execute function
+const subcommandHandlers: Record<
+  string,
+  (interaction: Interaction<ChatInputCommandInteraction>) => Promise<void>
+> = {
+  [Subcommands.POLL]: handlePollSubcommand,
+  [Subcommands.CLEAR]: handleClearSubcommand,
+};
+
 const execute = async (
   interaction: Interaction<ChatInputCommandInteraction>,
 ) => {
@@ -31,22 +38,18 @@ const execute = async (
   }
 
   const subcommand = interaction.options.getSubcommand();
+  const handler = subcommandHandlers[subcommand];
 
-  switch (subcommand) {
-    case Subcommands.POLL:
-      await handlePollSubcommand(interaction);
-      break;
-    case Subcommands.CLEAR:
-      await handleClearSubcommand(interaction);
-      break;
-    default:
-      interaction.reply({
-        content: "Something went wrong. Please try again.",
-        ephemeral: true,
-      });
-      console.log(
-        `*** BUMBOY - Subcommand doesn't exist: ${interaction.options.getSubcommand()}`,
-      );
+  if (handler) {
+    await handler(interaction);
+  } else {
+    interaction.reply({
+      content: "Something went wrong. Please try again.",
+      ephemeral: true,
+    });
+    console.log(
+      `*** BUMBOY - Subcommand doesn't exist: ${subcommand}`,
+    );
   }
 };
 
@@ -55,4 +58,5 @@ const bumboyCommand: Command = {
   execute,
 };
 
-module.exports = bumboyCommand;
+export default bumboyCommand;
+

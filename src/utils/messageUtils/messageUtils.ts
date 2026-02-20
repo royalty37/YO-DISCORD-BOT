@@ -12,8 +12,8 @@ export const splitMessage = (message: string, maxLength = 2000): string[] => {
 
   const returnArray: string[] = [];
 
-  for (let i = 0; i < message.length; i += 2000) {
-    const toSend = message.substring(i, Math.min(message.length, i + 2000));
+  for (let i = 0; i < message.length; i += maxLength) {
+    const toSend = message.substring(i, Math.min(message.length, i + maxLength));
     returnArray.push(toSend);
   }
 
@@ -30,9 +30,11 @@ export const filterInvites = async (message: Message<boolean>) => {
   if (INVITE_REGEX.test(message.content)) {
     console.log("*** Deleting Discord invite");
     await message.delete();
-    await message.channel.send(
-      `Discord invites are not allowed ${message.author.username}!`,
-    );
+    if (message.channel.isSendable()) {
+      await message.channel.send(
+        `Discord invites are not allowed ${message.author.username}!`,
+      );
+    }
   }
 };
 
@@ -51,9 +53,11 @@ export const filterBannedWords = async (message: Message<boolean>) => {
     if (message.content.toLowerCase().includes(bannedWord)) {
       console.log("*** Deleting banned word");
       await message.delete();
-      await message.channel.send(
-        `Banned word detected ${message.author.username}!`,
-      );
+      if (message.channel.isSendable()) {
+        await message.channel.send(
+          `Banned word detected ${message.author.username}!`,
+        );
+      }
     }
   }
 };

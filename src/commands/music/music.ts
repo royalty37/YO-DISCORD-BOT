@@ -82,77 +82,48 @@ const data = new SlashCommandBuilder()
   .addSubcommand(helpSubcommand)
   .addSubcommand(lyricsSubcommand);
 
+// Handler map for subcommands
+const subcommandHandlers: Record<
+  string,
+  (interaction: Interaction<ChatInputCommandInteraction>) => void
+> = {
+  [Subcommands.PLAY]: handlePlaySubcommand,
+  [Subcommands.SHORTHAND_PLAY]: handlePlaySubcommand,
+  [Subcommands.PAUSE]: handlePauseSubcommand,
+  [Subcommands.RESUME]: handleResumeSubcommand,
+  [Subcommands.JOIN]: handleJoinSubcommand,
+  [Subcommands.LEAVE]: handleLeaveSubcommand,
+  [Subcommands.SKIP]: handleSkipSubcommand,
+  [Subcommands.STOP]: handleStopSubcommand,
+  [Subcommands.QUEUE]: handleQueueSubcommand,
+  [Subcommands.NOWPLAYING]: handleNowPlayingSubcommand,
+  [Subcommands.PLAYSKIP]: (interaction) => handlePlaySubcommand(interaction, true),
+  [Subcommands.PLAYTOP]: (interaction) => handlePlaySubcommand(interaction, false, true),
+  [Subcommands.SHUFFLE]: handleShuffleSubcommand,
+  [Subcommands.SKIPTO]: handleSkipToSubcommand,
+  [Subcommands.SEARCH]: handleSearchSubcommand,
+  [Subcommands.REPEAT]: handleRepeatSubcommand,
+  [Subcommands.SEEK]: handleSeekSubcommand,
+  [Subcommands.HELP]: handleHelpSubcommand,
+  [Subcommands.LYRICS]: handleLyricsSubcommand,
+  [Subcommands.PREVIOUS]: handlePreviousSubcommand,
+};
+
 // Music command execute function
 const execute = async (
   interaction: Interaction<ChatInputCommandInteraction>,
 ) => {
   const subcommand = interaction.options.getSubcommand();
+  const handler = subcommandHandlers[subcommand];
 
-  // Switch statement for subcommands to handle subcommand execution accordingly
-  switch (subcommand) {
-    case Subcommands.PLAY:
-    case Subcommands.SHORTHAND_PLAY:
-      handlePlaySubcommand(interaction);
-      break;
-    case Subcommands.PAUSE:
-      handlePauseSubcommand(interaction);
-      break;
-    case Subcommands.RESUME:
-      handleResumeSubcommand(interaction);
-      break;
-    case Subcommands.JOIN:
-      handleJoinSubcommand(interaction);
-      break;
-    case Subcommands.LEAVE:
-      handleLeaveSubcommand(interaction);
-      break;
-    case Subcommands.SKIP:
-      handleSkipSubcommand(interaction);
-      break;
-    case Subcommands.STOP:
-      handleStopSubcommand(interaction);
-      break;
-    case Subcommands.QUEUE:
-      handleQueueSubcommand(interaction);
-      break;
-    case Subcommands.NOWPLAYING:
-      handleNowPlayingSubcommand(interaction);
-      break;
-    case Subcommands.PLAYSKIP:
-      handlePlaySubcommand(interaction, true);
-      break;
-    case Subcommands.PLAYTOP:
-      handlePlaySubcommand(interaction, false, true);
-    case Subcommands.SHUFFLE:
-      handleShuffleSubcommand(interaction);
-      break;
-    case Subcommands.SKIPTO:
-      handleSkipToSubcommand(interaction);
-      break;
-    case Subcommands.SEARCH:
-      handleSearchSubcommand(interaction);
-      break;
-    case Subcommands.REPEAT:
-      handleRepeatSubcommand(interaction);
-      break;
-    case Subcommands.SEEK:
-      handleSeekSubcommand(interaction);
-      break;
-    case Subcommands.HELP:
-      handleHelpSubcommand(interaction);
-      break;
-    case Subcommands.LYRICS:
-      handleLyricsSubcommand(interaction);
-      break;
-    case Subcommands.PREVIOUS:
-      handlePreviousSubcommand(interaction);
-      break;
-    default:
-      interaction.reply({
-        content: "Something went wrong. Please try again.",
-        ephemeral: true,
-      });
-      console.log(`*** MUSIC - Subcommand doesn't exist: ${subcommand}`);
+  if (handler) {
+    handler(interaction);
+  } else {
+    interaction.reply({
+      content: "Something went wrong. Please try again.",
+      ephemeral: true,
+    });
+    console.log(`*** MUSIC - Subcommand doesn't exist: ${subcommand}`);
   }
 };
 
@@ -161,4 +132,5 @@ const musicCommand: Command = {
   execute,
 };
 
-module.exports = musicCommand;
+export default musicCommand;
+

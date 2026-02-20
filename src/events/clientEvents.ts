@@ -8,17 +8,6 @@ export const registerClientEvents = (client: YoClient) => {
   client.on(Events.InteractionCreate, async (interaction: BaseInteraction) => {
     // If interaction is a chat input command, return
     if (interaction.isChatInputCommand()) {
-      // Uncomment if Sam's playing up
-      // if (interaction.member?.user.id === "256931816290779147") {
-      //   await interaction.reply("You're a bum ass Sam");
-      //   return;
-      // }
-
-      if (interaction.member?.user.id === "265963861012774913") {
-        await interaction.reply("Sassy's a gay cunt");
-        return;
-      }
-
       // Get command from client commands collection
       const command = (interaction.client as YoClient).commands.get(
         interaction.commandName,
@@ -37,9 +26,11 @@ export const registerClientEvents = (client: YoClient) => {
         // If error, log error and send error message
         console.error(error);
         if (interaction.replied) {
-          await interaction.channel?.send(
-            "There was an error while executing the last command!",
-          );
+          if (interaction.channel?.isSendable()) {
+            await interaction.channel.send(
+              "There was an error while executing the last command!",
+            );
+          }
         } else if (interaction.deferred) {
           await interaction.editReply(
             "There was an error while executing this command!",

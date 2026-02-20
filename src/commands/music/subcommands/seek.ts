@@ -36,7 +36,7 @@ export const handleSeekSubcommand = async (
 ) => {
   // If no guild ID, return
   if (!interaction.guildId) {
-    console.log("*** MUSIC RESUME SUBCOMMAND - NO GUILD ID");
+    console.log("*** MUSIC SEEK SUBCOMMAND - NO GUILD ID");
     return void interaction.reply({
       content: "Something went wrong. Please try again.",
       ephemeral: true,
@@ -48,7 +48,7 @@ export const handleSeekSubcommand = async (
 
   // If no queue, return
   if (!timeline) {
-    console.log("*** MUSIC RESUME SUBCOMMAND - NO QUEUE");
+    console.log("*** MUSIC SEEK SUBCOMMAND - NO QUEUE");
     return void interaction.reply({
       content: "❌ | No music is being played!",
       ephemeral: true,
@@ -73,9 +73,8 @@ export const handleSeekSubcommand = async (
 
   // Reply with seeked to
   interaction.reply({
-    content: `⏩ | Seeked to ${minutes}:${
-      seconds < 10 ? `0${seconds}` : seconds
-    }`,
+    content: `⏩ | Seeked to ${minutes}:${seconds < 10 ? `0${seconds}` : seconds
+      }`,
     ephemeral: true,
   });
 };

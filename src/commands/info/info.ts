@@ -18,15 +18,22 @@ const data = new SlashCommandBuilder()
   .addSubcommand(serverSubcommand)
   .addSubcommand(userSubcommand);
 
-// Info command execute function
+const subcommandHandlers: Record<
+  string,
+  (interaction: Interaction<ChatInputCommandInteraction>) => void
+> = {
+  [Subcommands.USER]: handleUserSubcommand,
+  [Subcommands.SERVER]: handleServerSubcommand,
+};
+
 const execute = async (
   interaction: Interaction<ChatInputCommandInteraction>,
 ) => {
   const subcommand = interaction.options.getSubcommand();
-  if (subcommand === Subcommands.USER) {
-    handleUserSubcommand(interaction);
-  } else if (subcommand === Subcommands.SERVER) {
-    handleServerSubcommand(interaction);
+  const handler = subcommandHandlers[subcommand];
+
+  if (handler) {
+    handler(interaction);
   } else {
     interaction.reply({
       content: "Something went wrong. Please try again.",
@@ -41,4 +48,5 @@ const infoCommand: Command = {
   execute,
 };
 
-module.exports = infoCommand;
+export default infoCommand;
+

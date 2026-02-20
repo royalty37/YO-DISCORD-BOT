@@ -13,7 +13,7 @@ import type { Interaction } from "../types/types";
 export const registerPlayerEvents = (player: Player) => {
   // Discord Player error event
   player.events.on(PlayerEvent.error, (queue: GuildQueue, error: Error) => {
-    console.error(`*** DisTube error: ${error}`);
+    console.error(`*** Player error: ${error}`);
     // queue.textChannel?.send(`Something went wrong!`);
     updateLatestQueueMessage(queue);
   });
@@ -23,10 +23,12 @@ export const registerPlayerEvents = (player: Player) => {
     GuildQueueEvent.audioTrackAdd,
     (queue: GuildQueue, track: Track) => {
       const q = queue as GuildQueue<Interaction<ChatInputCommandInteraction>>;
-      console.log(`*** DisTube addSong event - adding ${track.title}`);
-      q.metadata.channel?.send({
-        embeds: [createTrackEmbed(track)],
-      });
+      console.log(`*** audioTrackAdd event - adding ${track.title}`);
+      if (q.metadata.channel?.isSendable()) {
+        q.metadata.channel.send({
+          embeds: [createTrackEmbed(track)],
+        });
+      }
 
       // Update latest queue message
       updateLatestQueueMessage(queue);
@@ -39,13 +41,15 @@ export const registerPlayerEvents = (player: Player) => {
     (queue: GuildQueue, tracks: Track[]) => {
       const q = queue as GuildQueue<Interaction<ChatInputCommandInteraction>>;
       console.log(
-        `*** DisTube addSong event - adding multiple tracks ${tracks
+        `*** audioTracksAdd event - adding multiple tracks ${tracks
           .map((t) => t.title)
           .join(", ")}`,
       );
-      q.metadata.channel?.send({
-        embeds: tracks.map(createTrackEmbed),
-      });
+      if (q.metadata.channel?.isSendable()) {
+        q.metadata.channel.send({
+          embeds: tracks.map(createTrackEmbed),
+        });
+      }
 
       // Update latest queue message
       updateLatestQueueMessage(queue);
@@ -58,9 +62,11 @@ export const registerPlayerEvents = (player: Player) => {
     (queue: GuildQueue, track: Track) => {
       const q = queue as GuildQueue<Interaction<ChatInputCommandInteraction>>;
       console.log(
-        `*** DisTube playerSkip event - skipping song ${track.title}`,
+        `*** playerSkip event - skipping song ${track.title}`,
       );
-      q.metadata.channel?.send("Something went wrong!");
+      if (q.metadata.channel?.isSendable()) {
+        q.metadata.channel.send("Something went wrong!");
+      }
 
       // Update latest queue message
       updateLatestQueueMessage(queue);
@@ -70,8 +76,10 @@ export const registerPlayerEvents = (player: Player) => {
   // Discord player disconnect event
   player.events.on(GuildQueueEvent.disconnect, (queue: GuildQueue) => {
     const q = queue as GuildQueue<Interaction<ChatInputCommandInteraction>>;
-    console.log("*** DisTube disconnect event - disconnecting");
-    q.metadata.channel?.send("Disconnected from the voice channel!");
+    console.log("*** disconnect event - disconnecting");
+    if (q.metadata.channel?.isSendable()) {
+      q.metadata.channel.send("Disconnected from the voice channel!");
+    }
 
     // Update latest queue message
     updateLatestQueueMessage(queue);
@@ -80,8 +88,10 @@ export const registerPlayerEvents = (player: Player) => {
   // Discord player emptyChannel event
   player.events.on(GuildQueueEvent.emptyChannel, (queue: GuildQueue) => {
     const q = queue as GuildQueue<Interaction<ChatInputCommandInteraction>>;
-    console.log("*** DisTube emptyChannel event - nobody in the voice channel");
-    q.metadata.channel?.send("Nobody is in the voice channel, leaving...");
+    console.log("*** emptyChannel event - nobody in the voice channel");
+    if (q.metadata.channel?.isSendable()) {
+      q.metadata.channel.send("Nobody is in the voice channel, leaving...");
+    }
 
     // Update latest queue message
     updateLatestQueueMessage(queue);
@@ -90,8 +100,10 @@ export const registerPlayerEvents = (player: Player) => {
   // Discord player emptyQueue event
   player.events.on(GuildQueueEvent.emptyQueue, (queue: GuildQueue) => {
     const q = queue as GuildQueue<Interaction<ChatInputCommandInteraction>>;
-    console.log("*** DisTube emptyChannel event - nobody in the voice channel");
-    q.metadata.channel?.send("Queue finished !");
+    console.log("*** emptyQueue event - queue finished");
+    if (q.metadata.channel?.isSendable()) {
+      q.metadata.channel.send("Queue finished !");
+    }
 
     // Update latest queue message
     finishLatestQueueMessage();

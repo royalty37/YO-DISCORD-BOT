@@ -17,7 +17,7 @@ export const handleShuffleSubcommand = async (
   interaction: Interaction<ChatInputCommandInteraction>,
 ) => {
   if (!interaction.guildId) {
-    console.log("*** MUSIC PAUSE SUBCOMMAND - NO GUILD ID");
+    console.log("*** MUSIC SHUFFLE SUBCOMMAND - NO GUILD ID");
     return void interaction.reply({
       content: "Something went wrong. Please try again.",
       ephemeral: true,

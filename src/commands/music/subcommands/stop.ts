@@ -26,7 +26,6 @@ export const handleStopSubcommand = async (
     });
   }
 
-  // Get queue from distube
   const queue = useQueue(interaction.guildId);
 
   // If no queue, return
