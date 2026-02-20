@@ -40,17 +40,24 @@ export const filterInvites = async (message: Message<boolean>) => {
 
 // Function to filter/remove messages that contain banned words
 export const filterBannedWords = async (message: Message<boolean>) => {
-  // Get banned words from .env and split into an array
-  const bannedWords = process.env.BANNED_WORDS?.split(", ");
-
-  // If no banned words found, .env is probably missing BANNED_WORDS. Skip filter.
-  if (!bannedWords) {
+  // Get banned words from .env as a JSON array string
+  if (!process.env.BANNED_WORDS) {
     return console.log("*** No banned words found in .env, skipping filter...");
   }
 
-  // Loop through banned words to see if message contains any and if so, delete.
+  let bannedWords: string[];
+  try {
+    bannedWords = JSON.parse(process.env.BANNED_WORDS);
+  } catch {
+    return console.error("*** ERROR: BANNED_WORDS is not valid JSON, skipping filter...");
+  }
+
+  const content = message.content.toLowerCase();
+
+  // Use word-boundary regex to avoid false positives (e.g. "class" matching "ass")
   for (const bannedWord of bannedWords) {
-    if (message.content.toLowerCase().includes(bannedWord)) {
+    const regex = new RegExp(`\\b${bannedWord.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+    if (regex.test(content)) {
       console.log("*** Deleting banned word");
       await message.delete();
       if (message.channel.isSendable()) {
@@ -58,6 +65,7 @@ export const filterBannedWords = async (message: Message<boolean>) => {
           `Banned word detected ${message.author.username}!`,
         );
       }
+      break; // Message already deleted, no need to check remaining words
     }
   }
 };

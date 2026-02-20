@@ -1,14 +1,14 @@
 import dayjs from "dayjs";
-import { mongoClient } from "../../../mongoSetup";
+import { getData, setData, deleteData } from "../../../fileStore";
 
-const DB_NAME = "YOZA-BOT";
+const STORE_KEY = "currentBumboys";
 
 // Database operations for handling BUMBOY Guild Member IDs
 
-// Return type from Database
+// Return type from store
 export type CurrentBumboysRecord = {
   bumboys: BumboyData[];
-  clearTime: Date;
+  clearTime: string;
 };
 
 // BUMBOY datatype - holds ID and old nickname
@@ -17,39 +17,30 @@ type BumboyData = {
   nickname: string | null;
 };
 
-// Delete record holding current BUMBOYs from database
+// Delete record holding current BUMBOYs from store
 export const clearBumboys = async () => {
-  await mongoClient
-    .db(DB_NAME)
-    .collection("bumboys")
-    .deleteOne({ name: "current" });
-  console.log(`*** Successfully cleared BUMBOY IDs from MONGODB: ${DB_NAME}`);
+  deleteData(STORE_KEY);
+  console.log("*** Successfully cleared BUMBOY IDs from store.");
 };
 
-// Save array of BUMBOY IDs and clear time (12 hours from now) to database
+// Save array of BUMBOY IDs and clear time (12 hours from now) to store
 export const saveBumboys = async (bumboys: BumboyData[]) => {
   if (bumboys.length === 0) {
     return void console.error("*** ERROR: No BUMBOY IDs to save.");
   }
 
-  await mongoClient
-    .db(DB_NAME)
-    .collection("bumboys")
-    .insertOne({
-      name: "current",
-      bumboys,
-      clearTime: dayjs().add(12, "hours").toDate(),
-    });
-  console.log(`*** Successfully saved BUMBOY IDs to MONGODB: ${DB_NAME}`);
+  const record: CurrentBumboysRecord = {
+    bumboys,
+    clearTime: dayjs().add(12, "hours").toISOString(),
+  };
+
+  setData(STORE_KEY, record);
+  console.log("*** Successfully saved BUMBOY IDs to store.");
 };
 
-// Return array of BUMBOY data from database
+// Return array of BUMBOY data from store
 export const getBumboys = async (): Promise<CurrentBumboysRecord | null> => {
-  const bumboys = await mongoClient
-    .db(DB_NAME)
-    .collection("bumboys")
-    .findOne<CurrentBumboysRecord>({ name: "current" });
-  console.log(`*** Successfully retrieved BUMBOY IDs from MONGODB: ${DB_NAME}`);
-
+  const bumboys = getData<CurrentBumboysRecord>(STORE_KEY);
+  console.log("*** Successfully retrieved BUMBOY IDs from store.");
   return bumboys;
 };

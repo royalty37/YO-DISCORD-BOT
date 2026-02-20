@@ -6,7 +6,7 @@ import { YoClient } from "./types/types";
 import { registerClientEvents } from "./events/clientEvents";
 import { registerPlayerEvents } from "./events/playerEvents";
 import { registerProcessEvents } from "./events/processEvents";
-import { initMongo } from "./mongoSetup";
+
 import { scheduleJobs } from "./scheduleJobs";
 import { Player } from "discord-player";
 
@@ -71,8 +71,6 @@ for (const cf of commandFolders) {
 }
 
 const start = async () => {
-  // Ensure MongoDB is connected before bot starts
-  await initMongo();
   // Login to Discord with DISCORD_TOKEN
   await client.login(process.env.DISCORD_TOKEN);
   // Reschedule jobs

@@ -1,7 +1,10 @@
 import fs from "fs";
 import path from "path";
+import dotenv from "dotenv";
 import { REST, Routes } from "discord.js";
 import { Command } from "./types/types";
+
+dotenv.config();
 
 // Check if DISCORD_TOKEN or TEST_DISCORD_TOKEN environment variable is set - if not, exit
 if (!process.env.DISCORD_TOKEN) {

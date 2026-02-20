@@ -48,16 +48,9 @@ export const registerClientEvents = (client: YoClient) => {
   });
 
   // ClientReady event
-  client.once(Events.ClientReady, (c: Client<boolean>) => {
-    // Log client ready when client is ready
-    console.log(`*** Ready! Logged in as ${c?.user?.tag}`);
-  });
+  client.once(Events.ClientReady, (c: Client<boolean>) => console.log(`*** Ready! Logged in as ${c?.user?.tag}`));
 
-  client.on(Events.ShardError, (error: Error) => {
-    console.log(`*** A websocket connection encountered an error: ${error}`);
-  });
+  client.on(Events.ShardError, (error: Error) => console.log(`*** A websocket connection encountered an error: ${error}`));
 
-  client.on(Events.MessageCreate, async (message: Message<boolean>) => {
-    filterMessages(message);
-  });
+  client.on(Events.MessageCreate, async (message: Message<boolean>) => filterMessages(message));
 };
