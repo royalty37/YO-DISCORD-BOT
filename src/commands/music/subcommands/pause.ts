@@ -24,7 +24,7 @@ export const handlePauseSubcommand = async (
   }
 
   // Get queue
-  const timeline = useTimeline(interaction.guildId);
+  const timeline = useTimeline({ node: interaction.guildId });
 
   // If no queue, no music is playing
   if (!timeline) {

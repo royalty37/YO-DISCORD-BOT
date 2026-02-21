@@ -1,6 +1,6 @@
 import { clearBumboysJob } from "./commands/bumboy/jobs/bumboyJobs";
 import { YoClient } from "./types/types";
-import { isDevMode } from "./index";
+import { isDevMode } from "./config";
 
 // This function is responsible for scheduling the jobs every time the bot is restarted
 export const scheduleJobs = (client: YoClient) => {

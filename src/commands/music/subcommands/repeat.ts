@@ -7,7 +7,7 @@ import type {
   SlashCommandSubcommandBuilder,
 } from "discord.js";
 import type { Interaction } from "../../../types/types";
-import { useQueue } from "discord-player";
+import { useQueue, QueueRepeatMode } from "discord-player";
 
 const MODE_OPTION_NAME = "mode";
 
@@ -57,7 +57,7 @@ export const handleRepeatSubcommand = async (
   const mode = modeOption ? parseInt(modeOption) : 0;
 
   // Set repeat mode
-  queue.setRepeatMode(mode);
+  queue.setRepeatMode(mode as QueueRepeatMode);
 
   // Reply with repeat mode
   interaction.reply(`🔁 | Repeat mode set to ${REPEAT_MODE_ARRAY[mode]}!`);

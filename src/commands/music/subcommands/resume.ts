@@ -23,7 +23,7 @@ export const handleResumeSubcommand = async (
     });
   }
 
-  const timeline = useTimeline(interaction.guildId);
+  const timeline = useTimeline({ node: interaction.guildId });
 
   if (!timeline) {
     console.log("*** MUSIC RESUME SUBCOMMAND - NO TIMELINE");

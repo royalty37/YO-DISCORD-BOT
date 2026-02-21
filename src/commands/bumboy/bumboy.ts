@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { pollSubcommand, handlePollSubcommand } from "./subcommands/poll";
 import { clearSubcommand, handleClearSubcommand } from "./subcommands/clear";
-import { isDevMode } from "../../index";
+import { isDevMode } from "../../config";
 import { Command, Interaction } from "../../types/types";
 
 // TODO: Fix remaining time bug - sometimes shows message after poll finishes

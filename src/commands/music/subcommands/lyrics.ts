@@ -1,5 +1,4 @@
 import { Subcommands } from "../music";
-import { lyricsExtractor } from "@discord-player/extractor";
 
 import {
   type SlashCommandSubcommandBuilder,
@@ -7,7 +6,7 @@ import {
   EmbedBuilder,
 } from "discord.js";
 import type { Interaction } from "../../../types/types";
-import { useQueue } from "discord-player";
+import { useMainPlayer, useQueue } from "discord-player";
 
 // Music lyrics subcommand
 export const lyricsSubcommand = (sc: SlashCommandSubcommandBuilder) =>
@@ -37,30 +36,26 @@ export const handleLyricsSubcommand = async (
 
   await interaction.deferReply();
 
-  const lyricsFinder = lyricsExtractor();
+  const player = useMainPlayer();
 
   try {
-    const lyrics = await lyricsFinder.search(song);
+    const results = await player.lyrics.search({ q: song });
 
-    if (!lyrics) {
+    if (!results || results.length === 0) {
       return void interaction.editReply({
         content: `❌ | No lyrics found for ${song}!`,
       });
     }
 
-    const trimmedLyrics = lyrics.lyrics.substring(0, 4096 - 3);
+    const lyrics = results[0];
+    const lyricsText = lyrics.plainLyrics || "";
+    const trimmedLyrics = lyricsText.substring(0, 4096 - 3);
 
     interaction.editReply({
       embeds: [
         new EmbedBuilder()
-          .setTitle(lyrics.title)
-          .setURL(lyrics.url)
-          .setThumbnail(lyrics.thumbnail)
-          .setAuthor({
-            name: lyrics.artist.name,
-            iconURL: lyrics.artist.image,
-            url: lyrics.artist.url,
-          })
+          .setTitle(lyrics.trackName)
+          .setAuthor({ name: lyrics.artistName })
           .setDescription(
             trimmedLyrics.length === 4096 - 3
               ? `${trimmedLyrics}...`
@@ -70,7 +65,7 @@ export const handleLyricsSubcommand = async (
       ],
     });
   } catch (e) {
-    console.error("*** MUSIC LYRICS SUBCOMMAND - NO SONG", { e });
+    console.error("*** MUSIC LYRICS SUBCOMMAND - ERROR", { e });
     interaction.editReply({
       content: "❌ | An error occurred while searching for lyrics!",
     });

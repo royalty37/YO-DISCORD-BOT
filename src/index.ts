@@ -6,13 +6,12 @@ import { YoClient } from "./types/types";
 import { registerClientEvents } from "./events/clientEvents";
 import { registerPlayerEvents } from "./events/playerEvents";
 import { registerProcessEvents } from "./events/processEvents";
-
 import { scheduleJobs } from "./scheduleJobs";
 import { Player } from "discord-player";
+import { YoutubeiExtractor } from "discord-player-youtubei";
+import { DefaultExtractors } from "@discord-player/extractor";
 
 dotenv.config();
-
-export const isDevMode = !!process.env.DEV;
 
 // Check if DISCORD_TOKEN environment variable is set - if not, exit
 if (!process.env.DISCORD_TOKEN) {
@@ -34,7 +33,15 @@ const client = new Client({
 
 client.commands = new Collection<string, any>();
 client.player = new Player(client);
-client.player.extractors.loadDefault();
+
+// Register YoutubeiExtractor with yt-dlp streaming (bypasses broken native streams)
+client.player.extractors.register(YoutubeiExtractor, {
+  useYoutubeDL: true,
+  logLevel: "ALL",
+});
+
+// Load remaining extractors for Spotify, SoundCloud, etc.
+client.player.extractors.loadMulti(DefaultExtractors);
 
 // Register Client and Player events
 registerClientEvents(client);

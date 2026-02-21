@@ -20,7 +20,7 @@ export const registerPlayerEvents = (player: Player) => {
 
   // Discord player audioTrackAdd event
   player.events.on(
-    GuildQueueEvent.audioTrackAdd,
+    GuildQueueEvent.AudioTrackAdd,
     (queue: GuildQueue, track: Track) => {
       const q = queue as GuildQueue<Interaction<ChatInputCommandInteraction>>;
       console.log(`*** audioTrackAdd event - adding ${track.title}`);
@@ -37,7 +37,7 @@ export const registerPlayerEvents = (player: Player) => {
 
   // Discord player audioTracksAdd event
   player.events.on(
-    GuildQueueEvent.audioTracksAdd,
+    GuildQueueEvent.AudioTracksAdd,
     (queue: GuildQueue, tracks: Track[]) => {
       const q = queue as GuildQueue<Interaction<ChatInputCommandInteraction>>;
       console.log(
@@ -58,7 +58,7 @@ export const registerPlayerEvents = (player: Player) => {
 
   // Discord player playerSkip event
   player.events.on(
-    GuildQueueEvent.playerSkip,
+    GuildQueueEvent.PlayerSkip,
     (queue: GuildQueue, track: Track) => {
       const q = queue as GuildQueue<Interaction<ChatInputCommandInteraction>>;
       console.log(
@@ -74,7 +74,7 @@ export const registerPlayerEvents = (player: Player) => {
   );
 
   // Discord player disconnect event
-  player.events.on(GuildQueueEvent.disconnect, (queue: GuildQueue) => {
+  player.events.on(GuildQueueEvent.Disconnect, (queue: GuildQueue) => {
     const q = queue as GuildQueue<Interaction<ChatInputCommandInteraction>>;
     console.log("*** disconnect event - disconnecting");
     if (q.metadata.channel?.isSendable()) {
@@ -86,7 +86,7 @@ export const registerPlayerEvents = (player: Player) => {
   });
 
   // Discord player emptyChannel event
-  player.events.on(GuildQueueEvent.emptyChannel, (queue: GuildQueue) => {
+  player.events.on(GuildQueueEvent.EmptyChannel, (queue: GuildQueue) => {
     const q = queue as GuildQueue<Interaction<ChatInputCommandInteraction>>;
     console.log("*** emptyChannel event - nobody in the voice channel");
     if (q.metadata.channel?.isSendable()) {
@@ -98,7 +98,7 @@ export const registerPlayerEvents = (player: Player) => {
   });
 
   // Discord player emptyQueue event
-  player.events.on(GuildQueueEvent.emptyQueue, (queue: GuildQueue) => {
+  player.events.on(GuildQueueEvent.EmptyQueue, (queue: GuildQueue) => {
     const q = queue as GuildQueue<Interaction<ChatInputCommandInteraction>>;
     console.log("*** emptyQueue event - queue finished");
     if (q.metadata.channel?.isSendable()) {

@@ -1,7 +1,7 @@
 import { updateLatestQueueMessage } from "../actions/queueActions";
 import { Subcommands } from "../music";
 import { VoiceConnectionState, joinVoiceChannel } from "@discordjs/voice";
-import { useQueue } from "discord-player";
+import { useQueue, QueryType } from "discord-player";
 
 import type {
   ChatInputCommandInteraction,
@@ -114,6 +114,7 @@ export const handlePlaySubcommand = async (
         queue.node.skip();
       }
     }
+
     // If using playtop, follow up with top message
     else if (top) {
       await interaction.followUp({
@@ -126,38 +127,14 @@ export const handlePlaySubcommand = async (
           "*** ERROR IN MUSIC PLAY SUBCOMMAND - NO QUEUE - CANNOT ADD TO TOP",
         );
       } else {
-        const searchResult = await interaction.client.player.search(song);
+        const searchResult = await interaction.client.player.search(song, {
+          requestedBy: interaction.user,
+        });
         return queue.insertTrack(searchResult.tracks[0], 0);
       }
     }
     // If not using playskip or playtop, just play normally
     else {
-      // TODO: Remove this temporary workaround to Disconnection bug in Discord
-      const connection = joinVoiceChannel({
-        channelId: voiceChannel.id,
-        guildId: interaction.guildId,
-        adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-      });
-
-      connection.on(
-        "stateChange",
-        (oldState: VoiceConnectionState, newState: VoiceConnectionState) => {
-          const oldNetworking = Reflect.get(oldState, "networking");
-          const newNetworking = Reflect.get(newState, "networking");
-
-          const networkStateChangeHandler = (
-            oldNetworkState: any,
-            newNetworkState: any,
-          ) => {
-            const newUdp = Reflect.get(newNetworkState, "udp");
-            clearInterval(newUdp?.keepAliveInterval);
-          };
-
-          oldNetworking?.off("stateChange", networkStateChangeHandler);
-          newNetworking?.on("stateChange", networkStateChangeHandler);
-        },
-      );
-
       await interaction.client.player.play(voiceChannel, song, {
         requestedBy: interaction.user,
         nodeOptions: {

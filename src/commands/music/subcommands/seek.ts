@@ -44,7 +44,7 @@ export const handleSeekSubcommand = async (
   }
 
   // Get Timeline
-  const timeline = useTimeline(interaction.guildId);
+  const timeline = useTimeline({ node: interaction.guildId });
 
   // If no queue, return
   if (!timeline) {
