@@ -1,8 +1,9 @@
 import { Guild } from "discord.js";
 import { YoClient } from "../../types/types";
+import { env } from "../../environment";
 
 export const getMyGuild = async (client: YoClient): Promise<Guild> => {
-  const guildId = process.env.GUILD_ID;
+  const guildId = env.GUILD_ID;
   if (!guildId) {
     throw new Error("GUILD_ID environment variable is not set");
   }

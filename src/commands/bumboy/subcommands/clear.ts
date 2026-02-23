@@ -3,16 +3,13 @@ import {
   SlashCommandSubcommandBuilder,
 } from "discord.js";
 import { getBumboys } from "../actions/bumboyActions";
-import {
-  BUMBOY_ROLE_ID,
-  VICE_PLUS_ROLE_ID,
-} from "../../../utils/discordUtils/roleUtils";
+import { env } from "../../../environment";
 import { Subcommands } from "../bumboy";
 import { performForceClear } from "../jobs/bumboyJobs";
 import { Interaction } from "../../../types/types";
 
 // My Discord ID - only I can use the clear subcommand
-const ADMIN_ID = process.env.ADMIN_USER_ID;
+const ADMIN_ID = env.ADMIN_USER_ID;
 
 export const clearSubcommand = (sc: SlashCommandSubcommandBuilder) =>
   sc
@@ -33,8 +30,8 @@ export const handleClearSubcommand = async (
   }
 
   // Fetch BUMBOY role and Vice Plus role
-  const bumboyRole = await interaction.guild?.roles.fetch(BUMBOY_ROLE_ID);
-  const vicePlusRole = await interaction.guild?.roles.fetch(VICE_PLUS_ROLE_ID);
+  const bumboyRole = await interaction.guild?.roles.fetch(env.BUMBOY_ROLE_ID);
+  const vicePlusRole = await interaction.guild?.roles.fetch(env.VICE_PLUS_ROLE_ID);
 
   if (!bumboyRole || !vicePlusRole) {
     console.log("*** ERROR: No BUMBOY or no Vice Plus role found.");

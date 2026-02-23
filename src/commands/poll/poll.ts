@@ -1,16 +1,25 @@
-import { SlashCommandBuilder, EmbedBuilder, Colors } from "discord.js";
+import {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  Colors,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ComponentType,
+} from "discord.js";
 
 import type {
   ChatInputCommandInteraction,
   SlashCommandStringOption,
-  User,
-  MessageReaction,
   SlashCommandBooleanOption,
   SlashCommandNumberOption,
 } from "discord.js";
 import type { Command, Interaction } from "../../types/types";
 
-// Array of emoji numbers that correspond to possible options
+// Emoji that represents a vote in description
+const VOTE_EMOJI = "🟢";
+
+// Number emojis used as button emojis
 const EMOJI_NUMBERS = [
   "1️⃣",
   "2️⃣",
@@ -24,14 +33,11 @@ const EMOJI_NUMBERS = [
   "🔟",
 ];
 
-// Emoji that represents a vote in description
-const VOTE_EMOJI = "🟢";
-
 const QUESTION_OPTION_NAME = "question";
 const QUESTION_REQUIRED = true;
 const ALLOW_MULTIVOTE_OPTION_NAME = "allow-multiple-votes";
-const MULTIVOTE_REQUIRED = true;
-const DURATION_OPTION_NAME = "duration";
+const ALLOW_MULTIVOTE_REQUIRED = true;
+const DURATION_OPTION_NAME = "duration-minutes";
 const DURATION_REQUIRED = true;
 const NO_OF_OPTIONS = 10;
 const OPTION_NAME_PREFIX = "option-";
@@ -50,7 +56,7 @@ const data = new SlashCommandBuilder()
     option
       .setName(ALLOW_MULTIVOTE_OPTION_NAME)
       .setDescription("Allow multiple votes")
-      .setRequired(MULTIVOTE_REQUIRED),
+      .setRequired(ALLOW_MULTIVOTE_REQUIRED),
   )
   .addNumberOption((option: SlashCommandNumberOption) =>
     option
@@ -83,7 +89,7 @@ const execute = async (
   );
   const allowMultiVote = interaction.options.getBoolean(
     ALLOW_MULTIVOTE_OPTION_NAME,
-    MULTIVOTE_REQUIRED,
+    ALLOW_MULTIVOTE_REQUIRED,
   );
   const duration = interaction.options.getNumber(
     DURATION_OPTION_NAME,
@@ -99,17 +105,24 @@ const execute = async (
     }
   }
 
-  // Array of votes for each option (even if option is unused, collector will handle invalid votes)
-  const votes = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  // Vote tracking
+  // Single-vote: userId -> optionIndex
+  const singleVotes = new Map<string, number>();
+  // Multi-vote: userId -> Set of optionIndices
+  const multiVotes = new Map<string, Set<number>>();
+  // Per-option vote counts
+  const voteCounts = new Array(options.length).fill(0);
 
   // Function to generate description for poll embed based on current votes
   const generateDescription = (): string => {
+    const totalVotes = voteCounts.reduce((a, b) => a + b, 0);
+
     // Generate percentage for each option on poll
     const generatePercentage = (index: number): string => {
-      const percentage =
-        (votes[index] / votes.reduce((a, b) => a + b, 0)) * 100 || 0;
+      const percentage = totalVotes > 0
+        ? (voteCounts[index] / totalVotes) * 100
+        : 0;
 
-      // If percentage is a decimal, round to 2 decimal places
       if (
         percentage.toString().includes(".") &&
         percentage.toString().split(".")[1].length > 2
@@ -120,36 +133,62 @@ const execute = async (
       return percentage.toString();
     };
 
-    // Generate description for poll embed, start with an explanation of the poll type and how to participate
+    // Generate description for poll embed
     return (
-      `This is a ${allowMultiVote ? "" : "non "
-      }multi vote poll, which means participants are ${allowMultiVote
+      `This is a ${allowMultiVote ? "" : "non "}multi vote poll, which means participants are ${allowMultiVote
         ? "allowed to cast multiple votes"
-        : "only allowed to cast a single vote. To change your vote, remove your existing vote (reaction) and cast a new one"
-      }. Vote by reacting with the emoji corresponding to the option you want to vote for.\n\n` +
-      // Sort options by vote count, then map to generate information about each option, and join each option with a double new line
-      // Spread options into new array to avoid mutating original array on sort
+        : "only allowed to cast a single vote. To change your vote, click a different option button"
+      }. Vote by clicking the button corresponding to the option you want to vote for.\n\n` +
+      // Sort options by vote count, then map to generate information about each option
       [...options]
-        .sort((a, b) => votes[options.indexOf(b)] - votes[options.indexOf(a)])
+        .sort((a, b) => voteCounts[options.indexOf(b)] - voteCounts[options.indexOf(a)])
         .map((o) => {
-          // Generate green emoji bar for each option showing vote count
-          const votesEmojis = VOTE_EMOJI.repeat(votes[options.indexOf(o)]);
-          return `${EMOJI_NUMBERS[options.indexOf(o)]} ${o}\n ${votesEmojis ? `${votesEmojis} | ` : ""
-            }${votes[options.indexOf(o)]} (${generatePercentage(
-              options.indexOf(o),
-            )}%)`;
+          const idx = options.indexOf(o);
+          const votesEmojis = VOTE_EMOJI.repeat(voteCounts[idx]);
+          return `${EMOJI_NUMBERS[idx]} ${o}\n ${votesEmojis ? `${votesEmojis} | ` : ""
+            }${voteCounts[idx]} (${generatePercentage(idx)}%)`;
         })
         .join("\n\n")
     );
   };
 
-  // Function to generate footer text for poll embed, if no duration is provided, then remaining duration is not shown (used for poll end)
+  // Function to generate footer text for poll embed
   const getFooterText = (remainingDurationParam?: number): string =>
     `Poll created by ${interaction.user.username}${remainingDurationParam
       ? `\n\nPoll will end in approximately ${remainingDurationParam} ${remainingDurationParam > 1 ? "minutes" : "minute"
       }.`
       : ""
     }`;
+
+  // Build buttons for each option
+  const buildButtons = (disabled = false): ActionRowBuilder<ButtonBuilder>[] => {
+    const rows: ActionRowBuilder<ButtonBuilder>[] = [];
+    let currentRow = new ActionRowBuilder<ButtonBuilder>();
+
+    for (let i = 0; i < options.length; i++) {
+      // Truncate label to 80 chars (Discord limit)
+      const label = options[i].length > 80
+        ? options[i].substring(0, 77) + "..."
+        : options[i];
+
+      const button = new ButtonBuilder()
+        .setCustomId(`poll_vote_${i}`)
+        .setLabel(`${label} (${voteCounts[i]})`)
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji(EMOJI_NUMBERS[i])
+        .setDisabled(disabled);
+
+      currentRow.addComponents(button);
+
+      // 5 buttons per row
+      if ((i + 1) % 5 === 0 || i === options.length - 1) {
+        rows.push(currentRow);
+        currentRow = new ActionRowBuilder<ButtonBuilder>();
+      }
+    }
+
+    return rows;
+  };
 
   // Create initial poll embed - No votes yet
   const pollEmbed = new EmbedBuilder()
@@ -161,24 +200,27 @@ const execute = async (
       text: getFooterText(duration),
     });
 
-  // Edit reply to include poll embed and pull out message to edit after collecting reactions
-  const message = await interaction.editReply({ embeds: [pollEmbed] });
-
-  // Create reaction collector - no filter (manually handle in collect listener), 2 hour time limit, dispose = true (allow remove listener)
-  const collector = message.createReactionCollector({
-    filter: (_, user: User) => !user.bot,
-    // 60,000 ms (a minute) * duration (in minutes)
-    time: 60000 * duration,
-    dispose: true,
+  // Edit reply to include poll embed with buttons
+  const message = await interaction.editReply({
+    embeds: [pollEmbed],
+    components: buildButtons(),
   });
 
-  // Recursive function edit embed every minute to show remaining duration
+  // Create button collector
+  const collector = message.createMessageComponentCollector({
+    componentType: ComponentType.Button,
+    filter: (i) => i.customId.startsWith("poll_vote_"),
+    // 60,000 ms (a minute) * duration (in minutes)
+    time: 60000 * duration,
+  });
+
+  // Recursive function to edit embed every minute to show remaining duration
   const updateDuration = async (d: number) => {
     setTimeout(async () => {
       pollEmbed.setFooter({
         text: getFooterText(d),
       });
-      await message.edit({ embeds: [pollEmbed] });
+      await message.edit({ embeds: [pollEmbed], components: buildButtons() });
 
       if (d > 0 && !collector.ended) {
         updateDuration(d - 1);
@@ -189,74 +231,79 @@ const execute = async (
   // Initial call
   updateDuration(duration);
 
-  for (let i = 0; i < options.length; i++) {
-    // Add bot reaction to message for each option
-    message.react(EMOJI_NUMBERS[i]);
-  }
-
   // On Collect listener
-  collector.on("collect", (reaction: MessageReaction, user: User) => {
-    // If reaction is not a valid option (reaction outside of bounds of supplied options or random emoji), remove reaction and early return
-    if (
-      !(
-        EMOJI_NUMBERS.includes(reaction.emoji.name ?? "") &&
-        EMOJI_NUMBERS.indexOf(reaction.emoji.name ?? "") < options.length
-      )
-    ) {
-      return void reaction.remove();
-    }
+  collector.on("collect", async (btnInteraction) => {
+    const optionIndex = parseInt(
+      btnInteraction.customId.replace("poll_vote_", ""),
+      10,
+    );
+    const userId = btnInteraction.user.id;
 
-    // Get index of option that user voted for early to avoid a weird remove listener bug
-    const index = EMOJI_NUMBERS.indexOf(reaction.emoji.name ?? "");
+    if (allowMultiVote) {
+      // Multi-vote: toggle vote on/off
+      if (!multiVotes.has(userId)) {
+        multiVotes.set(userId, new Set());
+      }
+      const userVotes = multiVotes.get(userId)!;
 
-    // If not a multi-vote poll, check if user has already voted, if so, remove reaction and early return
-    if (!allowMultiVote) {
-      let userHasVoted = false;
+      if (userVotes.has(optionIndex)) {
+        // Remove vote
+        userVotes.delete(optionIndex);
+        voteCounts[optionIndex]--;
+        console.log(
+          `*** POLL - ${btnInteraction.user.displayName} removed vote for "${options[optionIndex]}"`,
+        );
+      } else {
+        // Add vote
+        userVotes.add(optionIndex);
+        voteCounts[optionIndex]++;
+        console.log(
+          `*** POLL - ${btnInteraction.user.displayName} voted for "${options[optionIndex]}"`,
+        );
+      }
+    } else {
+      // Single-vote mode
+      if (singleVotes.has(userId)) {
+        const previousIndex = singleVotes.get(userId)!;
 
-      // Loop through existing reactions to check if user has already voted
-      message.reactions.cache.each((existingReaction) => {
-        // Skip if reaction is the current reaction or if user has been confirmed to have already voted
-        if (existingReaction === reaction || userHasVoted) {
-          return;
+        if (previousIndex === optionIndex) {
+          // Already voted for this option
+          return btnInteraction.reply({
+            content: `❌ | You already voted for **${options[optionIndex]}**! Click a different option to change your vote.`,
+            ephemeral: true,
+          });
         }
 
-        userHasVoted = !!existingReaction.users.cache.get(user.id);
-      });
-
-      // If user has already voted, remove that users reaction and early return
-      if (userHasVoted) {
-        // Calling reaction.users.remove() will trigger the remove listener, so we need to manually increment the vote count before the remove listener decrements it
-        // A slight roundabout solution but not necessarily non performant - Would prefer to block the remove listener or early return in the remove listener but unsure if it's doable
-        votes[index]++;
-        return void reaction.users.remove(user);
+        // Move vote from old option to new option
+        voteCounts[previousIndex]--;
+        voteCounts[optionIndex]++;
+        singleVotes.set(userId, optionIndex);
+        console.log(
+          `*** POLL - ${btnInteraction.user.displayName} changed vote from "${options[previousIndex]}" to "${options[optionIndex]}"`,
+        );
+      } else {
+        // New vote
+        voteCounts[optionIndex]++;
+        singleVotes.set(userId, optionIndex);
+        console.log(
+          `*** POLL - ${btnInteraction.user.displayName} voted for "${options[optionIndex]}"`,
+        );
       }
     }
 
-    // If everything is all good, register the vote
-    // Get index of reaction emoji in EMOJI_NUMBERS array and increment vote count for that index
-    votes[index]++;
-
-    // Update poll embed description and edit message
+    // Update poll embed and buttons
     pollEmbed.setDescription(generateDescription());
-    message.edit({ embeds: [pollEmbed] });
-  });
-
-  // On Remove listener
-  collector.on("remove", (reaction: MessageReaction) => {
-    // Get index of reaction emoji in EMOJI_NUMBERS array and decrement vote count for that index
-    const index = EMOJI_NUMBERS.indexOf(reaction.emoji.name ?? "");
-    votes[index]--;
-
-    // Update poll embed description and edit message
-    pollEmbed.setDescription(generateDescription());
-    message.edit({ embeds: [pollEmbed] });
+    await btnInteraction.update({
+      embeds: [pollEmbed],
+      components: buildButtons(),
+    });
   });
 
   // On End listener
   collector.on("end", () => {
     // Filter options array to only include options with the highest vote count
-    const maxVotes = Math.max(...votes);
-    const winners = options.filter((_, i) => votes[i] === maxVotes);
+    const maxVotes = Math.max(...voteCounts);
+    const winners = options.filter((_, i) => voteCounts[i] === maxVotes);
 
     // If no votes, write a sad no votes message to description
     if (!maxVotes) {
@@ -284,7 +331,7 @@ const execute = async (
     }
 
     pollEmbed.setFooter({ text: getFooterText() });
-    message.edit({ embeds: [pollEmbed] });
+    message.edit({ embeds: [pollEmbed], components: buildButtons(true) });
   });
 };
 

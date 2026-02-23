@@ -33,10 +33,6 @@ const subcommandHandlers: Record<
 const execute = async (
   interaction: Interaction<ChatInputCommandInteraction>,
 ) => {
-  if (isDevMode) {
-    return void interaction.reply("This command is disabled in dev mode.");
-  }
-
   const subcommand = interaction.options.getSubcommand();
   const handler = subcommandHandlers[subcommand];
 

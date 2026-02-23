@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
 import { Client, Collection, GatewayIntentBits } from "discord.js";
+import { env } from "./environment";
 import { YoClient } from "./types/types";
 import { registerClientEvents } from "./events/clientEvents";
 import { registerPlayerEvents } from "./events/playerEvents";
@@ -14,7 +15,7 @@ import { DefaultExtractors } from "@discord-player/extractor";
 dotenv.config();
 
 // Check if DISCORD_TOKEN environment variable is set - if not, exit
-if (!process.env.DISCORD_TOKEN) {
+if (!env.DISCORD_TOKEN) {
   console.error("*** ERROR: DISCORD_TOKEN environment variable not found.");
   process.exit(1);
 }
@@ -26,6 +27,7 @@ const client = new Client({
     GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.GuildMessageReactions,
     GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildPresences,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
   ],
@@ -79,7 +81,7 @@ for (const cf of commandFolders) {
 
 const start = async () => {
   // Login to Discord with DISCORD_TOKEN
-  await client.login(process.env.DISCORD_TOKEN);
+  await client.login(env.DISCORD_TOKEN);
   // Reschedule jobs
   scheduleJobs(client);
 };

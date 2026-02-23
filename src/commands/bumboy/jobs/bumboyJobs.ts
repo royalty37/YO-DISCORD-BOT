@@ -9,10 +9,7 @@ import {
   clearBumboys,
   CurrentBumboysRecord,
 } from "../actions/bumboyActions";
-import {
-  VICE_PLUS_ROLE_ID,
-  BUMBOY_ROLE_ID,
-} from "../../../utils/discordUtils/roleUtils";
+import { env } from "../../../environment";
 
 let scheduledJob: Job;
 
@@ -21,7 +18,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 // Reset a single member's roles back to Vice Plus (preserving managed roles like server booster)
 const resetMemberRole = async (member: GuildMember) => {
   await member.roles.set([
-    VICE_PLUS_ROLE_ID,
+    env.VICE_PLUS_ROLE_ID,
     ...member.roles.cache.filter((r) => r.managed).values(),
   ]);
 };
@@ -89,7 +86,7 @@ const performClear = async (
 
   // Check if any bumboys are still in the server (bugged) — clear them too
   const bumboysStillInServer = guild?.members.cache
-    .filter((m) => m.roles.cache.has(BUMBOY_ROLE_ID))
+    .filter((m) => m.roles.cache.has(env.BUMBOY_ROLE_ID))
     .values();
 
   if (bumboysStillInServer) {
