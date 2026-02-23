@@ -1,0 +1,13 @@
+node_modules
+build
+data
+.env
+.env.example
+.git
+.gitignore
+.eslintrc.js
+.eslintignore
+nodemon.json
+vitest.config.ts
+**/*.test.ts
+README.md
