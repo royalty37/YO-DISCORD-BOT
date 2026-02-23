@@ -2,37 +2,37 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { sleep } from "./sleep";
 
 describe("sleep", () => {
-    afterEach(() => {
-        vi.useRealTimers();
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("returns a Promise that resolves after the given ms", async () => {
+    vi.useFakeTimers();
+
+    let resolved = false;
+    const p = sleep(1000).then(() => {
+      resolved = true;
     });
 
-    it("returns a Promise that resolves after the given ms", async () => {
-        vi.useFakeTimers();
+    expect(resolved).toBe(false);
 
-        let resolved = false;
-        const p = sleep(1000).then(() => {
-            resolved = true;
-        });
+    vi.advanceTimersByTime(1000);
+    await p;
 
-        expect(resolved).toBe(false);
+    expect(resolved).toBe(true);
+  });
 
-        vi.advanceTimersByTime(1000);
-        await p;
+  it("resolves immediately for 0 ms", async () => {
+    vi.useFakeTimers();
 
-        expect(resolved).toBe(true);
+    let resolved = false;
+    const p = sleep(0).then(() => {
+      resolved = true;
     });
 
-    it("resolves immediately for 0 ms", async () => {
-        vi.useFakeTimers();
+    vi.advanceTimersByTime(0);
+    await p;
 
-        let resolved = false;
-        const p = sleep(0).then(() => {
-            resolved = true;
-        });
-
-        vi.advanceTimersByTime(0);
-        await p;
-
-        expect(resolved).toBe(true);
-    });
+    expect(resolved).toBe(true);
+  });
 });
