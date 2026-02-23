@@ -56,10 +56,6 @@ export const handlePollSubcommand = async (
   const vicePlusRole = await interaction.guild?.roles.fetch(env.VICE_PLUS_ROLE_ID);
   const bumboyRole = await interaction.guild?.roles.fetch(env.BUMBOY_ROLE_ID);
 
-  console.log("*** DEBUG - Vice Plus role ID:", env.VICE_PLUS_ROLE_ID);
-  console.log("*** DEBUG - BUMBOY role ID:", env.BUMBOY_ROLE_ID);
-  console.log('*** DEBUG - VICE PLUS ROLE members:', vicePlusRole?.members);
-
   // If no Vice Plus role or BUMBOY role, send error message and early return
   if (!vicePlusRole) {
     await interaction.reply({
