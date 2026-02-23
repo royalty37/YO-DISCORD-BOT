@@ -11,8 +11,6 @@ import { Subcommands } from "../bumboy";
 import { performForceClear } from "../jobs/bumboyJobs";
 import { Interaction } from "../../../types/types";
 
-// TODO: Let the president use this command - only me at this point (and probably ever)
-
 // My Discord ID - only I can use the clear subcommand
 const ADMIN_ID = process.env.ADMIN_USER_ID;
 
@@ -28,7 +26,7 @@ export const handleClearSubcommand = async (
   if (!ADMIN_ID || interaction.user.id !== ADMIN_ID) {
     await interaction.reply({
       content:
-        "You do not have permission to use this command. Only the president can use this command.",
+        "You do not have permission to use this command.",
       ephemeral: true,
     });
     return console.log("*** BUMBOY CLEAR - User is not the president.");

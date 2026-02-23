@@ -37,8 +37,8 @@ export const handleStopSubcommand = async (
     });
   }
 
-  // Clear queue
-  queue.clear();
+  // Stop playback, clear queue, and disconnect
+  queue.delete();
 
   console.log("*** MUSIC STOP SUBCOMMAND - STOPPED QUEUE");
   await interaction.reply(`⏹️ | Stopped!`);
