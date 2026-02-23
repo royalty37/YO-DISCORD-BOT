@@ -1,4 +1,5 @@
 import { EmbedBuilder } from "discord.js";
+import { env } from "../../environment";
 
 import type { Message } from "discord.js";
 import type { Track } from "discord-player";
@@ -41,13 +42,13 @@ export const filterInvites = async (message: Message<boolean>) => {
 // Function to filter/remove messages that contain banned words
 export const filterBannedWords = async (message: Message<boolean>) => {
   // Get banned words from .env as a JSON array string
-  if (!process.env.BANNED_WORDS) {
+  if (!env.BANNED_WORDS) {
     return console.log("*** No banned words found in .env, skipping filter...");
   }
 
   let bannedWords: string[];
   try {
-    bannedWords = JSON.parse(process.env.BANNED_WORDS);
+    bannedWords = JSON.parse(env.BANNED_WORDS);
   } catch {
     return console.error("*** ERROR: BANNED_WORDS is not valid JSON, skipping filter...");
   }

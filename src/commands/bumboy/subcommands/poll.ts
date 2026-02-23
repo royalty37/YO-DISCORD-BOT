@@ -2,12 +2,13 @@ import {
   ChatInputCommandInteraction,
   Colors,
   EmbedBuilder,
-  MessageReaction,
   SlashCommandSubcommandBuilder,
-  User,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ComponentType,
 } from "discord.js";
 import { Subcommands } from "../bumboy";
-import { getUniqueRandomEmojis } from "../../../utils/emojiUtils/emojiUtils";
 import {
   saveBumboys,
   getBumboys,
@@ -16,10 +17,8 @@ import {
 import dayjs from "dayjs";
 import { clearBumboysJob } from "../jobs/bumboyJobs";
 import { Interaction } from "../../../types/types";
-import {
-  VICE_PLUS_ROLE_ID,
-  BUMBOY_ROLE_ID,
-} from "../../../utils/discordUtils/roleUtils";
+import { env } from "../../../environment";
+import { isDevMode } from "../../../config";
 
 // Emoji that represents a vote in description
 const VOTE_EMOJI = "🟢";
@@ -28,8 +27,8 @@ const VOTE_EMOJI = "🟢";
 const DURATION_IN_MINUTES = 60;
 const DURATION_IN_MS = 60000 * DURATION_IN_MINUTES;
 
-// Have to set max number of options to 20 as this is the max number of reacts per message Discord allows
-const NO_OF_OPTIONS = 20;
+// Maximum number of buttons Discord allows (5 rows x 5 buttons)
+const MAX_BUTTONS = 25;
 
 // True when poll is already running
 let pollIsRunning = false;
@@ -50,26 +49,46 @@ export const handlePollSubcommand = async (
     return console.log("*** BUMBOY POLL - Poll is already running.");
   }
 
-  // Fetch all members then fetch the Vice Plus role to get all members with that role
-  const vicePlusRole = await interaction.guild?.roles.fetch(VICE_PLUS_ROLE_ID);
-  const bumboyRole = await interaction.guild?.roles.fetch(BUMBOY_ROLE_ID);
+  // Fetch all guild members into cache first (Role.members reads from cache)
+  await interaction.guild?.members.fetch();
+
+  // Fetch the Vice Plus and BUMBOY roles
+  const vicePlusRole = await interaction.guild?.roles.fetch(env.VICE_PLUS_ROLE_ID);
+  const bumboyRole = await interaction.guild?.roles.fetch(env.BUMBOY_ROLE_ID);
+
+  console.log("*** DEBUG - Vice Plus role ID:", env.VICE_PLUS_ROLE_ID);
+  console.log("*** DEBUG - BUMBOY role ID:", env.BUMBOY_ROLE_ID);
+  console.log('*** DEBUG - VICE PLUS ROLE members:', vicePlusRole?.members);
 
   // If no Vice Plus role or BUMBOY role, send error message and early return
-  if (!vicePlusRole?.members || !bumboyRole) {
+  if (!vicePlusRole) {
     await interaction.reply({
       content: "Something went wrong. Please try again.",
       ephemeral: true,
     });
-    return console.error("*** BUMBOY POLL - No Vice Plus role or BUMBOY role.");
+    return console.error("*** BUMBOY POLL - No Vice Plus role.");
+  }
+
+  if (!vicePlusRole.members) {
+    await interaction.reply({
+      content: "Something went wrong. Please try again.",
+      ephemeral: true,
+    });
+    return console.error("*** BUMBOY POLL - No Vice Plus role members.");
+  }
+
+  if (!bumboyRole) {
+    await interaction.reply({
+      content: "Something went wrong. Please try again.",
+      ephemeral: true,
+    });
+    return console.error("*** BUMBOY POLL - No BUMBOY role.");
   }
 
   // Set pollRunning to true
   pollIsRunning = true;
 
   await interaction.deferReply();
-
-  // Fetch all members
-  await interaction.guild?.members.fetch();
 
   // Get current BUMBOYS record from database
   const currentBumboysRecord = await getBumboys();
@@ -88,16 +107,15 @@ export const handlePollSubcommand = async (
     } else {
       pollIsRunning = false;
       interaction.editReply(
-        `BUMBOY poll can only be run once every 12 hours.\n\n${
-          currentBumboys.length
-            ? `Current BUMBOYS are:\n\n${currentBumboys
-                .map((b) => `💩 **${b.user.username}** 💩`)
-                .join("\n\n")}`
-            : "There are currently no BUMBOYS..."
+        `BUMBOY poll can only be run once every 12 hours.\n\n${currentBumboys.length
+          ? `Current BUMBOYS are:\n\n${currentBumboys
+            .map((b) => `💩 **${b.user.username}** 💩`)
+            .join("\n\n")}`
+          : "There are currently no BUMBOYS..."
         }
               \n\nTry again later at ${dayjs(
-                currentBumboysRecord.clearTime,
-              ).format("DD/MM/YYYY h:mm:ss a")}`,
+          currentBumboysRecord.clearTime,
+        ).format("DD/MM/YYYY h:mm:ss a")}`,
       );
       return console.log(
         "*** BUMBOY POLL - BUMBOY poll can only be run once every 12 hours.",
@@ -105,31 +123,35 @@ export const handlePollSubcommand = async (
     }
   }
 
-  // Randomly retrieve 20 members used as options for the poll
-  const includedMembers = vicePlusRole.members.random(NO_OF_OPTIONS);
+  // Determine how many members to include (up to MAX_BUTTONS)
+  const totalVicePlusMembers = vicePlusRole.members.size;
+  const includedCount = Math.min(totalVicePlusMembers, MAX_BUTTONS);
 
-  // Array of members names in Vice Plus role that will not be included in the poll
+  // Randomly retrieve members used as options for the poll (up to 25)
+  const includedMembers = vicePlusRole.members.random(includedCount);
+
+  // Array of members in Vice Plus role that will not be included in the poll (only if overflow)
   const nonIncludedMembers = vicePlusRole.members.filter(
     (m) => !includedMembers.includes(m),
   );
 
-  // Get a random emoji for each option - VICE PLUS
-  const emojis = getUniqueRandomEmojis(includedMembers.length);
+  // Whether all vice plus members fit in the poll
+  const allMembersFit = nonIncludedMembers.size === 0;
 
-  // Programatically generate votes array corresponding to number of VICE PLUS members included in the poll
-  const votes: number[] = [];
-  for (let i = 0; i < includedMembers.length; i++) {
-    votes.push(0);
-  }
+  // Vote tracking: userId -> optionIndex (single-vote)
+  const singleVotes = new Map<string, number>();
+  // Per-option vote counts
+  const voteCounts = new Array(includedMembers.length).fill(0);
 
   // Function to generate description for poll embed based on current votes
   const generateDescription = (): string => {
+    const totalVotes = voteCounts.reduce((a, b) => a + b, 0);
+
     // Generate percentage for each option on poll
     const generatePercentage = (index: number): string => {
       const percentage =
-        (votes[index] / votes.reduce((a, b) => a + b, 0)) * 100 || 0;
+        totalVotes > 0 ? (voteCounts[index] / totalVotes) * 100 : 0;
 
-      // If percentage is a decimal, round to 2 decimal places
       if (
         percentage.toString().includes(".") &&
         percentage.toString().split(".")[1].length > 2
@@ -140,49 +162,87 @@ export const handlePollSubcommand = async (
       return percentage.toString();
     };
 
-    // Generate description for poll embed, include members who were not randomly selected for the poll
-    return (
+    // Build the intro text
+    let description =
       "The BUMBOY poll is a poll to determine who will be demoted to BUMBOY and have their nickname changed for 24 hours. This doesn't revoke any permissions (except for the ability to change your nickname), but the BUMBOY must suffer the embarrassment of being the BUMBOY.\n\n" +
-      "This poll is a non multi vote poll, which means you can only cast a single vote. To change your vote, remove your existing vote (reaction) and cast a new vote.\n\nOnly members of the Vice Plus role may participate.\n\nThe BUMBOY poll can only be run once every 24 hours.\n\n" +
-      "Luckily, the following members are exempt from todays YOZA Bumboy vote (Discord only allows a maximum of 20 reacts on a message):\n\n" +
-      nonIncludedMembers
-        .map(
-          (m) =>
-            `🍀 ${m.user.username} ${m.nickname ? `(${m.nickname})` : ""} 🍀`,
-        )
-        .join("\n\n") +
-      "\n\nMembers included in todays BUMBOY poll are:\n\n" +
-      // Sort options by vote count, then map to generate information about each option, and join each option with a double new line
-      // Spread options into new array to avoid mutating original array on sort
+      "This poll is a non multi vote poll, which means you can only cast a single vote. To change your vote, click a different button.\n\nOnly members of the Vice Plus role may participate.\n\nThe BUMBOY poll can only be run once every 24 hours.\n\n";
+
+    // Conditionally show exempt members or "all members included" message
+    if (allMembersFit) {
+      description +=
+        "✅ All Vice Plus members are included in todays BUMBOY poll!\n\n";
+    } else {
+      description +=
+        `Luckily, the following members are exempt from todays YOZA Bumboy vote (Discord only allows a maximum of ${MAX_BUTTONS} buttons on a message):\n\n` +
+        nonIncludedMembers
+          .map(
+            (m) =>
+              `🍀 ${m.user.username} ${m.nickname ? `(${m.nickname})` : ""} 🍀`,
+          )
+          .join("\n\n") +
+        "\n\n";
+    }
+
+    description +=
+      "Members included in todays BUMBOY poll are:\n\n" +
       [...includedMembers]
         .sort(
           (a, b) =>
-            votes[includedMembers.indexOf(b)] -
-            votes[includedMembers.indexOf(a)],
+            voteCounts[includedMembers.indexOf(b)] -
+            voteCounts[includedMembers.indexOf(a)],
         )
         .map((o) => {
-          // Generate green emoji bar for each option showing vote count
-          const votesEmojis = VOTE_EMOJI.repeat(
-            votes[includedMembers.indexOf(o)],
-          );
-          return `${emojis[includedMembers.indexOf(o)]} ${o.user.username}${
-            o.nickname ? ` (${o.nickname})` : ""
-          }\n ${votesEmojis ? `${votesEmojis} | ` : ""}${
-            votes[includedMembers.indexOf(o)]
-          } (${generatePercentage(includedMembers.indexOf(o))}%)`;
+          const idx = includedMembers.indexOf(o);
+          const votesEmojis = VOTE_EMOJI.repeat(voteCounts[idx]);
+          return `${o.user.username}${o.nickname ? ` (${o.nickname})` : ""
+            }\n ${votesEmojis ? `${votesEmojis} | ` : ""}${voteCounts[idx]
+            } (${generatePercentage(idx)}%)`;
         })
-        .join("\n\n")
-    );
+        .join("\n\n");
+
+    return description;
   };
 
   const getFooterText = (remainingDurationParam?: number): string =>
-    `BUMBOY poll initiated by ${interaction.user.username}${
-      remainingDurationParam
-        ? `\n\nBUMBOY poll will end in approximately ${remainingDurationParam} ${
-            remainingDurationParam > 1 ? `minutes` : `minute`
-          }.`
-        : ""
+    `BUMBOY poll initiated by ${interaction.user.username}${remainingDurationParam
+      ? `\n\nBUMBOY poll will end in approximately ${remainingDurationParam} ${remainingDurationParam > 1 ? `minutes` : `minute`
+      }.`
+      : ""
     }`;
+
+  // Build buttons for each included member
+  const buildButtons = (
+    disabled = false,
+  ): ActionRowBuilder<ButtonBuilder>[] => {
+    const rows: ActionRowBuilder<ButtonBuilder>[] = [];
+    let currentRow = new ActionRowBuilder<ButtonBuilder>();
+
+    for (let i = 0; i < includedMembers.length; i++) {
+      const member = includedMembers[i];
+      // Use username (truncated to fit Discord's 80-char button label limit)
+      const name = member.nickname ?? member.user.username;
+      const label =
+        name.length > 72
+          ? name.substring(0, 69) + "..."
+          : name;
+
+      const button = new ButtonBuilder()
+        .setCustomId(`bumboy_vote_${i}`)
+        .setLabel(`${label} (${voteCounts[i]})`)
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(disabled);
+
+      currentRow.addComponents(button);
+
+      // 5 buttons per row
+      if ((i + 1) % 5 === 0 || i === includedMembers.length - 1) {
+        rows.push(currentRow);
+        currentRow = new ActionRowBuilder<ButtonBuilder>();
+      }
+    }
+
+    return rows;
+  };
 
   // Create initial poll embed - No votes yet
   const pollEmbed = new EmbedBuilder()
@@ -191,19 +251,20 @@ export const handlePollSubcommand = async (
     .setColor(Colors.Red)
     .setThumbnail(interaction.user.avatarURL())
     .setFooter({
-      // Embed shows duration in minutes
       text: getFooterText(DURATION_IN_MINUTES),
     });
 
-  // Edit reply to include poll embed and pull out message to edit after collecting reactions
-  const message = await interaction.editReply({ embeds: [pollEmbed] });
+  // Edit reply to include poll embed with buttons
+  const message = await interaction.editReply({
+    embeds: [pollEmbed],
+    components: buildButtons(),
+  });
 
-  // Create reaction collector - no filter (manually handle in collect listener), 2 hour time limit, dispose = true (allow remove listener)
-  const collector = message.createReactionCollector({
-    filter: (_, user: User) => !user.bot,
-    // Collector uses milliseconds
+  // Create button collector
+  const collector = message.createMessageComponentCollector({
+    componentType: ComponentType.Button,
+    filter: (i) => i.customId.startsWith("bumboy_vote_"),
     time: DURATION_IN_MS,
-    dispose: true,
   });
 
   // Recursive function to update poll embed footer with remaining duration every minute
@@ -212,7 +273,10 @@ export const handlePollSubcommand = async (
       pollEmbed.setFooter({
         text: getFooterText(duration),
       });
-      await message.edit({ embeds: [pollEmbed] });
+      await message.edit({
+        embeds: [pollEmbed],
+        components: buildButtons(),
+      });
 
       if (duration > 1 && !collector.ended) {
         updateDuration(duration - 1);
@@ -222,118 +286,108 @@ export const handlePollSubcommand = async (
 
   updateDuration(DURATION_IN_MINUTES);
 
-  for (let i = 0; i < includedMembers.length; i++) {
-    // Add bot reaction to message for each option
-    message.react(emojis[i]);
-  }
-
   // On Collect listener
-  collector.on("collect", (reaction: MessageReaction, user: User) => {
-    // If reaction is not a valid option (reaction outside of bounds of supplied options or random emoji), remove reaction and early return
-    if (
-      !(
-        emojis.includes(reaction.emoji.name ?? "") &&
-        emojis.indexOf(reaction.emoji.name ?? "") < includedMembers.length
-      )
-    ) {
-      return void reaction.remove();
+  collector.on("collect", async (btnInteraction) => {
+    const optionIndex = parseInt(
+      btnInteraction.customId.replace("bumboy_vote_", ""),
+      10,
+    );
+    const userId = btnInteraction.user.id;
+
+    // Only Vice Plus members may vote
+    if (!vicePlusRole.members.has(userId)) {
+      return btnInteraction.reply({
+        content: "❌ | Only Vice Plus members may vote in the BUMBOY poll!",
+        ephemeral: true,
+      });
     }
 
-    // Get index of option that user voted for early to avoid a weird remove listener bug
-    const index = emojis.indexOf(reaction.emoji.name ?? "");
+    // Single-vote mode
+    if (singleVotes.has(userId)) {
+      const previousIndex = singleVotes.get(userId)!;
 
-    // If user is not a vice plus, remove reaction and early return
-    if (!vicePlusRole.members.has(user.id)) {
-      // Calling reaction.users.remove() will trigger the remove listener, so we need to manually increment the vote count before the remove listener decrements it
-      // A slight roundabout solution but not necessarily non performant - Would prefer to block the remove listener or early return in the remove listener but unsure if it's doable
-      votes[index]++;
-      return void reaction.users.remove(user);
-    }
-
-    // Check if user has already voted, if so, remove reaction and early return
-    let userHasVoted = false;
-
-    // Loop through existing reactions to check if user has already voted
-    message.reactions.cache.each((existingReaction) => {
-      // Skip if reaction is the current reaction or if user has been confirmed to have already voted
-      if (existingReaction === reaction || userHasVoted) {
-        return;
+      if (previousIndex === optionIndex) {
+        return btnInteraction.reply({
+          content: `❌ | You already voted for **${includedMembers[optionIndex].user.username}**! Click a different button to change your vote.`,
+          ephemeral: true,
+        });
       }
 
-      userHasVoted = !!existingReaction.users.cache.get(user.id);
-    });
-
-    // If user has already voted, remove that users reaction and early return
-    if (userHasVoted) {
-      // Calling reaction.users.remove() will trigger the remove listener, so we need to manually increment the vote count before the remove listener decrements it
-      // A slight roundabout solution but not necessarily non performant - Would prefer to block the remove listener or early return in the remove listener but unsure if it's doable
-      votes[index]++;
-      return void reaction.users.remove(user);
+      // Move vote from old option to new option
+      voteCounts[previousIndex]--;
+      voteCounts[optionIndex]++;
+      singleVotes.set(userId, optionIndex);
+      console.log(
+        `*** BUMBOY POLL - ${btnInteraction.user.displayName} changed vote from "${includedMembers[previousIndex].user.username}" to "${includedMembers[optionIndex].user.username}"`,
+      );
+    } else {
+      // New vote
+      voteCounts[optionIndex]++;
+      singleVotes.set(userId, optionIndex);
+      console.log(
+        `*** BUMBOY POLL - ${btnInteraction.user.displayName} voted for "${includedMembers[optionIndex].user.username}"`,
+      );
     }
 
-    // If everything is all good, register the vote
-    // Get index of reaction emoji in EMOJI_NUMBERS array and increment vote count for that index
-    votes[index]++;
-
-    // Update poll embed description and edit message
+    // Update poll embed and buttons
     pollEmbed.setDescription(generateDescription());
-    message.edit({ embeds: [pollEmbed] });
-  });
-
-  // On Remove listener
-  collector.on("remove", (reaction: MessageReaction) => {
-    // Get index of reaction emoji in EMOJI_NUMBERS array and decrement vote count for that index
-    const index = emojis.indexOf(reaction.emoji.name ?? "");
-    votes[index]--;
-
-    // Update poll embed description and edit message
-    pollEmbed.setDescription(generateDescription());
-    message.edit({ embeds: [pollEmbed] });
+    await btnInteraction.update({
+      embeds: [pollEmbed],
+      components: buildButtons(),
+    });
   });
 
   // On End listener
   collector.on("end", async () => {
     // Filter options array to only include options with the highest vote count
-    const maxVotes = Math.max(...votes);
-    const newBumboys = includedMembers.filter((_, i) => votes[i] === maxVotes);
+    const maxVotes = Math.max(...voteCounts);
+    const newBumboys = includedMembers.filter(
+      (_, i) => voteCounts[i] === maxVotes,
+    );
 
     // If no votes, write a sad no votes message to description
     if (!maxVotes) {
       pollEmbed.setDescription(
         generateDescription() +
-          "\n\n**BUMBOY poll has ended**\n\nUnfortunately, no votes were cast. 😔😔😔\n\nThis however means that the BUMBOY poll can be run again immediately!",
+        "\n\n**BUMBOY poll has ended**\n\nUnfortunately, no votes were cast. 😔😔😔\n\nThis however means that the BUMBOY poll can be run again immediately!",
       );
     } else if (newBumboys.length === 1) {
       // If there is only one winner, add winner to description
       pollEmbed.setDescription(
         generateDescription() +
-          `\n\n**BUMBOY Poll has ended**\n\n💩 **${
-            newBumboys[0].user.username
-          }${
-            newBumboys[0].nickname ? ` (${newBumboys[0].nickname})` : ""
-          }** 💩 is the todays BUMBOY with ${maxVotes} ${
-            maxVotes > 1 ? `votes` : `vote`
-          }.\n\n`,
+        `\n\n**BUMBOY Poll has ended**\n\n💩 **${newBumboys[0].user.username
+        }${newBumboys[0].nickname ? ` (${newBumboys[0].nickname})` : ""
+        }** 💩 is the todays BUMBOY with ${maxVotes} ${maxVotes > 1 ? `votes` : `vote`
+        }.\n\n`,
       );
     } else {
       // If there are multiple winners, add winners to description
       pollEmbed.setDescription(
         generateDescription() +
-          `\n\n**BUMBOY Poll has ended**\n\nTodays BUMBOYS are:\n\n ${newBumboys
-            .map(
-              (w) =>
-                `💩 **${w.user.username}${
-                  w.nickname ? ` (${w.nickname})` : ""
-                }** 💩`,
-            )
-            .join("\n")}\n\n with ${maxVotes} ${
-            maxVotes > 1 ? `votes` : `vote`
-          } each.`,
+        `\n\n**BUMBOY Poll has ended**\n\nTodays BUMBOYS are:\n\n ${newBumboys
+          .map(
+            (w) =>
+              `💩 **${w.user.username}${w.nickname ? ` (${w.nickname})` : ""
+              }** 💩`,
+          )
+          .join("\n")}\n\n with ${maxVotes} ${maxVotes > 1 ? `votes` : `vote`
+        } each.`,
       );
     }
 
     pollEmbed.setFooter({ text: getFooterText() });
-    message.edit({ embeds: [pollEmbed] });
+    message.edit({ embeds: [pollEmbed], components: buildButtons(true) });
+
+    // In dev mode, skip role assignment and send test-run disclaimer
+    if (isDevMode) {
+      pollIsRunning = false;
+      if (maxVotes) {
+        await interaction.followUp(
+          "⚠️ **Test Mode** — YOZA Bot is currently running in test mode. This was a dry run and no roles or nicknames have been changed. Nobody is the BUMBOY today... yet. 😈",
+        );
+      }
+      return;
+    }
 
     // Set roles and change nicknames for bumboys
     // Weird recursive function to set bumboys one at a time with a 3 second delay between each
@@ -343,7 +397,7 @@ export const handlePollSubcommand = async (
         console.log(`*** MAKING MEMBER BUMBOY: ${newBumboys[i].user.username}`);
         // Spread in managed roles when setting to avoid exception (for instance server booster role)
         await newBumboys[i].roles.set([
-          BUMBOY_ROLE_ID,
+          env.BUMBOY_ROLE_ID,
           ...newBumboys[i].roles.cache.filter((r) => r.managed).values(),
         ]);
         await newBumboys[i].setNickname(

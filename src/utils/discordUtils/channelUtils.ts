@@ -1,8 +1,9 @@
 import { YoClient } from "../../types/types";
 import { getMyGuild } from "./guildUtils";
+import { env } from "../../environment";
 
 export const getBotChannel = async (client: YoClient) => {
-  const botChannelId = process.env.BOT_CHANNEL_ID;
+  const botChannelId = env.BOT_CHANNEL_ID;
   if (!botChannelId) {
     console.error("*** ERROR: BOT_CHANNEL_ID environment variable is not set");
     return;

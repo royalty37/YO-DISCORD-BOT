@@ -1,1 +1,3 @@
-export const isDevMode = !!process.env.DEV;
+import { env } from "./environment";
+
+export const isDevMode = !!env.DEV;
