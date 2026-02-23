@@ -8,7 +8,9 @@
     "build": "tsc",
     "start": "npm run build && node build/index.js",
     "dev": "cross-env DEV=true nodemon src/index.ts",
-    "deploy-commands": "npx ts-node -r dotenv/config src/deploy-commands.ts"
+    "deploy-commands": "npx ts-node -r dotenv/config src/deploy-commands.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "author": "Liam Hardy",
   "license": "ISC",
@@ -42,6 +44,7 @@
     "nodemon": "^3.1.13",
     "prettier": "^3.8.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }
