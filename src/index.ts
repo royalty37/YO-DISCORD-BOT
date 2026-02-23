@@ -61,7 +61,7 @@ for (const cf of commandFolders) {
   // Include .ts files for when running in dev mode - ts-node and nodemon
   const commandFiles = fs
     .readdirSync(path.join(commandsPath, cf))
-    .filter((file) => file.endsWith(".js") || file.endsWith(".ts"));
+    .filter((file) => (file.endsWith(".js") || file.endsWith(".ts")) && !file.endsWith(".test.ts") && !file.endsWith(".test.js"));
 
   for (const file of commandFiles) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires

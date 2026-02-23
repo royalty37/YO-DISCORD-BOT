@@ -18,6 +18,7 @@
     "swc": true
   },
   "exclude": [
-    "vitest.config.ts"
+    "vitest.config.ts",
+    "**/*.test.ts"
   ],
 }
