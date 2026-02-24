@@ -15,6 +15,7 @@ import type {
   SlashCommandNumberOption,
 } from "discord.js";
 import type { Command, Interaction } from "../../types/types";
+import { saveActivePoll, clearActivePoll, PersistedPollState } from "./pollStore";
 
 // Emoji that represents a vote in description
 const VOTE_EMOJI = "🟢";
@@ -113,6 +114,34 @@ const execute = async (
   // Per-option vote counts
   const voteCounts = new Array(options.length).fill(0);
 
+  // Absolute end time for the poll
+  const durationMs = 60000 * duration;
+  const endTime = new Date(Date.now() + durationMs).toISOString();
+
+  // Helper to compute remaining whole minutes from endTime
+  const getRemainingMinutes = (): number =>
+    Math.max(0, Math.ceil((new Date(endTime).getTime() - Date.now()) / 60000));
+
+  // Helper to persist current poll state to the store
+  const persistState = (messageId: string, channelId: string): void => {
+    const state: PersistedPollState = {
+      type: "regular",
+      messageId,
+      channelId,
+      initiatorUsername: interaction.user.username,
+      endTime,
+      voteCounts: [...voteCounts],
+      singleVotes: Object.fromEntries(singleVotes),
+      multiVotes: Object.fromEntries(
+        [...multiVotes.entries()].map(([k, v]) => [k, [...v]]),
+      ),
+      question,
+      options: [...options],
+      allowMultiVote,
+    };
+    saveActivePoll(state);
+  };
+
   // Function to generate description for poll embed based on current votes
   const generateDescription = (): string => {
     const totalVotes = voteCounts.reduce((a, b) => a + b, 0);
@@ -153,12 +182,54 @@ const execute = async (
   };
 
   // Function to generate footer text for poll embed
-  const getFooterText = (remainingDurationParam?: number): string =>
-    `Poll created by ${interaction.user.username}${remainingDurationParam
-      ? `\n\nPoll will end in approximately ${remainingDurationParam} ${remainingDurationParam > 1 ? "minutes" : "minute"
-      }.`
-      : ""
-    }`;
+  const getFooterText = (remainingMinutesParam?: number): string => {
+    const base = `Poll created by ${interaction.user.username}`;
+    if (remainingMinutesParam === undefined) return base;
+    if (remainingMinutesParam <= 0) return `${base}\n\nPoll has ended.`;
+    return `${base}\n\nPoll will end in approximately ${remainingMinutesParam} ${remainingMinutesParam > 1 ? "minutes" : "minute"}.`;
+  };
+
+  // Generate a "who voted for what" breakdown
+  const generateVoteBreakdown = (): string => {
+    // Collect all votes into optionIndex -> voterIds[]
+    const votesByOption = new Map<number, string[]>();
+
+    if (allowMultiVote) {
+      for (const [voterId, optionIndices] of multiVotes) {
+        for (const idx of optionIndices) {
+          if (!votesByOption.has(idx)) votesByOption.set(idx, []);
+          votesByOption.get(idx)!.push(voterId);
+        }
+      }
+    } else {
+      for (const [voterId, idx] of singleVotes) {
+        if (!votesByOption.has(idx)) votesByOption.set(idx, []);
+        votesByOption.get(idx)!.push(voterId);
+      }
+    }
+
+    if (votesByOption.size === 0) return "";
+
+    // Sort by vote count descending
+    const sortedEntries = [...votesByOption.entries()].sort(
+      (a, b) => b[1].length - a[1].length,
+    );
+
+    let breakdown = "\n\n📋 **Vote Breakdown — Who voted for what:**\n\n";
+
+    for (const [optionIndex, voterIds] of sortedEntries) {
+      const voterNames = voterIds.map((id) => {
+        const member = interaction.guild?.members.cache.get(id);
+        return member
+          ? (member.nickname ?? member.user.username)
+          : `Unknown (${id})`;
+      });
+
+      breakdown += `**${options[optionIndex]}** — ${voterNames.join(", ")}\n`;
+    }
+
+    return breakdown;
+  };
 
   // Build buttons for each option
   const buildButtons = (disabled = false): ActionRowBuilder<ButtonBuilder>[] => {
@@ -206,30 +277,40 @@ const execute = async (
     components: buildButtons(),
   });
 
+  // Persist initial poll state
+  persistState(message.id, message.channelId);
+
   // Create button collector
   const collector = message.createMessageComponentCollector({
     componentType: ComponentType.Button,
     filter: (i) => i.customId.startsWith("poll_vote_"),
     // 60,000 ms (a minute) * duration (in minutes)
-    time: 60000 * duration,
+    time: durationMs,
   });
 
-  // Recursive function to edit embed every minute to show remaining duration
-  const updateDuration = async (d: number) => {
-    setTimeout(async () => {
-      pollEmbed.setFooter({
-        text: getFooterText(d),
-      });
+  // Interval-based countdown that ticks every minute until the collector ends
+  const durationInterval = setInterval(async () => {
+    const remainingMinutes = getRemainingMinutes();
+
+    if (collector.ended) {
+      clearInterval(durationInterval);
+      return;
+    }
+
+    pollEmbed.setFooter({
+      text: getFooterText(remainingMinutes),
+    });
+
+    try {
       await message.edit({ embeds: [pollEmbed], components: buildButtons() });
+    } catch {
+      clearInterval(durationInterval);
+    }
 
-      if (d > 0 && !collector.ended) {
-        updateDuration(d - 1);
-      }
-    }, 60000);
-  };
-
-  // Initial call
-  updateDuration(duration);
+    if (remainingMinutes <= 0) {
+      clearInterval(durationInterval);
+    }
+  }, 60000);
 
   // On Collect listener
   collector.on("collect", async (btnInteraction) => {
@@ -297,13 +378,25 @@ const execute = async (
       embeds: [pollEmbed],
       components: buildButtons(),
     });
+
+    // Persist updated vote state
+    persistState(message.id, message.channelId);
   });
 
   // On End listener
   collector.on("end", () => {
+    // Stop the countdown interval
+    clearInterval(durationInterval);
+
+    // Clear persisted poll state
+    clearActivePoll("regular", message.id);
+
     // Filter options array to only include options with the highest vote count
     const maxVotes = Math.max(...voteCounts);
     const winners = options.filter((_, i) => voteCounts[i] === maxVotes);
+
+    // Generate the vote breakdown to append after the results
+    const voteBreakdown = generateVoteBreakdown();
 
     // If no votes, write a sad no votes message to description
     if (!maxVotes) {
@@ -317,7 +410,7 @@ const execute = async (
         generateDescription() +
         `\n\n**Poll has ended**\n\n👑 **${winners[0]
         }** 👑 is the winner with ${maxVotes} ${maxVotes > 1 ? "votes" : "vote"
-        }.`,
+        }.` + voteBreakdown,
       );
     } else {
       // If there are multiple winners, add winners to description
@@ -326,11 +419,11 @@ const execute = async (
         `\n\n**Poll has ended**\n\nWinners are:\n\n ${winners
           .map((w) => `👑 **${w}** 👑`)
           .join("\n")}\n\n with ${maxVotes} ${maxVotes > 1 ? "votes" : "vote"
-        } each.`,
+        } each.` + voteBreakdown,
       );
     }
 
-    pollEmbed.setFooter({ text: getFooterText() });
+    pollEmbed.setFooter({ text: getFooterText(0) });
     message.edit({ embeds: [pollEmbed], components: buildButtons(true) });
   });
 };

@@ -13,12 +13,14 @@ import {
   saveBumboys,
   getBumboys,
   clearBumboys,
+  recordBumboyWins,
 } from "../actions/bumboyActions";
 import dayjs from "dayjs";
 import { clearBumboysJob } from "../jobs/bumboyJobs";
 import { Interaction } from "../../../types/types";
 import { env } from "../../../environment";
 import { isDevMode } from "../../../config";
+import { saveActivePoll, clearActivePoll, PersistedPollState } from "../../poll/pollStore";
 
 // Emoji that represents a vote in description
 const VOTE_EMOJI = "🟢";
@@ -139,6 +141,30 @@ export const handlePollSubcommand = async (
   // Per-option vote counts
   const voteCounts = new Array(includedMembers.length).fill(0);
 
+  // Absolute end time for the poll
+  const endTime = new Date(Date.now() + DURATION_IN_MS).toISOString();
+
+  // Helper to compute remaining whole minutes from endTime
+  const getRemainingMinutes = (): number =>
+    Math.max(0, Math.ceil((new Date(endTime).getTime() - Date.now()) / 60000));
+
+  // Helper to persist current poll state to the store
+  const persistState = (messageId: string, channelId: string): void => {
+    const state: PersistedPollState = {
+      type: "bumboy",
+      messageId,
+      channelId,
+      initiatorUsername: interaction.user.username,
+      endTime,
+      voteCounts: [...voteCounts],
+      singleVotes: Object.fromEntries(singleVotes),
+      multiVotes: {},
+      includedMemberIds: includedMembers.map((m) => m.id),
+      nonIncludedMemberIds: nonIncludedMembers.map((m) => m.id),
+    };
+    saveActivePoll(state);
+  };
+
   // Function to generate description for poll embed based on current votes
   const generateDescription = (): string => {
     const totalVotes = voteCounts.reduce((a, b) => a + b, 0);
@@ -199,12 +225,50 @@ export const handlePollSubcommand = async (
     return description;
   };
 
-  const getFooterText = (remainingDurationParam?: number): string =>
-    `BUMBOY poll initiated by ${interaction.user.username}${remainingDurationParam
-      ? `\n\nBUMBOY poll will end in approximately ${remainingDurationParam} ${remainingDurationParam > 1 ? `minutes` : `minute`
-      }.`
-      : ""
-    }`;
+  const getFooterText = (remainingMinutesParam?: number): string => {
+    const base = `BUMBOY poll initiated by ${interaction.user.username}`;
+    if (remainingMinutesParam === undefined) return base;
+    if (remainingMinutesParam <= 0) return `${base}\n\nBUMBOY poll has ended.`;
+    return `${base}\n\nBUMBOY poll will end in approximately ${remainingMinutesParam} ${remainingMinutesParam > 1 ? "minutes" : "minute"}.`;
+  };
+
+  // Generate a "who voted for who" breakdown from the singleVotes map
+  const generateVoteBreakdown = (): string => {
+    if (singleVotes.size === 0) return "";
+
+    // Group voters by the candidate they voted for (optionIndex -> voterIds[])
+    const votesByCandidate = new Map<number, string[]>();
+    for (const [voterId, optionIndex] of singleVotes) {
+      if (!votesByCandidate.has(optionIndex)) {
+        votesByCandidate.set(optionIndex, []);
+      }
+      votesByCandidate.get(optionIndex)!.push(voterId);
+    }
+
+    // Sort candidates by vote count descending
+    const sortedEntries = [...votesByCandidate.entries()].sort(
+      (a, b) => b[1].length - a[1].length,
+    );
+
+    let breakdown = "\n\n📋 **Vote Breakdown — Who voted for who:**\n\n";
+
+    for (const [optionIndex, voterIds] of sortedEntries) {
+      const candidate = includedMembers[optionIndex];
+      const candidateName = candidate.nickname ?? candidate.user.username;
+
+      // Resolve voter display names from guild cache
+      const voterNames = voterIds.map((id) => {
+        const member = interaction.guild?.members.cache.get(id);
+        return member
+          ? (member.nickname ?? member.user.username)
+          : `Unknown (${id})`;
+      });
+
+      breakdown += `**${candidateName}** — ${voterNames.join(", ")}\n`;
+    }
+
+    return breakdown;
+  };
 
   // Build buttons for each included member
   const buildButtons = (
@@ -256,6 +320,9 @@ export const handlePollSubcommand = async (
     components: buildButtons(),
   });
 
+  // Persist initial poll state
+  persistState(message.id, message.channelId);
+
   // Create button collector
   const collector = message.createMessageComponentCollector({
     componentType: ComponentType.Button,
@@ -263,24 +330,33 @@ export const handlePollSubcommand = async (
     time: DURATION_IN_MS,
   });
 
-  // Recursive function to update poll embed footer with remaining duration every minute
-  const updateDuration = async (duration: number) => {
-    setTimeout(async () => {
-      pollEmbed.setFooter({
-        text: getFooterText(duration),
-      });
+  // Interval-based countdown that ticks every minute until the collector ends
+  const durationInterval = setInterval(async () => {
+    const remainingMinutes = getRemainingMinutes();
+
+    if (collector.ended) {
+      clearInterval(durationInterval);
+      return;
+    }
+
+    pollEmbed.setFooter({
+      text: getFooterText(remainingMinutes),
+    });
+
+    try {
       await message.edit({
         embeds: [pollEmbed],
         components: buildButtons(),
       });
+    } catch {
+      // Message may have been deleted or edited by the end handler
+      clearInterval(durationInterval);
+    }
 
-      if (duration > 1 && !collector.ended) {
-        updateDuration(duration - 1);
-      }
-    }, 1000 * 60);
-  };
-
-  updateDuration(DURATION_IN_MINUTES);
+    if (remainingMinutes <= 0) {
+      clearInterval(durationInterval);
+    }
+  }, 1000 * 60);
 
   // On Collect listener
   collector.on("collect", async (btnInteraction) => {
@@ -331,15 +407,27 @@ export const handlePollSubcommand = async (
       embeds: [pollEmbed],
       components: buildButtons(),
     });
+
+    // Persist updated vote state
+    persistState(message.id, message.channelId);
   });
 
   // On End listener
   collector.on("end", async () => {
+    // Stop the countdown interval
+    clearInterval(durationInterval);
+
+    // Clear persisted poll state
+    clearActivePoll("bumboy");
+
     // Filter options array to only include options with the highest vote count
     const maxVotes = Math.max(...voteCounts);
     const newBumboys = includedMembers.filter(
       (_, i) => voteCounts[i] === maxVotes,
     );
+
+    // Generate the vote breakdown to append after the results
+    const voteBreakdown = generateVoteBreakdown();
 
     // If no votes, write a sad no votes message to description
     if (!maxVotes) {
@@ -354,7 +442,7 @@ export const handlePollSubcommand = async (
         `\n\n**BUMBOY Poll has ended**\n\n💩 **${newBumboys[0].user.username
         }${newBumboys[0].nickname ? ` (${newBumboys[0].nickname})` : ""
         }** 💩 is the todays BUMBOY with ${maxVotes} ${maxVotes > 1 ? `votes` : `vote`
-        }.\n\n`,
+        }.\n\n` + voteBreakdown,
       );
     } else {
       // If there are multiple winners, add winners to description
@@ -367,11 +455,11 @@ export const handlePollSubcommand = async (
               }** 💩`,
           )
           .join("\n")}\n\n with ${maxVotes} ${maxVotes > 1 ? `votes` : `vote`
-        } each.`,
+        } each.` + voteBreakdown,
       );
     }
 
-    pollEmbed.setFooter({ text: getFooterText() });
+    pollEmbed.setFooter({ text: getFooterText(0) });
     message.edit({ embeds: [pollEmbed], components: buildButtons(true) });
 
     // In dev mode, skip role assignment and send test-run disclaimer
@@ -419,6 +507,9 @@ export const handlePollSubcommand = async (
     await saveBumboys(
       newBumboys.map((b) => ({ id: b.id, nickname: b.nickname })),
     );
+
+    // Record wins on the leaderboard
+    recordBumboyWins(newBumboys.map((b) => b.id));
 
     // Schedule job to promote bumboys back to Vice Plus after 12 hours and reset their nicknames
     clearBumboysJob(interaction.client);

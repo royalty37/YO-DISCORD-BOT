@@ -12,9 +12,10 @@ describe("bumboy command", () => {
     expect(typeof bumboyCommand.execute).toBe("function");
   });
 
-  it("Subcommands enum has POLL and CLEAR", () => {
+  it("Subcommands enum has POLL, CLEAR and LEADERBOARD", () => {
     expect(Subcommands.POLL).toBe("poll");
     expect(Subcommands.CLEAR).toBe("clear");
+    expect(Subcommands.LEADERBOARD).toBe("leaderboard");
   });
 
   it("replies with error for unknown subcommand", async () => {
