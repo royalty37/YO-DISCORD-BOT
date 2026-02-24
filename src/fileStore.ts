@@ -48,3 +48,9 @@ export const deleteData = (key: string): void => {
   delete store[key];
   writeStore(store);
 };
+
+// Get all keys matching a prefix
+export const getKeysByPrefix = (prefix: string): string[] => {
+  const store = readStore();
+  return Object.keys(store).filter((key) => key.startsWith(prefix));
+};

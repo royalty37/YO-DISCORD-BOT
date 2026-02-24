@@ -83,7 +83,7 @@ const start = async () => {
   // Login to Discord with DISCORD_TOKEN
   await client.login(env.DISCORD_TOKEN);
   // Reschedule jobs
-  scheduleJobs(client);
+  await scheduleJobs(client);
 };
 
 start();

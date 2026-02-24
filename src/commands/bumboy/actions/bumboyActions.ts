@@ -44,3 +44,35 @@ export const getBumboys = async (): Promise<CurrentBumboysRecord | null> => {
   console.log("*** Successfully retrieved BUMBOY IDs from store.");
   return bumboys;
 };
+
+// ─── Leaderboard ────────────────────────────────────────────────────────────
+
+const LEADERBOARD_KEY = "bumboyLeaderboard";
+
+export type LeaderboardEntry = {
+  id: string;
+  wins: number;
+};
+
+// Record bumboy wins — increments the win count for each given user ID
+export const recordBumboyWins = (bumboyIds: string[]): void => {
+  const leaderboard = getData<LeaderboardEntry[]>(LEADERBOARD_KEY) ?? [];
+
+  for (const id of bumboyIds) {
+    const entry = leaderboard.find((e) => e.id === id);
+    if (entry) {
+      entry.wins++;
+    } else {
+      leaderboard.push({ id, wins: 1 });
+    }
+  }
+
+  setData(LEADERBOARD_KEY, leaderboard);
+  console.log("*** Successfully recorded BUMBOY wins to leaderboard.");
+};
+
+// Return the leaderboard sorted by wins descending
+export const getLeaderboard = (): LeaderboardEntry[] => {
+  const leaderboard = getData<LeaderboardEntry[]>(LEADERBOARD_KEY) ?? [];
+  return leaderboard.sort((a, b) => b.wins - a.wins);
+};

@@ -1,14 +1,13 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { pollSubcommand, handlePollSubcommand } from "./subcommands/poll";
 import { clearSubcommand, handleClearSubcommand } from "./subcommands/clear";
-import { isDevMode } from "../../config";
+import { leaderboardSubcommand, handleLeaderboardSubcommand } from "./subcommands/leaderboard";
 import { Command, Interaction } from "../../types/types";
-
-// TODO: Fix remaining time bug - sometimes shows message after poll finishes
 
 export enum Subcommands {
   POLL = "poll",
   CLEAR = "clear",
+  LEADERBOARD = "leaderboard",
 }
 
 // Feature to excite the boys - the YOZA BUMBOY feature
@@ -20,7 +19,8 @@ const data = new SlashCommandBuilder()
     "Vices cast their vote for who will be demoted to bumboy for the next 24 hours!",
   )
   .addSubcommand(pollSubcommand)
-  .addSubcommand(clearSubcommand);
+  .addSubcommand(clearSubcommand)
+  .addSubcommand(leaderboardSubcommand);
 
 const subcommandHandlers: Record<
   string,
@@ -28,6 +28,7 @@ const subcommandHandlers: Record<
 > = {
   [Subcommands.POLL]: handlePollSubcommand,
   [Subcommands.CLEAR]: handleClearSubcommand,
+  [Subcommands.LEADERBOARD]: handleLeaderboardSubcommand,
 };
 
 const execute = async (
