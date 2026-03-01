@@ -13,7 +13,7 @@ describe("environment", () => {
 		delete process.env.BUMBOY_ROLE_ID;
 		delete process.env.ADMIN_USER_ID;
 		delete process.env.BANNED_WORDS;
-		delete process.env.DEV;
+		delete process.env.IS_DEV;
 	});
 
 	afterEach(() => {
@@ -32,7 +32,7 @@ describe("environment", () => {
 			"BUMBOY_ROLE_ID",
 			"ADMIN_USER_ID",
 			"BANNED_WORDS",
-			"DEV",
+			"IS_DEV",
 		];
 
 		for (const key of expectedKeys) {
@@ -67,6 +67,6 @@ describe("environment", () => {
 		const keys = Object.keys(env);
 		expect(keys).toContain("DISCORD_TOKEN");
 		expect(keys).toContain("GUILD_ID");
-		expect(keys).toContain("DEV");
+		expect(keys).toContain("IS_DEV");
 	});
 });

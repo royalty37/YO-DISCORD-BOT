@@ -1,10 +1,15 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import dayjs from "dayjs";
-import {
-  saveBumboys,
-  getBumboys,
-  clearBumboys,
-} from "./bumboyActions";
+
+// Hoisted mock ref so it's available at vi.mock definition time
+const mockIsDevMode = vi.hoisted(() => ({ value: false }));
+
+// Mock the config module so we can control isDevMode per test
+vi.mock("../../../config", () => ({
+  get isDevMode() {
+    return mockIsDevMode.value;
+  },
+}));
 
 // Mock the fileStore module
 vi.mock("../../../fileStore", () => {
@@ -22,10 +27,17 @@ vi.mock("../../../fileStore", () => {
   };
 });
 
+import {
+  saveBumboys,
+  getBumboys,
+  clearBumboys,
+} from "./bumboyActions";
+
 describe("bumboyActions", () => {
   let mockStore: Record<string, unknown>;
 
   beforeEach(async () => {
+    mockIsDevMode.value = false;
     const fileStore = await import("../../../fileStore");
     mockStore = (fileStore as any).__store;
     // Clear store before each test
@@ -48,7 +60,9 @@ describe("bumboyActions", () => {
       expect(result!.bumboys).toEqual(bumboys);
     });
 
-    it("sets clearTime approximately 12 hours in the future", async () => {
+    it("sets clearTime approximately 12 hours in the future (production)", async () => {
+      mockIsDevMode.value = false;
+
       const bumboys = [{ id: "user1", nickname: "Test" }];
       const before = dayjs();
 
@@ -61,6 +75,23 @@ describe("bumboyActions", () => {
       // clearTime should be ~12 hours from now (within a 5 second margin)
       expect(clearTime.diff(before, "hour")).toBeGreaterThanOrEqual(11);
       expect(clearTime.diff(after, "hour")).toBeLessThanOrEqual(13);
+    });
+
+    it("sets clearTime approximately 2 minutes in the future (dev mode)", async () => {
+      mockIsDevMode.value = true;
+
+      const bumboys = [{ id: "user1", nickname: "Test" }];
+      const before = dayjs();
+
+      await saveBumboys(bumboys);
+      const result = await getBumboys();
+
+      const after = dayjs();
+      const clearTime = dayjs(result!.clearTime);
+
+      // clearTime should be ~2 minutes from now (within a 5 second margin)
+      expect(clearTime.diff(before, "minute")).toBeGreaterThanOrEqual(1);
+      expect(clearTime.diff(after, "minute")).toBeLessThanOrEqual(3);
     });
 
     it("does not write when given an empty array", async () => {

@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "start": "npm run build && node build/index.js",
-    "dev": "cross-env DEV=true nodemon src/index.ts",
+    "dev": "cross-env IS_DEV=true nodemon src/index.ts",
     "deploy-commands": "npx ts-node -r dotenv/config src/deploy-commands.ts",
     "test": "vitest run",
     "test:watch": "vitest"
