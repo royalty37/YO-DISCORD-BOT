@@ -7,6 +7,7 @@ import {
 import { Subcommands } from "../bumboy";
 import { getLeaderboard } from "../actions/bumboyActions";
 import { Interaction } from "../../../types/types";
+import { fetchGuildMembers } from "../../../utils/discordUtils/guildUtils";
 
 // Medal emojis for top 3
 const MEDALS = ["🥇", "🥈", "🥉"];
@@ -33,7 +34,7 @@ export const handleLeaderboardSubcommand = async (
   }
 
   // Fetch guild members so we can resolve display names
-  await interaction.guild?.members.fetch();
+  await fetchGuildMembers(interaction.guild);
 
   const lines = leaderboard.map((entry, index) => {
     const member = interaction.guild?.members.cache.get(entry.id);

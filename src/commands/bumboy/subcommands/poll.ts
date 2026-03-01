@@ -21,12 +21,13 @@ import { Interaction } from "../../../types/types";
 import { env } from "../../../environment";
 import { isDevMode } from "../../../config";
 import { saveActivePoll, clearActivePoll, PersistedPollState } from "../../poll/pollStore";
+import { fetchGuildMembers } from "../../../utils/discordUtils/guildUtils";
 
 // Emoji that represents a vote in description
 const VOTE_EMOJI = "🟢";
 
-// Duration of the poll in milliseconds, 1 hour
-const DURATION_IN_MINUTES = 60;
+// Duration of the poll – 1 minute in dev mode, 1 hour in production
+const DURATION_IN_MINUTES = isDevMode ? 1 : 60;
 const DURATION_IN_MS = 60000 * DURATION_IN_MINUTES;
 
 // Maximum number of buttons Discord allows (5 rows x 5 buttons)
@@ -52,7 +53,7 @@ export const handlePollSubcommand = async (
   }
 
   // Fetch all guild members into cache first (Role.members reads from cache)
-  await interaction.guild?.members.fetch();
+  await fetchGuildMembers(interaction.guild);
 
   // Fetch the Vice Plus and BUMBOY roles
   const vicePlusRole = await interaction.guild?.roles.fetch(env.VICE_PLUS_ROLE_ID);
@@ -356,7 +357,7 @@ export const handlePollSubcommand = async (
     if (remainingMinutes <= 0) {
       clearInterval(durationInterval);
     }
-  }, 1000 * 60);
+  }, isDevMode ? 1000 * 10 : 1000 * 60);
 
   // On Collect listener
   collector.on("collect", async (btnInteraction) => {
@@ -462,17 +463,6 @@ export const handlePollSubcommand = async (
     pollEmbed.setFooter({ text: getFooterText(0) });
     message.edit({ embeds: [pollEmbed], components: buildButtons(true) });
 
-    // In dev mode, skip role assignment and send test-run disclaimer
-    if (isDevMode) {
-      pollIsRunning = false;
-      if (maxVotes) {
-        await interaction.followUp(
-          "⚠️ **Test Mode** — YOZA Bot is currently running in test mode. This was a dry run and no roles or nicknames have been changed. Nobody is the BUMBOY today... yet. 😈",
-        );
-      }
-      return;
-    }
-
     // Set roles and change nicknames for bumboys
     // Weird recursive function to set bumboys one at a time with a 3 second delay between each
     let i = 0;
@@ -484,11 +474,16 @@ export const handlePollSubcommand = async (
           env.BUMBOY_ROLE_ID,
           ...newBumboys[i].roles.cache.filter((r) => r.managed).values(),
         ]);
-        await newBumboys[i].setNickname(
-          newBumboys.length === 1
-            ? `💩 THE BUMBOY 💩`
-            : `💩 BUMBOY ${i + 1} 💩`,
-        );
+        // Discord does not allow bots to change the server owner's nickname
+        if (newBumboys[i].id === interaction.guild?.ownerId) {
+          console.log(`*** SKIPPING NICKNAME CHANGE FOR SERVER OWNER: ${newBumboys[i].user.username}`);
+        } else {
+          await newBumboys[i].setNickname(
+            newBumboys.length === 1
+              ? `💩 THE BUMBOY 💩`
+              : `💩 BUMBOY ${i + 1} 💩`,
+          );
+        }
 
         i++;
 

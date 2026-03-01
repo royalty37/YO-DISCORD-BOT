@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import { getData, setData, deleteData } from "../../../fileStore";
+import { isDevMode } from "../../../config";
 
 const STORE_KEY = "currentBumboys";
 
@@ -31,7 +32,9 @@ export const saveBumboys = async (bumboys: BumboyData[]) => {
 
   const record: CurrentBumboysRecord = {
     bumboys,
-    clearTime: dayjs().add(12, "hours").toISOString(),
+    clearTime: isDevMode
+      ? dayjs().add(2, "minutes").toISOString()
+      : dayjs().add(12, "hours").toISOString(),
   };
 
   setData(STORE_KEY, record);

@@ -49,11 +49,9 @@ export type PersistedPollState = {
 const BUMBOY_POLL_KEY = "activePoll_bumboy";
 const REGULAR_POLL_PREFIX = "activePoll_regular_";
 
-function getStoreKey(state: PersistedPollState): string {
-  return state.type === "bumboy"
-    ? BUMBOY_POLL_KEY
-    : `${REGULAR_POLL_PREFIX}${state.messageId}`;
-}
+const getStoreKey = (state: PersistedPollState): string => state.type === "bumboy"
+  ? BUMBOY_POLL_KEY
+  : `${REGULAR_POLL_PREFIX}${state.messageId}`;
 
 // ─── API ────────────────────────────────────────────────────────────────────
 
