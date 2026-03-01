@@ -24,7 +24,7 @@ interface Environment {
     /** JSON array of banned words (optional) */
     BANNED_WORDS: string;
     /** Set to any truthy value to enable dev mode */
-    DEV: string;
+    IS_DEV: string;
 }
 
 function lazy(key: keyof Environment): string {
@@ -50,7 +50,7 @@ export const env: Environment = Object.defineProperties(
                 "BUMBOY_ROLE_ID",
                 "ADMIN_USER_ID",
                 "BANNED_WORDS",
-                "DEV",
+                "IS_DEV",
             ] as const
         ).map((key) => [key, { get: () => lazy(key), enumerable: true }]),
     ),
