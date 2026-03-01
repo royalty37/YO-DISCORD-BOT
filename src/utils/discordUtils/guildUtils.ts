@@ -19,3 +19,16 @@ export const getMyGuild = async (client: YoClient): Promise<Guild> => {
 
   return guild;
 };
+
+export const fetchGuildMembers = async (guild: Guild | null) => {
+  try {
+    await guild?.members.fetch();
+  } catch (error: unknown) {
+    if (error instanceof Error && error.constructor.name === "GatewayRateLimitError") {
+      const retryAfter = Math.ceil((error as { data?: { retry_after?: number } }).data?.retry_after ?? 16);
+      console.log(`*** RATE LIMITED, RETRY AFTER ${retryAfter}s`);
+      return;
+    }
+    throw error;
+  }
+};

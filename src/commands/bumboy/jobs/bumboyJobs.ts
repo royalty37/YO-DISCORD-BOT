@@ -3,7 +3,7 @@ import { GuildMember } from "discord.js";
 import { Job, scheduleJob } from "node-schedule";
 import { YoClient } from "../../../types/types";
 import { getBotChannel } from "../../../utils/discordUtils/channelUtils";
-import { getMyGuild } from "../../../utils/discordUtils/guildUtils";
+import { fetchGuildMembers, getMyGuild } from "../../../utils/discordUtils/guildUtils";
 import {
   getBumboys,
   clearBumboys,
@@ -16,12 +16,10 @@ let scheduledJob: Job;
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Reset a single member's roles back to Vice Plus (preserving managed roles like server booster)
-const resetMemberRole = async (member: GuildMember) => {
-  await member.roles.set([
-    env.VICE_PLUS_ROLE_ID,
-    ...member.roles.cache.filter((r) => r.managed).values(),
-  ]);
-};
+const resetMemberRole = async (member: GuildMember) => member.roles.set([
+  env.VICE_PLUS_ROLE_ID,
+  ...member.roles.cache.filter((r) => r.managed).values(),
+]);
 
 const performClear = async (
   client: YoClient,
@@ -35,7 +33,7 @@ const performClear = async (
 
   // Fetch Guild off client and cache members
   const guild = await getMyGuild(client);
-  await guild?.members.fetch();
+  await fetchGuildMembers(guild);
 
   console.log(
     "*** Promoting bumboys back to Vice Plus and resetting nicknames...",
@@ -56,7 +54,12 @@ const performClear = async (
         `*** RESETTING ROLE AND NICKNAME FOR: ${member.user.username}`,
       );
       await resetMemberRole(member);
-      await member.setNickname(bumboyData.nickname ?? "");
+      // Discord does not allow bots to change the server owner's nickname
+      if (member.id === guild?.ownerId) {
+        console.log(`*** SKIPPING NICKNAME RESET FOR SERVER OWNER: ${member.user.username}`);
+      } else {
+        await member.setNickname(bumboyData.nickname ?? "");
+      }
       bumboysPostClear.push(member);
 
       await sleep(1000);
