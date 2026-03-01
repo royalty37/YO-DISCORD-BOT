@@ -16,12 +16,10 @@ let scheduledJob: Job;
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Reset a single member's roles back to Vice Plus (preserving managed roles like server booster)
-const resetMemberRole = async (member: GuildMember) => {
-  await member.roles.set([
-    env.VICE_PLUS_ROLE_ID,
-    ...member.roles.cache.filter((r) => r.managed).values(),
-  ]);
-};
+const resetMemberRole = async (member: GuildMember) => member.roles.set([
+  env.VICE_PLUS_ROLE_ID,
+  ...member.roles.cache.filter((r) => r.managed).values(),
+]);
 
 const performClear = async (
   client: YoClient,

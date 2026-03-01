@@ -43,8 +43,6 @@ export const handleClearSubcommand = async (
 
   await interaction.deferReply();
 
-  await interaction.guild?.members.fetch();
-
   const currentBumboyRecord = await getBumboys();
 
   console.log("*** Calling BUMBOY performClear from Clear subcommand.");
