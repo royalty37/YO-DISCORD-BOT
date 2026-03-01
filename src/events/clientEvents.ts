@@ -1,6 +1,7 @@
-import { Client, Events, BaseInteraction, Message } from "discord.js";
+import { Client, Events, BaseInteraction, Message, channelMention } from "discord.js";
 import { YoClient } from "../types/types";
 import { filterMessages } from "../utils/messageUtils/messageUtils";
+import { env } from "../environment";
 
 // Register client events
 export const registerClientEvents = (client: YoClient) => {
@@ -8,6 +9,15 @@ export const registerClientEvents = (client: YoClient) => {
   client.on(Events.InteractionCreate, async (interaction: BaseInteraction) => {
     // If interaction is a chat input command, return
     if (interaction.isChatInputCommand()) {
+      // Block commands outside the designated bot channel
+      if (env.BOT_CHANNEL_ID && interaction.channelId !== env.BOT_CHANNEL_ID) {
+        await interaction.reply({
+          content: `Commands can only be used in ${channelMention(env.BOT_CHANNEL_ID)}.`,
+          ephemeral: true,
+        });
+        return;
+      }
+
       // Get command from client commands collection
       const command = (interaction.client as YoClient).commands.get(
         interaction.commandName,
