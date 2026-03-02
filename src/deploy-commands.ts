@@ -41,7 +41,7 @@ for (const cf of commandFolders) {
   // Command file name is the same as the folder name, therefore we can join it twice to get the path of the file
   const commandFiles = fs
     .readdirSync(path.join(commandsPath, cf))
-    .filter((file) => file.endsWith(".js") || file.endsWith(".ts"));
+    .filter((file) => (file.endsWith(".js") || file.endsWith(".ts")) && !file.endsWith(".test.ts") && !file.endsWith(".test.js"));
   for (const file of commandFiles) {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const imported = require(`./commands/${cf}/${file}`);
